@@ -1,0 +1,4369 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Mpdf\Mpdf;
+
+class Data_entry extends MY_Controller {
+	
+	public function __construct() {
+        parent::__construct();
+		$this->load->library('session');
+		
+		$this->load->model('hrms_full_attendance_model');
+		$this->load->model('hrms_attendance_register_model');
+		$this->load->model('hrms_attendance_summary_model');
+		$this->load->model('hrms_occupation_deviation_model');
+		$this->load->model('hrms_spell_wise_model');
+		$this->load->model('hrms_category_summary_model');
+		$this->load->model('hrms_department_sub_summary_model');
+		$this->load->model('hrms_department_summary_model');
+		$this->load->model('hrms_designation_summary_model');
+		$this->load->model('hrms_dept_cat_summary_model');
+		$this->load->model('hrms_cash_hands_report_model');
+		$this->load->model('hrms_employee_bank_statement_report_model');
+		$this->load->model('Attendance_checklist_Model');
+		$this->load->model('Loans_advance_model');
+		$this->load->model('Loan_adv_model');
+		
+
+		
+		
+		
+		ini_set('max_execution_time', 6000); //300 seconds = 5 minutes
+    }
+
+	public function exceldownload() {
+		// Create a new Spreadsheet object
+		$spreadsheet = new Spreadsheet();
+	$sheet = $spreadsheet->getActiveSheet();
+
+    $sdate='2023-01-01';
+    $cmpn='company';
+	$sheet->setCellValue('A1', $cmpn);
+	$sheet->setCellValue('A2', "Doff 10 Reports for Dated : ".$sdate);
+	
+    $filename="doff10_".$sdate.'.xlsx';
+	// Set headers for Excel file download
+//	ob_clean();
+	header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+//	header('Content-Disposition: attachment;filename="your_excel_file.xlsx"');
+
+//		header('Content-Type: application/vnd.ms-excel');
+	header('Content-Disposition: attachment;filename='.$filename);
+	header('Cache-Control: max-age=0');
+	ob_clean();
+
+	// Save the Excel file to output stream
+	$writer = new Xlsx($spreadsheet);
+	$writer->save('php://output');
+	// Save the Excel file to output stream
+//	$writer = new Xlsx($spreadsheet);
+//	$writer->save('php://output');
+	
+		// Terminate the script to prevent further output
+		exit;
+	}
+	
+	public function generatePdf() {
+        // Load mPDF library
+        require_once APPPATH.'../vendor/autoload.php'; // Adjust the path as needed
+        $mpdf = new Mpdf();
+
+        // Write content directly to PDF
+        $mpdf->WriteHTML('<h1>Hello, mPDF!</h1>');
+        $mpdf->WriteText(10, 10, 'Additional text goes here.'); // Adjust the coordinates as needed
+
+        // Generate PDF
+        $mpdf->Output('output.pdf', 'D'); // Output as download
+    }
+
+	
+	public function ajax_list_full_attendance(){
+		$mainmenuId=$_POST['mainmenuId'];
+		$submenuId=$_POST['submenuId'];
+		$companyId=$_POST['companyId'];
+		$from_date=$_POST['from_date'];
+		$to_date=$_POST['to_date'];
+		$columns = $this->columns->getReportColumns($submenuId);
+		$list = $this->hrms_full_attendance_model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+		$array_keys = array_keys($columns);
+
+		// $this->varaha->print_arrays($list);
+		
+		$data = array();
+		$no = $_POST['start'];
+		foreach ($list as $loc) {
+			$no++;
+			$action ='';
+			$row = array();
+			if($array_keys){
+				for($i=0; $i<count($array_keys); $i++){
+					if($i==0){
+						$row[] = $no;
+					}else{
+						$mrowname = $array_keys[$i];
+						$row[] = $loc->$mrowname;
+					}
+				}
+			}
+			$data[] = $row;
+		}
+
+		$output = array(
+						"draw" => $_POST['draw'],
+						"recordsTotal" => $this->hrms_full_attendance_model->count_all($mainmenuId,$submenuId, $companyId, $from_date,$to_date),
+						"recordsFiltered" => $this->hrms_full_attendance_model->count_filtered($mainmenuId,$submenuId, $companyId, $from_date,$to_date),
+						"data" => $data,
+				);
+		//output to json format
+		// $this->varaha->print_arrays($output);
+		echo json_encode($output);
+	}
+	public function ajax_list_attendance_checklist(){
+		$mainmenuId=$_POST['mainmenuId'];
+		$submenuId=$_POST['submenuId'];
+		$companyId=$_POST['companyId'];
+		$from_date=$_POST['from_date'];
+		$to_date=$_POST['to_date'];
+		$columns = $this->columns->getReportColumns($submenuId);
+		$list = $this->Attendance_checklist_Model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+		$array_keys = array_keys($columns);
+
+		// $this->varaha->print_arrays($list);
+		
+		$data = array();
+		$no = $_POST['start'];
+		foreach ($list as $loc) {
+			$no++;
+			$action ='';
+			$row = array();
+			if($array_keys){
+				for($i=0; $i<count($array_keys); $i++){
+					if($i==0){
+						$row[] = $no;
+					}else{
+						$mrowname = $array_keys[$i];
+						$row[] = $loc->$mrowname;
+					}
+				}
+			}
+			$data[] = $row;
+		}
+
+		$output = array(
+						"draw" => $_POST['draw'],
+						"recordsTotal" => $this->Attendance_checklist_Model->count_all($mainmenuId,$submenuId, $companyId, $from_date,$to_date),
+						"recordsFiltered" => $this->Attendance_checklist_Model->count_filtered($mainmenuId,$submenuId, $companyId, $from_date,$to_date),
+						"data" => $data,
+				);
+		//output to json format
+		// $this->varaha->print_arrays($output);
+		echo json_encode($output);
+	}
+
+	public function ajax_list_mechine_summary_entry(){
+ 
+	}
+
+
+	public function ajax_list_attendance_register(){
+		$mainmenuId=$_POST['mainmenuId'];
+		$submenuId=$_POST['submenuId'];
+		$companyId=$_POST['companyId'];
+		$from_date=$_POST['from_date'];
+		$to_date=$_POST['to_date'];
+		$columns = $this->columns->getReportColumns($submenuId, $from_date,$to_date);
+		$list = $this->hrms_attendance_register_model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+		$array_keys = array_keys($columns);
+		// $this->varaha->print_arrays($array_keys,$list);
+		$data = array();
+		$no = $_POST['start'];
+		foreach ($list as $loc) {
+			$no++;
+			$action ='';
+			$row = array();			
+			if($array_keys){
+				for($i=0; $i<count($array_keys); $i++){
+					if($i==0){
+						$row[] = $no;
+					}else{
+						$mrowname = $array_keys[$i];
+						$row[] = ($loc[$mrowname] ? $loc[$mrowname] : "");
+					}
+				}
+			}
+			$data[] = $row;
+		}
+
+		$output = array(
+						"draw" => $_POST['draw'],
+						"recordsTotal" => $this->hrms_attendance_register_model->count_all($mainmenuId,$submenuId, $companyId, $from_date,$to_date),
+						"recordsFiltered" => $this->hrms_attendance_register_model->count_filtered($mainmenuId,$submenuId, $companyId, $from_date,$to_date),
+						"data" => $data,
+				);
+		
+		echo json_encode($output);
+	}
+
+	public function ajax_list_attendance_summary(){
+		$mainmenuId=$_POST['mainmenuId'];
+		$submenuId=$_POST['submenuId'];
+		$companyId=$_POST['companyId'];
+		$from_date=$_POST['from_date'];
+		$to_date=$_POST['to_date'];
+		$columns = $this->columns->getReportColumns($submenuId);
+		$list = $this->hrms_attendance_summary_model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+		$array_keys = array_keys($columns);
+
+		// $this->varaha->print_arrays($list);
+		
+		$data = array();
+		$no = $_POST['start'];
+		foreach ($list as $loc) {
+			$no++;
+			$action ='';
+			$row = array();
+			if($array_keys){
+				for($i=0; $i<count($array_keys); $i++){
+					if($i==0){
+						$row[] = $no;
+					}else{
+						$mrowname = $array_keys[$i];
+						$row[] = $loc->$mrowname;
+					}
+				}
+			}
+			$data[] = $row;
+		}
+
+		$output = array(
+						"draw" => $_POST['draw'],
+						"recordsTotal" => $this->hrms_attendance_summary_model->count_all($mainmenuId,$submenuId, $companyId, $from_date,$to_date),
+						"recordsFiltered" => $this->hrms_attendance_summary_model->count_filtered($mainmenuId,$submenuId, $companyId, $from_date,$to_date),
+						"data" => $data,
+				);
+		//output to json format
+		// $this->varaha->print_arrays($output);
+		echo json_encode($output);
+	}
+
+	public function ajax_list_occupation_deviation(){
+		$mainmenuId=$_POST['mainmenuId'];
+		$submenuId=$_POST['submenuId'];
+		$companyId=$_POST['companyId'];
+		$from_date=$_POST['from_date'];
+		$to_date=$_POST['to_date'];
+		$columns = $this->columns->getReportColumns($submenuId);
+		$list = $this->hrms_occupation_deviation_model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+		$array_keys = array_keys($columns);
+
+		// $this->varaha->print_arrays($list);
+		
+		$data = array();
+		$no = $_POST['start'];
+		foreach ($list as $loc) {
+			$no++;
+			$action ='';
+			$row = array();
+			if($array_keys){
+				for($i=0; $i<count($array_keys); $i++){
+					if($i==0){
+						$row[] = $no;
+					}else{
+						$mrowname = $array_keys[$i];
+						$row[] = $loc->$mrowname;
+					}
+				}
+			}
+			$data[] = $row;
+		}
+
+		$output = array(
+						"draw" => $_POST['draw'],
+						"recordsTotal" => $this->hrms_occupation_deviation_model->count_all($mainmenuId,$submenuId, $companyId, $from_date,$to_date),
+						"recordsFiltered" => $this->hrms_occupation_deviation_model->count_filtered($mainmenuId,$submenuId, $companyId, $from_date,$to_date),
+						"data" => $data,
+				);
+		//output to json format
+		// $this->varaha->print_arrays($output);
+		echo json_encode($output);
+	}
+
+
+	public function list_ajax(){
+		$mainmenuId=$_POST['mainmenuId'];
+		$submenuId=$_POST['submenuId'];
+		$companyId=$_POST['companyId'];
+		$from_date=$_POST['from_date'];
+		$to_date=$_POST['to_date'];
+		$sno=1;
+		$spells= $this->varaha_model->getAllSpells($companyId);
+		$columns = $this->columns->getReportColumns($submenuId,null,null,$spells);	
+		$recordsTotal="";
+		$recordsFiltered="";
+		if($submenuId==559){						
+			$list = $this->hrms_spell_wise_model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsTotal=$this->hrms_spell_wise_model->count_all($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsFiltered=$this->hrms_spell_wise_model->count_filtered($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+		}
+		if($submenuId==506){
+			$sno=null;			
+			$list = $this->hrms_category_summary_model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsTotal=$this->hrms_category_summary_model->count_all($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsFiltered=$this->hrms_category_summary_model->count_filtered($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+		}
+		if($submenuId==508){
+			$sno=null;			
+			$list = $this->hrms_department_sub_summary_model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsTotal=$this->hrms_department_sub_summary_model->count_all($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsFiltered=$this->hrms_department_sub_summary_model->count_filtered($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+		}
+
+		if($submenuId==505){
+			$sno=null;			
+			$list = $this->hrms_department_summary_model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsTotal=$this->hrms_department_summary_model->count_all($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsFiltered=$this->hrms_department_summary_model->count_filtered($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+		}
+
+		if($submenuId==517){
+			$sno=null;			
+			$list = $this->hrms_designation_summary_model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsTotal=$this->hrms_designation_summary_model->count_all($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsFiltered=$this->hrms_designation_summary_model->count_filtered($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+		}
+
+		if($submenuId==509){
+			$sno=null;			
+			$list = $this->hrms_dept_cat_summary_model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsTotal=$this->hrms_dept_cat_summary_model->count_all($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsFiltered=$this->hrms_dept_cat_summary_model->count_filtered($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+		}
+
+		if($submenuId==610){
+			$sno=null;			
+			$list_data = $this->hrms_cash_hands_report_model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$list = $list_data['data'];
+			$recordsTotal=count($list_data['data']);
+			$recordsFiltered=count($list_data['data']);
+			
+		}
+		if($submenuId==534){
+			$sno=null;			
+			$list = $this->hrms_employee_bank_statement_report_model->get_datatables($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			// $this->varaha->print_arrays($list_data);
+			$recordsTotal=$this->hrms_employee_bank_statement_report_model->count_all($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			$recordsFiltered=$this->hrms_employee_bank_statement_report_model->count_filtered($mainmenuId,$submenuId, $companyId, $from_date,$to_date);
+			
+				
+		}
+		$array_keys = array_keys($columns);		
+		$data = array();
+		$no = $_POST['start'];
+		if($list){
+			foreach ($list as $loc) {
+				$no++;
+				$action ='';
+				$row = array();
+				if($array_keys){
+					for($i=0; $i<count($array_keys); $i++){
+						if($sno){
+							if($i==0){
+								$row[] = $no;
+							}else{
+								$mrowname = $array_keys[$i];
+								$row[] = $loc->$mrowname;
+							}
+						}else{
+							$mrowname = $array_keys[$i];
+							if($submenuId==610){
+								$row[] = (isset($loc->$mrowname) ? $loc->$mrowname : $loc[$mrowname]);
+							}else{
+								$row[] = (isset($loc->$mrowname) ? $loc->$mrowname : "");
+							}
+						}
+						
+					}
+				}
+				$data[] = $row;
+			}
+	
+		}
+		
+		$output = array(
+						"draw" => $_POST['draw'],
+						"recordsTotal" => $recordsTotal,
+						"recordsFiltered" => $recordsFiltered,
+						"data" => $data,
+				);
+		//output to json format
+		// $this->varaha->print_arrays($output);
+		echo json_encode($output);
+	}
+	
+
+	public function dashboard($menuId, $submenuId =null){
+		if($this->session->userdata('userid')==''){
+			$this->data['headtitle'] = "LogIn";
+			$this->load->view('login/signin',$this->data);
+		}else{		
+		//	 phpinfo();
+			$this->data['headtitle'] = "Dashboard";
+			$this->data['mainmenuId'] = $menuId;			
+			$this->data['menudit'] = $this->varaha_model->getMenuData($menuId);
+			$this->data['menuName'] = ($this->data['menudit'] ? $this->data['menudit']->menu : "Reports");			
+			$this->data['from_date'] = date('Y-m-01',time());
+			$this->data['to_date'] = date('Y-m-t',time());
+			$this->data['submenuId'] = "";
+			$this->data['companyId'] = "";
+			$this->data['controller'] = "Data_entry";
+			if($this->session->userdata('companys')){
+				foreach($this->session->userdata('companys') as $company){
+					if($company['name']=='TALBOT'){
+						$companyName = $company['name'];
+					}
+				}
+			}
+			if(($companyName =='TALBOT')){
+				$this->data['embed_url'] = "https://datastudio.google.com/embed/reporting/5c1f08d8-1ab1-4cd3-89e3-85bffd30d03a/page/LAYAD";
+				$this->page_construct('embedreps/embedreports',$this->data);
+			}else{
+				$this->page_construct('hrms/dashboard',$this->data);
+			}
+			
+		}
+	}
+	
+	public function report($mainmenuId,$submenuId,$company){
+		if($this->session->userdata('userid')==''){
+			$this->data['headtitle'] = "LogIn";
+			$this->load->view('login/signin',$this->data);
+		}else{
+			$this->data['headtitle'] = "Dashboard";
+			$this->data['mainmenuId'] = $mainmenuId;
+			$this->data['submenuId'] = $submenuId;
+			$this->data['companyId'] = $company;
+			$this->data['from_date'] = date('Y-m-01',time());
+			$this->data['to_date'] = date('Y-m-t',time());
+			$this->data['controller'] = "data_entry";
+			$this->data['menudit'] = $this->varaha_model->getMenuData($submenuId);
+			
+
+
+
+			$this->data['menuName'] = ($this->data['menudit'] ? $this->data['menudit']->menu : "Reports");
+			$this->data['tableBorders']="";
+			$this->data['Source']="0";
+			$this->data['att_type']="0";
+			$this->data['att_status']="";
+			$this->data['status']=$this->varaha_model->getAllStatus();
+			$this->data['departments']=$this->varaha_model->getAllDepartments($this->data['companyId']);
+			$this->data['masterdepartments']=$this->varaha_model->getAllMasterDepartments($this->data['companyId']);
+			$this->data['payschemes']=$this->varaha_model->getAllPayschemes($this->data['companyId']);
+			$this->data['att_dept']="";
+			$this->data['designations']= $this->varaha_model->getAllDesignations($this->data['companyId']);
+			$this->data['att_desig']="";
+			$this->data['spells']= $this->varaha_model->getAllSpells($this->data['companyId']);
+			$this->data['att_spells']="";
+			$this->data['eb_no']="";			
+			$this->data['att_mark_hrs_att']="1";
+			$this->data['dates']=1;
+			$this->data['att_worktype']="R";
+			$this->data['att_cat']="";
+			$this->data['categorys']= $this->varaha_model->getAllCategorys($this->data['companyId']);
+			$this->data['branchs']= $this->varaha_model->getAllBranchs($this->data['companyId']);
+			$this->data['branch_id'] = "";
+			$this->data['componets']= $this->varaha_model->getAllComponets($this->data['companyId']);
+			$this->data['componet_id'] = 21;
+			$this->data['godowns'] = $this->varaha_model->getAllGodownsNos();
+			$this->data['mccodes'] = $this->varaha_model->getAllMccodes($this->data['companyId']);
+			// $this->varaha->print_arrays($this->data['from_date'], $this->data['to_date']);
+			$this->data['columns'] = $this->columns->getReportColumns($submenuId);
+				$query = $this->varaha_model->getEmbedGoogleLinks($company,$submenuId);
+				
+				if($query){
+					// $this->varaha->print_arrays($query);
+					$this->data['embed_url'] = $query;
+					$this->page_construct('embedreps/embedreports',$this->data);
+				
+				}else{
+					if($submenuId==603){
+						$this->data['function'] = "ajax_list_full_attendance";
+					}else if($submenuId==657){
+						$this->data['function'] = "ajax_list_attendance_checklist";
+				}else if($submenuId==658){
+					 $this->page_construct('other_data_entry/mcsummary_report',$this->data);
+	//	 $this->page_construct('other_data_entry/tabsample',$this->data);
+
+				}else if($submenuId==659){
+							 $this->page_construct('other_data_entry/loans_advance',$this->data);
+		
+					}else if($submenuId==666){
+									 $this->page_construct('other_data_entry/loans_advance_installment_process',$this->data);
+				
+					}else if($submenuId==668){
+						$this->page_construct('other_data_entry/holiday_att_incn_eligibility',$this->data);
+   
+	   				}else if($submenuId==669){
+						$this->page_construct('other_data_entry/holiday_att_incn_process',$this->data);
+   
+	   				}else if($submenuId==670){
+						$this->page_construct('other_data_entry/ot_register_payslip',$this->data);
+				//		$html=$this->page_construct('other_data_entry/ot_register_payslip',$this->data);
+				//		echo $html;
+		//		$html = $this->load->view('hrms/reportprint', $this->data, true);		
+		//		echo $html;
+   
+	   				}else if($submenuId==671){
+						$this->page_construct('other_data_entry/pay_register_payslip',$this->data);
+   
+	   				}else if($submenuId==667){
+						$this->page_construct('other_data_entry/other_data_ent_report',$this->data);
+   
+	   				}else if($submenuId==604){
+							$this->data['columns'] = $this->columns->getReportColumns($submenuId,$this->data['from_date'],$this->data['to_date']);
+							$this->data['function'] = "ajax_list_attendance_register";	
+							$this->data['tableBorders']="table-bordered";			
+					}else if($submenuId==607){
+						$this->data['function'] = "ajax_list_attendance_summary";
+				
+					}else if($submenuId==601){
+							$this->data['function'] = "ajax_list_occupation_deviation";
+					
+					}else if($submenuId==559){
+						$this->data['function'] = "list_ajax";
+						$this->data['columns'] = $this->columns->getReportColumns($submenuId,null,null,$this->data['spells']);	
+					}else if($submenuId==506){
+						$this->data['function'] = "list_ajax";
+						// $this->data['dates']=0;
+					}else if($submenuId==508){
+						$this->data['function'] = "list_ajax";
+						// $this->data['dates']=0;
+					}else if($submenuId==505){
+						$this->data['function'] = "list_ajax";
+						// $this->data['dates']=0;
+					}else if($submenuId==517){
+						$this->data['function'] = "list_ajax";
+						// $this->data['dates']=0;
+					}else if($submenuId==509){
+						$this->data['function'] = "list_ajax";
+						// $this->data['dates']=0;
+					}else if($submenuId==610){
+						$this->data['function'] = "list_ajax";
+						// $this->data['dates']=0;
+					}else if($submenuId==534){
+						$this->data['function'] = "list_ajax";
+						// $this->data['dates']=0;
+					}else{
+						
+						$this->page_construct('hrms/notfound',$this->data);
+					}
+					if($this->data['dates']){
+						$this->data['report_title'] = $this->data['menuName'] ." From ". date('d-m-Y', strtotime($this->data['from_date'])) . " To ".date('d-m-Y', strtotime($this->data['to_date']));
+					}else{
+						$this->data['report_title'] = $this->data['menuName'];
+					}
+					
+					//.date("d",$form_date)." ".substr((date("D",$form_date)),0,2)." ".substr((date("M",$form_date)),0,2).
+					
+					if($submenuId==658){
+//						$this->page_construct('other_data_entry/mcsummary_report',$this->data);
+					}else  {	
+//						$this->page_construct('other_data_entry/report',$this->data);
+					}		
+				}
+
+			
+		}
+	}
+
+	public function reporttype(){
+		if($this->session->userdata('userid')==''){
+			$this->data['headtitle'] = "LogIn";
+			$this->load->view('login/signin',$this->data);
+		}else{
+			$this->data['headtitle'] = "Dashboard";
+			$this->data['mainmenuId'] = $_POST['mainmenu'];
+			$this->data['submenuId'] = $_POST['submenu'];
+			$this->data['companyId'] = $_POST['companyId'];
+			$this->data['menudit'] = $this->varaha_model->getMenuData($this->data['submenuId']);
+			$this->data['menuName'] = ($this->data['menudit'] ? $this->data['menudit']->menu : "Reports");
+			$this->data['controller'] = "reports_hrms";
+			
+			$this->data['report_title'] = $this->data['menuName'] ." From ". date('d-m-Y', strtotime($_POST['from_date'])) . " To ".date('d-m-Y', strtotime($_POST['to_date']));
+			$this->data['from_date'] = $_POST['from_date'];
+			$this->data['to_date'] = $_POST['to_date'];
+			$this->data['tableBorders']="";
+
+			$this->data['Source']= $_POST['Source_att'];
+			$this->data['att_type']=$_POST['att_type_att'];
+			$this->data['att_status']=$_POST['att_status_att'];
+			$this->data['status']=$this->varaha_model->getAllStatus();
+			$this->data['departments']=$this->varaha_model->getAllDepartments($this->data['companyId']);
+			// $this->data['subdepartments']=$this->varaha_model->getAllSubDepartments($this->data['companyId']);
+			$this->data['att_dept']=$_POST['att_dept_att'];
+			$this->data['designations']= $this->varaha_model->getAllDesignations($this->data['companyId']);
+			$this->data['att_desig']=$_POST['att_desig_att'];
+			$this->data['spells']= $this->varaha_model->getAllSpells($this->data['companyId']);
+			$this->data['att_spells']=$_POST['att_spells_att'];
+			$this->data['eb_no']=$_POST['eb_no_att'];
+			$this->data['att_mark_hrs_att']=$_POST['att_mark_hrs_att'];
+			$this->data['sno']=1;
+			$this->data['att_worktype']=$_POST['att_worktype_att'];
+			$this->data['att_cat_att']=$_POST['att_cat_att'];
+			$this->data['columns'] = $this->columns->getReportColumns($this->data['submenuId']);
+			$this->data['categorys']= $this->varaha_model->getAllCategorys($this->data['companyId']);
+			$this->data['branchs']= $this->varaha_model->getAllBranchs($this->data['companyId']);
+			$this->data['branch_id'] = $_POST['att_branch_id'];
+			$this->data['componets']= $this->varaha_model->getAllComponets($this->data['companyId']);
+			$this->data['componet_id'] = $_POST['att_componet_id'];
+			if($this->data['submenuId']==603){
+				$this->data['function'] = "ajax_list_full_attendance";
+			}
+			if($this->data['submenuId']==657){
+				$this->data['function'] = "ajax_list_attendance_checklist";
+			}
+
+			$filename = $this->data['report_title'].date('Ymdhis');
+				$perms=array(
+					'company' => $this->data['companyId'],
+					'mainmenuId' => $this->data['mainmenuId'],
+					'submenuId' => $this->data['submenuId'],
+					'from_date' => $_POST['from_date'],
+					'to_date' => $_POST['to_date'],
+					'Source' => $this->data['Source'],
+					'att_type' => $this->data['att_type'],
+					'att_status' => $this->data['att_status'],
+					'att_dept' => $this->data['att_dept'],
+					'att_desig' => $this->data['att_desig'],
+					'att_spells' => $this->data['att_spells'],
+					'eb_no' => $this->data['eb_no'],
+					'att_mark_hrs_att' => $this->data['att_mark_hrs_att'],
+					'att_worktype' => $this->data['att_worktype'],
+					'att_cat' => $this->data['att_cat_att'],
+					'branch_id' => $this->data['branch_id'],
+					'componet_id' => $this->data['componet_id']
+				);				
+			
+			if($this->data['submenuId']==603){				
+				$this->data['res'] = $this->hrms_full_attendance_model->directReport($perms);
+				// $this->varaha->print_arrays($this->data['res']);
+				$html = $this->load->view('hrms/hrms_full_attendance', $this->data, true);
+				
+			}else if($this->data['submenuId']==658){
+ 		
+		//echo 'jjjj';
+				$this->load->view('other_data_entry/mechine_summary_entry');
+			}else if($this->data['submenuId']==604){
+				$this->data['columns'] = $this->columns->getReportColumns($this->data['submenuId'],$this->data['from_date'],$this->data['to_date']);
+				$this->data['function'] = "ajax_list_attendance_register";	
+				$this->data['tableBorders']="table-bordered";
+				$html = $this->load->view('hrms/reportprint', $this->data, true);
+			}else if($this->data['submenuId']==607){
+				$this->data['function'] = "ajax_list_attendance_summary";
+				$this->data['res'] = $this->hrms_attendance_summary_model->directReport($perms);
+				$html = $this->load->view('hrms/reportprint', $this->data, true);
+			}else if($this->data['submenuId']==601){				
+				$this->data['function'] = "ajax_list_occupation_deviation";
+				$this->data['res'] = $this->hrms_occupation_deviation_model->directReport($perms);	
+				
+				$html = $this->load->view('hrms/reportprint', $this->data, true);
+			}else if($this->data['submenuId']==559){
+				$this->data['function'] = "list_ajax";
+				$this->data['columns'] = $this->columns->getReportColumns($this->data['submenuId'],null,null,$this->data['spells']);
+				$this->data['res'] = $this->hrms_spell_wise_model->directReport($perms);	
+				$html = $this->load->view('hrms/reportprint', $this->data, true);	
+				
+			}else if($this->data['submenuId']==506){
+				$this->data['function'] = "list_ajax";
+				$this->data['dates']=0;
+				$this->data['sno']=null;
+				$this->data['res'] = $this->hrms_category_summary_model->directReport($perms);
+				// $this->data['report_title'] = $this->data['menuName'];
+				$html = $this->load->view('hrms/reportprint', $this->data, true);
+			}else if($this->data['submenuId']==508){
+				$this->data['function'] = "list_ajax";
+				$this->data['dates']=0;
+				$this->data['sno']=null;
+				$this->data['res'] = $this->hrms_department_sub_summary_model->directReport($perms);
+				// $this->data['report_title'] = $this->data['menuName'];
+				$html = $this->load->view('hrms/reportprint', $this->data, true);
+			}else if($this->data['submenuId']==505){
+				$this->data['function'] = "list_ajax";
+				$this->data['dates']=0;
+				$this->data['sno']=null;
+				$this->data['res'] = $this->hrms_department_summary_model->directReport($perms);
+				// $this->data['report_title'] = $this->data['menuName'];
+				$html = $this->load->view('hrms/reportprint', $this->data, true);
+			}else if($this->data['submenuId']==517){
+				$this->data['function'] = "list_ajax";
+				$this->data['dates']=0;
+				$this->data['sno']=null;
+				$this->data['res'] = $this->hrms_designation_summary_model->directReport($perms);
+				// $this->data['report_title'] = $this->data['menuName'];
+				$html = $this->load->view('hrms/reportprint', $this->data, true);
+			}else if($this->data['submenuId']==509){
+				$this->data['function'] = "list_ajax";
+				$this->data['dates']=0;
+				$this->data['sno']=null;
+				$this->data['res'] = $this->hrms_dept_cat_summary_model->directReport($perms);
+				// $this->data['report_title'] = $this->data['menuName'];
+				$html = $this->load->view('hrms/reportprint', $this->data, true);
+			}else if($this->data['submenuId']==610){
+				$this->data['function'] = "list_ajax";
+				$this->data['dates']=0;
+				$this->data['sno']=null;
+				$this->data['res'] = $this->hrms_cash_hands_report_model->directReport($perms);
+				// $this->data['report_title'] = $this->data['menuName'];
+				
+				$html = $this->load->view('hrms/reportprint', $this->data, true);
+			}else if($this->data['submenuId']==534){
+				$this->data['function'] = "list_ajax";
+				$this->data['dates']=0;
+				$this->data['sno']=null;
+				$this->data['res'] = $this->hrms_employee_bank_statement_report_model->directReport($perms);
+				// $this->data['report_title'] = $this->data['menuName'];
+				
+				$html = $this->load->view('hrms/reportprint', $this->data, true);
+			}else{
+				$this->page_construct('hrms/notfound',$this->data);
+			}
+				
+
+
+			if($_POST['type']==1){ // PDF
+				if($this->data['submenuId']==610){
+					$this->hrms_cash_hands_report_model->get_cashhands_pdf_report($perms);
+				}else{
+					$this->pdf($html,$filename);
+				}
+				
+			}
+			
+			if($_POST['type']==2){ // EXCEL
+				if($this->data['submenuId']==604){
+					$this->data['res'] = $this->hrms_attendance_register_model->directReport($perms);
+					$html = $this->load->view('hrms/reportprint', $this->data, true);
+				}
+				if($this->data['submenuId']==534){
+					$user_arr = array();
+					if($this->data['res']){		
+						$user_arr[] = array("","",$this->data['menuName'],"From ". date('d-m-Y', strtotime($_POST['from_date'])) . " To ".date('d-m-Y', strtotime($_POST['to_date'])),"","");		
+						$user_arr[] = array("Employee Code","Employee Name","Bank Name","Account No","IFSC Code","Net Pay");		
+						foreach($this->data['res'] as $row){
+							$user_arr[] = array($row->Employee_Code,$row->Employee_Name,$row->Bank_Name,$row->Account_No,$row->IFSC_Code, $row->Net_Pay);
+						}
+					}
+					$serialize_user_arr = serialize($user_arr);
+					$this->excelcsv($serialize_user_arr,$filename);
+					// $this->excel($html,$filename);
+				}else{
+					$this->excel($html,$filename);
+				}
+				
+			}
+
+			if($_POST['type']==3){ // PRINT
+				if($this->data['submenuId']==604){
+					$this->data['res'] = $this->hrms_attendance_register_model->directReport($perms);
+					$html = $this->load->view('hrms/reportprint', $this->data, true);
+				}
+				echo $html;
+			}
+
+			if($_POST['type']==4){ // GRID				
+
+				$this->page_construct('hrms/report',$this->data);
+			}
+
+			// $this->page_construct('jute/jutereport',$this->data);
+			
+		}
+	}
+
+
+	function pdf($result,$filename){
+		
+		/*
+		include("application/third_party/MPDF/mpdf.php");
+		$mpdf=new mPDF('en-GB-x','A4-P','','',10,10,10,10,6,3);
+		$mpdf->list_indent_first_level = 0;
+		$mpdf->shrink_tables_to_fit = 1;
+		$mpdf->WriteHTML($result);
+		$filename = $filename.date('d-m-Y h:m:i',time());
+		$mpdf->Output($filename.'.pdf','D');
+		*/
+		
+		require_once 'vendor/autoload.php';
+		$mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8',
+										'format' => 'A4-L',
+										'margin_top' => 10,
+										'margin_left' => 10,
+										'margin_right' => 10,
+										'margin_bottom' => 10,
+										'mirrorMargins' => true]); 
+		$mpdf->list_indent_first_level = 0;
+		$mpdf->shrink_tables_to_fit = 1;
+		$mpdf->WriteHTML($result);
+		//$filename = $filename.date('d-m-Y h:m:i',time());
+		$mpdf->Output($filename.'.pdf','D');
+		
+		
+	}
+	function pdfland($result,$filename){
+		
+		/*
+		include("application/third_party/MPDF/mpdf.php");
+		$mpdf=new mPDF('en-GB-x','A4-L','','',10,10,10,10,6,3);
+		$mpdf->list_indent_first_level = 0;
+		$mpdf->shrink_tables_to_fit = 1;
+		$mpdf->WriteHTML($result);
+		$filename = $filename.date('d-m-Y h:m:i',time());
+		$mpdf->Output($filename.'.pdf','I');
+		*/
+		
+		require_once 'vendor/autoload.php';
+		$mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8',
+										'format' => 'A4-L',
+										'margin_top' => 10,
+										'margin_left' => 10,
+										'margin_right' => 10,
+										'margin_bottom' => 10,
+										'mirrorMargins' => true]); 
+		$mpdf->list_indent_first_level = 0;
+		$mpdf->shrink_tables_to_fit = 1;
+		$mpdf->WriteHTML($result);
+		$filename = $filename.date('d-m-Y h:m:i',time());
+		$mpdf->Output($filename.'.pdf','I');
+		
+	}
+	
+	function excel($result,$filename){
+		
+		
+		$data = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">
+				   <head>
+					   <!--[if gte mso 9]>
+					   <xml>
+						   <x:ExcelWorkbook>
+							   <x:ExcelWorksheets>
+								   <x:ExcelWorksheet>
+									   <x:Name>Sheet 1</x:Name>
+									   <x:WorksheetOptions>
+										   <x:Print>
+											   <x:ValidPrinterInfo/>
+										   </x:Print>
+									   </x:WorksheetOptions>
+								   </x:ExcelWorksheet>
+							   </x:ExcelWorksheets>
+						   </x:ExcelWorkbook>
+					   </xml>
+					   <![endif]-->
+				   </head>
+				   <body>'.$result.'</body></html>';
+				   
+	   
+	//    ob_end_clean();
+	   if (ob_get_contents()) ob_end_clean();
+	   header('Content-Encoding: UTF-8');
+	   header('Content-Type: application/vnd.ms-excel');
+	//    header('Content-Type: UTF-8');
+	   header("Content-type: application/vnd.ms-excel" );
+	   header('Content-Disposition: attachment;filename="' . $filename . '.xls"');
+	   header('Cache-Control: max-age=0');		
+	   header("Pragma: no-cache");
+	   header("Expires: 0");
+	//    ob_end_clean();
+	   if (ob_get_contents()) ob_end_clean();
+	   mb_convert_encoding($data, 'UCS-2LE', 'UTF-8');	   
+	   
+	   echo $data;
+
+
+	// // Headers for download 
+	// header("Content-Type: application/vnd.ms-excel"); 
+	// header('Content-Disposition: attachment;filename="' . $filename . '.xls"');
+	// header('Cache-Control: max-age=0');		
+	// header("Pragma: no-cache");
+	// header("Expires: 0");
+	// // Render excel data 
+	// echo $data; 
+	// exit;
+   }
+
+    function excelcsv($result,$filename){
+		$export_data = unserialize($result);
+		ob_end_clean();
+		$filename = $filename.'.csv';
+		$fp = fopen('php://output', 'w');
+		header('Content-type: application/csv');
+		header('Content-Disposition: attachment; filename=' . $filename);
+		// $marr = array(1,2,3,4);
+		foreach ($export_data as $line){		
+			fputcsv($fp, array_map(function($v){return $v."\r";},$line));
+		}
+		// fputcsv($fp, $marr);
+		fclose( $fp );
+		ob_flush();
+		// foreach ($export_data as $line){			
+		// 	fputcsv($fp, array_map(function($v){
+		// 		return $v."\r";
+		// 	},$line));
+		// }	
+		exit();
+
+	}
+	
+	public function getMasterMCCodes() {
+		$this->load->model('Loan_adv_model');
+        $selectedDepartment = $this->input->post('department');
+        $mccodes = $this->Loan_adv_model->getMCCodesByDepartment($selectedDepartment);
+		echo json_encode($mccodes);
+    }
+	public function getEbMaster() {
+		$this->load->model('Loan_adv_model');
+        $selectedDepartment = $this->input->post('ebno');
+        $mccodes = $this->Loan_adv_model->getEbMaster($selectedDepartment);
+		$data = [];
+		$cnt=count($mccodes);
+	//	echo $cnt;
+			foreach ($mccodes as $record) {
+				$ebid=$record->eb_id;
+				$ebname=$record->empname;
+				$data[] = [
+					$ebid=$ebid,
+					$ebname=$ebname,
+					 
+				];
+			}
+			if ($cnt==0) {
+				$ebid=0;
+				$ebname='N.A';
+			
+			}
+			$response = array(
+				'success' => true,
+				'eb_id' => $ebid,
+				'empname' => $ebname 
+			);
+			echo json_encode($response);
+    }
+
+	public function getLoanadvData() {
+		$this->load->model('Loan_adv_model');
+     //   $selectedDepartment = $this->input->post('date');
+		$periodfromdate= $this->input->post('date');
+	//	echo 'date-- '.$periodfromdate;
+	//	$periodtodate= $this->input->post('periodtodate');
+//		$att_payschm =  $this->input->post('att_payschm');
+		
+		$mccodes = $this->Loan_adv_model->getLoanadvData($periodfromdate);
+		$data = [];
+			foreach ($mccodes as $record) {
+				$data[] = [
+					$recid=$record->loan_adv_id,
+					$advdate=$record->loan_adv_date,
+					$advtype=$record->loan_adv_type,
+					$emp_code=$record->emp_code,
+					$empname=$record->empname,
+					$loan_adv_amount=$record->loan_adv_amount,
+					$installment_amount=$record->installment_amount,
+					$No_of_installment=$record->No_of_installment,
+					$installment_start_date=$record->installment_start_date,
+					$eb_id=$record->eb_id,
+					$inststat=$record->inststat,
+					$remarks=$record->remarks,
+					
+				 	
+					
+				];
+			}
+			echo json_encode(['data' => $data]);
+    }
+	public function getLoanadvtranData() {
+		$this->load->model('Loan_adv_model');
+  		$periodfromdate= $this->input->post('periodfromdate');
+		$periodtodate= $this->input->post('periodtodate');
+		$att_payschm =  $this->input->post('att_payschm');
+		
+		$mccodes = $this->Loan_adv_model->getLoanadvtranData($periodfromdate,$periodtodate,$att_payschm);
+		$data = [];
+			foreach ($mccodes as $record) {
+				$data[] = [
+					$recid=$record->loan_adv_id,
+					$advdate=$record->loan_adv_date,
+					$advtype=$record->loan_adv_type,
+					$emp_code=$record->emp_code,
+					$empname=$record->empname,
+					$loan_adv_amount=$record->loan_adv_amount,
+					$installment_amount=$record->installment_amount,
+					$No_of_installment=$record->No_of_installment,
+					$installment_start_date=$record->installment_start_date,
+					$eb_id=$record->eb_id,
+					$inststat=$record->inststat,
+					$remarks=$record->remarks,
+					
+				 	
+					
+				];
+			}
+			echo json_encode(['data' => $data]);
+    }
+
+	public function saveadv_data() {
+		$loanadvamt = $this->input->post('loanadvamt');
+		$instamt = $this->input->post('instamt');
+		$rec_time =  date('Y-m-d H:i:s');
+		$ebid = $this->input->post('ebid');
+		$comp = $this->session->userdata('companyId');
+		$noofinst = $this->input->post('noofinst');
+		$inststartdate = $this->input->post('inststartdate');
+		$fromdt = $this->input->post('fromdt');
+		$advtype = $this->input->post('advtype');
+	    $stat=3;
+		$active=1;
+		$userid=$this->session->userdata('userid');
+ 		 
+		 $data = array(
+			'loan_adv_amount' => $loanadvamt,
+			'installment_amount' => $instamt,
+			'eb_id' => $ebid,
+			'No_of_installment' => $noofinst,
+			'is_active' => $active,
+			'installment_start_date' => $inststartdate,
+			'loan_adv_date' => $fromdt,
+			'status' => $stat,
+			'created_by' => $userid,
+			'loan_adv_type' => $advtype,
+			'created_date' => $rec_time
+		);
+	$this->db->insert('EMPMILL12.tbl_loan_advance_table', $data);
+	$response = array(
+		'success' => true,
+		'savedata'=> 'saved'
+	);
+	
+		echo json_encode($response);
+	
+	}
+	
+	public function updateadv_data() {
+		$loanadvamt = $this->input->post('loanadvamt');
+		$instamt = $this->input->post('instamt');
+		$rec_time =  date('Y-m-d H:i:s');
+		$ebid = $this->input->post('ebid');
+		$comp = $this->session->userdata('companyId');
+		$noofinst = $this->input->post('noofinst');
+		$inststartdate = $this->input->post('inststartdate');
+		$fromdt = $this->input->post('fromdt');
+		$advtype = $this->input->post('advtype');
+		$recordid = $this->input->post('record_id');
+		
+	    $stat=3;
+		$active=1;
+		$userid=$this->session->userdata('userid');
+ 		 
+		 $data = array(
+			'loan_adv_amount' => $loanadvamt,
+			'installment_amount' => $instamt,
+			'eb_id' => $ebid,
+			'No_of_installment' => $noofinst,
+			'is_active' => $active,
+			'installment_start_date' => $inststartdate,
+			'loan_adv_date' => $fromdt,
+			'status' => $stat,
+			'created_by' => $userid,
+			'loan_adv_type' => $advtype,
+			'mod_date' => $rec_time
+			
+
+		);
+
+		$this->Loan_adv_model->updateLoanAdvanceData($recordid, $data);
+	//	$this->Loan_adv_model->getLoanadvData($selectedDepartment);
+
+
+	$response = array(
+		'success' => true,
+		'savedata'=> 'saved'
+	);
+	
+		echo json_encode($response);
+	
+	}
+	
+	public function advpprocessdata() {
+		$periodfromdate = $this->input->post('periodfromdate');
+		$periodtodate = $this->input->post('periodtodate');
+		$att_payschm = $this->input->post('att_payschm');
+	 	
+	
+		$this->Loan_adv_model->advpprocessdata($periodfromdate, $periodtodate,$att_payschm);
+ 		 
+ 	$response = array(
+		'success' => true,
+		'savedata'=> 'saved'
+	);
+	
+		echo json_encode($response);
+	
+	}
+
+
+	public function saveeleg_data() {
+		$holget = $this->input->post('holget');
+		$aincget = $this->input->post('aincget');
+		$rec_time =  date('Y-m-d H:i:s');
+		$ebid = $this->input->post('ebid');
+		$comp = $this->session->userdata('companyId');
+		$fnaincamt = $this->input->post('fnaincamt');
+		$mnaincamt = $this->input->post('mnaincamt');
+	    $stat=3;
+		$active=1;
+		$userid=$this->session->userdata('userid');
+    	 $data = array(
+			'eb_id' => $ebid,
+			'holiday_eligibility' => $holget,
+			'att_incn_eligibility' => $aincget,
+			'fn_att_inc_rate' => $fnaincamt,
+			'mn_att_inc_rate' => $mnaincamt,
+			'is_active' => $active,
+			'created_by' => $userid,
+			'status' => $stat
+ 		);
+	$this->db->insert('EMPMILL12.tbl_holiday_att_inc_eligibility', $data);
+//echo $this->db->last_query();
+	$ebid = 0;
+
+	$response = array(
+		'success' => true,
+		'savedata'=> 'saved'
+	);
+	
+		echo json_encode($response);
+	
+	}
+
+
+	public function savemcsumm_data() {
+//		mcsummdate: mcsummdate,mcsummdeptid: mcsummdeptid,companyId: companyId,record_id: record_id,
+//		mcsummmcid: mcsummmcid,spella1: spella1,spella2: spella2,spellb1: spellb1,spellb2: spellb2,
+//		shifta: shifta,shiftb: shiftb,shiftc: shiftc 
+		$mcsummdate = $this->input->post('mcsummdate');
+		$mcsummdeptid = $this->input->post('mcsummdeptid');
+		$att_branch = $this->input->post('att_branch');
+		$att_desig = $this->input->post('att_desig');
+		$hol_get = $this->input->post('hol_get');
+		$rec_time =  date('Y-m-d H:i:s');
+		$comp = $this->session->userdata('companyId');
+		$mcsummmcid = $this->input->post('mcsummmcid');
+		$record_id = $this->input->post('record_id');
+		$spella1 = $this->input->post('spella1');
+		$spella2 = $this->input->post('spella2');
+		$spellb1 = $this->input->post('spellb1');
+		$spellb2 = $this->input->post('spellb2');
+		$shifta = $this->input->post('shifta');
+		$shiftb = $this->input->post('shiftb');
+		$shiftc = $this->input->post('shiftc');
+		$mdate=$mcsummdate;
+		
+		//substr($mcsummdate,8,2).'/'.substr($mcsummdate,5,2).'/'.substr($mcsummdate,0,4);
+	    $stat=3;
+		$active=1;
+		$userid=$this->session->userdata('userid');
+	if ($hol_get==1) {
+		$data = array(
+			'tran_date' => $mdate,
+			'shift_a' => $shifta ,
+			'shift_b' => $shiftb ,
+			'shift_c' => $shiftc ,
+			'spell_a1' => $spella1,
+			'spell_a2' => $spella2,
+			'spell_b1' => $spellb1,
+			'spell_b2' => $spellb2,
+			'company_id' => $comp,
+			'mc_code_id' => $mcsummmcid,
+			'is_active' => $active,
+			'created_on' => $rec_time,
+			'branch_id' => $att_branch
+		);
+	if ($record_id==0) {
+		$this->db->insert('EMPMILL12.tbl_daily_summ_mechine_data', $data);
+	}
+	if ($record_id>0) {
+		$data = array(
+		'shift_a' => $shifta ,
+		'shift_b' => $shiftb ,
+		'shift_c' => $shiftc ,
+		'spell_a1' => $spella1,
+		'spell_a2' => $spella2,
+		'spell_b1' => $spellb1,
+		'spell_b2' => $spellb2,
+		);
+
+	$this->db->where('daily_sum_mc_id', $record_id);
+    $this->db->update('EMPMILL12.tbl_daily_summ_mechine_data', $data);
+	}
+	}
+	if ($hol_get==2) {
+		$data = array(
+			'tran_date' => $mdate,
+			'shift_a' => $shifta ,
+			'shift_b' => $shiftb ,
+			'shift_c' => $shiftc ,
+			'spell_a1' => $spella1,
+			'spell_a2' => $spella2,
+			'spell_b1' => $spellb1,
+			'spell_b2' => $spellb2,
+			'company_id' => $comp,
+			'occu_id' => $att_desig,
+			'is_active' => $active,
+			'created_on' => $rec_time,
+			'branch_id' => $att_branch
+		);
+
+		if ($record_id==0) {
+			$this->db->insert('EMPMILL12.tbl_daily_other_hands_data', $data);
+		}
+		if ($record_id>0) {
+			$data = array(
+			'shift_a' => $shifta ,
+			'shift_b' => $shiftb ,
+			'shift_c' => $shiftc ,
+			'spell_a1' => $spella1,
+			'spell_a2' => $spella2,
+			'spell_b1' => $spellb1,
+			'spell_b2' => $spellb2,
+			);
+	
+		$this->db->where('oth_hands_id', $record_id);
+		$this->db->update('EMPMILL12.tbl_daily_other_hands_data', $data);
+		}
+	
+//echo $this->db->last_query();
+	$ebid = 0;
+	}
+
+	$response = array(
+		'success' => true,
+		'savedata'=> 'saved'
+	);
+	
+		echo json_encode($response);
+	
+	}
+
+
+	
+	public function checkmcsumm_data() {
+	 
+		$this->load->model('Loan_adv_model');
+		$mcsummdate = $this->input->post('mcsummdate');
+		$mcsummdeptid = $this->input->post('mcsummdeptid');
+		$att_branch = $this->input->post('att_branch');
+		$rec_time =  date('Y-m-d H:i:s');
+		$comp = $this->session->userdata('companyId');
+		$mcsummmcid = $this->input->post('mcsummmcid');
+		$att_desig=$this->input->post('att_desig');
+		$hol_get=$this->input->post('hol_get');
+	 	$mccodes = $this->Loan_adv_model->checkmcsumm_data($mcsummdate,$mcsummmcid,$comp,$att_branch,$att_desig,$hol_get);
+		$cnt=count($mccodes);
+		$data = [];
+		$response = array(
+			'spella1'=>0,
+			'spella2'=>0,
+			'spellb1'=>0,
+			'spellb2'=>0,
+			'shifta'=>0,
+			'shiftb'=>0,
+			'shiftc'=>0,
+			'recordid'=>0,
+			'success' => true,
+			'savedata'=> 'saved'
+		);	
+
+		if ($cnt>0) {
+			foreach ($mccodes as $record) {
+				$response = array(
+					'spella1'=>$record->spell_a1,
+					'spella2'=>$record->spell_a2,
+					'spellb1'=>$record->spell_b1,
+					'spellb2'=>$record->spell_b2,
+					'shifta'=>$record->shift_a,
+					'shiftb'=>$record->shift_b,
+					'shiftc'=>$record->shift_c,
+					'recordid'=>$record->recordid,
+					'success' => true,
+					'savedata'=> 'saved'
+				
+				);
+				
+	 		}
+	
+		}  		
+/*	
+		$response = array(
+			'success' => true,
+			'trollyNo' => $trlno,
+			'trollyWt' => $trlwt,
+			'doffNo' => $dfno,
+			'tnetWt' => $twt,
+			'mcno' => $frm	
+		
+		);
+*/		
+		
+		echo json_encode($response);
+//		echo json_encode([$response]);
+    }
+
+	public function checkdesigsumm_data() {
+	 
+		$this->load->model('Loan_adv_model');
+		$mcsummdate = $this->input->post('mcsummdate');
+		$mcsummdeptid = $this->input->post('mcsummdeptid');
+		$att_branch = $this->input->post('att_branch');
+		$rec_time =  date('Y-m-d H:i:s');
+		$comp = $this->session->userdata('companyId');
+		$att_desig = $this->input->post('att_desig');
+	 	$mccodes = $this->Loan_adv_model->checkdesigsumm_data($mcsummdate,$att_desig,$comp,$att_branch);
+		$cnt=count($mccodes);
+		$data = [];
+		$response = array(
+			'spella1'=>0,
+			'spella2'=>0,
+			'spellb1'=>0,
+			'spellb2'=>0,
+			'shifta'=>0,
+			'shiftb'=>0,
+			'shiftc'=>0,
+			'recordid'=>0,
+			'success' => true,
+			'savedata'=> 'saved'
+		);	
+
+		if ($cnt>0) {
+			foreach ($mccodes as $record) {
+				$response = array(
+					'spella1'=>$record->spell_a1,
+					'spella2'=>$record->spell_a2,
+					'spellb1'=>$record->spell_b1,
+					'spellb2'=>$record->spell_b2,
+					'shifta'=>$record->shift_a,
+					'shiftb'=>$record->shift_b,
+					'shiftc'=>$record->shift_c,
+					'recordid'=>$record->daily_sum_mc_id,
+					'success' => true,
+					'savedata'=> 'saved'
+				
+				);
+				
+	 		}
+	
+		}  		
+/*	
+		$response = array(
+			'success' => true,
+			'trollyNo' => $trlno,
+			'trollyWt' => $trlwt,
+			'doffNo' => $dfno,
+			'tnetWt' => $twt,
+			'mcno' => $frm	
+		
+		);
+*/		
+		
+		echo json_encode($response);
+//		echo json_encode([$response]);
+    }
+
+
+	public function getmcsummData() {
+	 
+	$this->load->model('Loan_adv_model');
+	 $mcsummdate = $this->input->post('date');
+	 $mcsummdeptid = $this->input->post('mcsummdeptid');
+	 $att_branch = $this->input->post('att_branch');
+	 $rec_time =  date('Y-m-d H:i:s');
+	 $comp = $this->session->userdata('companyId');
+	 $hol_get = $this->input->post('hol_get');
+	 
+
+		$mccodes = $this->Loan_adv_model->getmcsummData($mcsummdate,$mcsummdeptid,$att_branch,$comp,$hol_get);
+		$data = [];
+			foreach ($mccodes as $record) {
+				$data[] = [
+					$recid=$record->recordid,
+					$tran_date=$record->tran_date,
+					$code=$record->code,
+					$name=$record->name,
+					$spella1=$record->spell_a1,
+					$spella2=$record->spell_a2,
+					$shifta=$record->shift_a,
+					$spellb1=$record->spell_b1,
+					$spellb2=$record->spell_b2,
+					$shiftb=$record->shift_b,
+					$shiftc=$record->shift_c
+
+
+				];
+			}
+			echo json_encode(['data' => $data]);
+    }
+
+
+
+	public function gethlaincelegData() {
+	 
+		$this->load->model('Loan_adv_model');
+     //   $selectedDepartment = $this->input->post('date');
+	 
+		$mccodes = $this->Loan_adv_model->gethlaincelegData();
+		$data = [];
+			foreach ($mccodes as $record) {
+				$data[] = [
+					$recid=$record->hl_att_inc_id,
+					$advdate=$record->emp_code,
+					$advtype=$record->empname,
+					$emp_code=$record->holidayeligibility,
+					$empname=$record->attincneligibility,
+					$loan_adv_amount=$record->fn_att_inc_rate,
+					$installment_amount=$record->mn_att_inc_rate,
+					$No_of_installment=$record->eb_id
+ 					
+				 	
+					
+				];
+			}
+			echo json_encode(['data' => $data]);
+    }
+	public function holidayprocessdata() {
+		$rec_time =  date('Y-m-d H:i:s');
+		$comp = $this->session->userdata('companyId');
+		$periodfromdate = $this->input->post('periodfromdate');
+		$periodtodate = $this->input->post('periodtodate');
+		$att_payschm = $this->input->post('att_payschm');
+	    $stat=3;
+		$active=1;
+		$userid=$this->session->userdata('userid');
+
+		$mcc=$this->Loan_adv_model->updateholidayaData($periodfromdate,$periodtodate, $att_payschm);
+		$data = [];
+			foreach ($mcc as $record) {
+				$succ=$record->succes;
+			}		
+
+			$response = array(
+		'success' => true,
+		'savedata'=> 'saved'
+	);
+	
+		echo json_encode($response);
+	
+	}
+
+
+	public function getholiday_data() {
+		$this->load->model('Loan_adv_model');
+     //   $selectedDepartment = $this->input->post('date');
+		$periodfromdate= $this->input->post('periodfromdate');
+		$periodtodate= $this->input->post('periodtodate');
+		$att_payschm =  $this->input->post('att_payschm');
+
+		
+
+
+//echo $periodfromdate,$periodtodate,$att_payschm;
+		$mccodes = $this->Loan_adv_model->getholiday_data($periodfromdate,$periodtodate,$att_payschm);
+		//var_dump($mccodes);
+		$data = [];
+			foreach ($mccodes as $record) {
+				$data[] = [
+					$recid=$record->holiday_tran_id,
+					$advdate=$record->emp_code,
+					$advtype=$record->empname,
+					$emp_code=$record->holiday_date,
+					$empname=$record->holiday,
+					$loan_adv_amount=$record->holiday_hours,
+ 					
+				 	
+					
+				];
+			}
+
+			echo json_encode(['data' => $data]);
+    }
+
+	public function getFNattincentiveData() {
+		$this->load->model('Loan_adv_model');
+     //   $selectedDepartment = $this->input->post('date');
+		$periodfromdate= $this->input->post('periodfromdate');
+		$periodtodate= $this->input->post('periodtodate');
+		$att_payschm =  $this->input->post('att_payschm');
+		$holget =  $this->input->post('holget');
+//echo $periodfromdate,$periodtodate,$att_payschm;
+		$mccodes = $this->Loan_adv_model->getFNattincentiveData($periodfromdate,$periodtodate,$att_payschm,$holget);
+		//var_dump($mccodes);
+		$data = [];
+			$totamt=0;
+			foreach ($mccodes as $record) {
+				$data[] = [
+					$empcode=$record->emp_code,
+					$empname=$record->empname,
+					$department=$record->dept_desc,
+					$periodfromdt=$periodfromdate,
+					$periodtodt=$periodtodate,
+					$incday=$record->incdays,
+					$lvday=$record->incdays,
+					$inrate=$record->fn_att_inc_rate,
+					$inamount=$record->incamt,
+
+				];
+				$totamt=$totamt+$record->incamt;
+			}
+
+			$data[] = [
+				$empcode='',
+			$empname='Grand Total',
+			$department='',
+			$periodfromdt='',
+			$periodtodt='',
+			$incday='',
+			$lvday='',
+			$inrate='',
+			$inamount=$totamt,
+		];
+	
+			echo json_encode(['data' => $data]);
+    }
+
+	public function getMNattincentiveData() {
+		$this->load->model('Loan_adv_model');
+     //   $selectedDepartment = $this->input->post('date');
+		$periodfromdate= $this->input->post('periodfromdate');
+		$periodtodate= $this->input->post('periodtodate');
+		$att_payschm =  $this->input->post('att_payschm');
+		$holget =  $this->input->post('holget');
+//echo $periodfromdate,$periodtodate,$att_payschm;
+		$mccodes = $this->Loan_adv_model->getMNattincentiveData($periodfromdate,$periodtodate,$att_payschm,$holget);
+//echo $periodfromdate,$periodtodate,$att_payschm;
+ 		//var_dump($mccodes);
+		$data = [];
+			foreach ($mccodes as $record) {
+				$data[] = [
+					$empcode=$record->emp_code,
+					$empname=$record->empname,
+					$periodfromdt=$periodfromdate,
+					$periodtodt=$periodtodate,
+					$incday=$record->incdays,
+					$lvday=$record->incdays,
+					$inrate=$record->mn_att_inc_rate,
+					$inamount=$record->incamt,
+				];
+			}
+
+			echo json_encode(['data' => $data]);
+    }
+
+
+	public function getpayscheme() {
+		$this->load->model('Loan_adv_model');
+        $selectedDepartment = $this->input->post('ebno');
+//		echo  'psch-'.$selectedDepartment;
+
+        $mccodes = $this->Loan_adv_model->getpayscheme($selectedDepartment);
+		$data = [];
+		$cnt=count($mccodes);
+	//	echo $cnt;
+			foreach ($mccodes as $record) {
+				$ebnames=$record->NAME;
+				$data[] = [
+					$ebid=$ebid,
+					$ebname=$ebnames,
+					 
+				];
+			}
+			if ($cnt==0) {
+				$ebid=0;
+				$ebname='N.A';
+			
+			}
+			$response = array(
+				'success' => true,
+				'empname' => $ebname 
+			);
+			echo json_encode($response);
+    }
+
+	public function exportdbfdata() {
+		$periodfromdate= $this->input->get('periodfromdate');
+		$periodtodate= $this->input->get('periodtodate');
+		$att_payschm =  $this->input->get('att_payschm');
+		$holget =  $this->input->get('holget');
+		$payschemeName =  $this->input->get('payschemeName');
+			 $company_name = $this->session->userdata('companyname');
+			 $comp = $this->session->userdata('companyId');
+		if ($holget==1) {
+			 $this->db->select('thht.holiday_tran_id, theod.emp_code, CONCAT(thepd.first_name, " ", IFNULL(thepd.middle_name, " "), " ", IFNULL(thepd.last_name, " ")) AS empname, date_format(hm.holiday_date,"%d-%m-%Y") holiday_date, hm.holiday,holiday_hours');
+			 $this->db->from('tbl_hrms_holiday_transactions thht');
+			 $this->db->join('tbl_hrms_ed_official_details theod', 'thht.eb_id = theod.eb_id', 'left');
+			 $this->db->join('tbl_hrms_ed_personal_details thepd', 'thht.eb_id = thepd.eb_id', 'left');
+			 $this->db->join('holiday_master hm', 'thht.holiday_id = hm.id', 'left');
+			 $this->db->join('tbl_pay_employee_payscheme tpep', 'thht.eb_id = tpep.EMPLOYEEID', 'left');
+			 $this->db->where('hm.holiday_date >=', $periodfromdate);
+			 $this->db->where('hm.holiday_date <=', $periodtodate);
+			 $this->db->where('thht.is_active', 1);
+			 $this->db->where('tpep.status', 1);
+			 $this->db->where('tpep.PAY_SCHEME_ID', $att_payschm);
+			 $this->db->where('thepd.company_id', $comp);
+			 $this->db->where('theod.is_active', 1);
+			 $query = $this->db->get();
+ 			 $data=$query->result();
+ 		
+			$fileContainer = "data.csv";
+			$filePointer = fopen($fileContainer,"w+");
+		
+			$logMsg='';
+			$rowIndex = 4;
+			foreach ($data as $row) {
+				$logMsg.= $row->emp_code.",".$row->holiday_hours.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+		
+			}	
+		
+			fputs($filePointer,$logMsg);
+			fclose($filePointer);
+	
+ 	
+	
+ 			$txt1="data.txt";
+ 			$txt1=$fileContainer;
+			$files = array($txt1);
+			$zipname = 'holidaydata.zip';
+		}
+		if ($holget==2) {
+			$mccodes = $this->Loan_adv_model->getFNattincentiveData($periodfromdate,$periodtodate,$att_payschm,$holget);
+			$data = [];
+			$fileContainer = "data.csv";
+  	        $filePointer = fopen($fileContainer,"w+");
+			  $logMsg='';
+			  $rowIndex = 4;
+	   
+			foreach ($mccodes as $record) {
+					$empcode=$record->emp_code;
+					$inamount=$record->incamt;
+					$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+				}
+		   fputs($filePointer,$logMsg);
+		   fclose($filePointer);
+
+		   $mccodes = $this->Loan_adv_model->getFNattincentiveDatamdpl($periodfromdate,$periodtodate,$att_payschm,$holget);
+		   $data = [];
+		   $fileContainer1 = "ATINC.txt";
+			 $filePointer1 = fopen($fileContainer1,"w+");
+			 $logMsg='';
+			 $rowIndex = 4;
+	  
+		   foreach ($mccodes as $record) {
+				   $empcode=$record->emp_code;
+				   $inamount=$record->incamt;
+				   $inrate=$record->fn_att_inc_rate;
+				   $incdays=$record->incdays;
+				   $incd='';	
+				   if ($incdays<10) {
+					   $incd='0'.$incdays.'00';
+				   }					   
+				if ($incdays>=10) {
+					$incd=$incdays.'00';
+				}					   
+				$inr=' ';
+				   $rv='V';
+				   if ($empcode>='10000' and $empcode<='18000') { $rv='R';}
+				   if ($inrate==0.5 and $rv=='V') {$inr='N';}
+				
+				   $logMsg.= $rv.$record->emp_code.$inr.$incd.
+				   "\r\n";
+			   }
+		  fputs($filePointer1,$logMsg);
+		  fclose($filePointer1);
+
+
+		   $txt1="data.txt";
+			$txt1=$fileContainer;
+			$txt2=$fileContainer1;
+		   $files = array($txt1,$txt2);
+		   $zipname = 'mainfnincdata.zip';
+	   }
+	   if ($holget==3) {
+		$mccodes = $this->Loan_adv_model->getFNattincentiveData($periodfromdate,$periodtodate,$att_payschm,$holget);
+		$data = [];
+		$fileContainer = "data.csv";
+		  $filePointer = fopen($fileContainer,"w+");
+		  $logMsg='';
+		  $rowIndex = 4;
+   
+		foreach ($mccodes as $record) {
+				$empcode=$record->emp_code;
+				$inamount=$record->incamt;
+				$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+			}
+	   fputs($filePointer,$logMsg);
+	   fclose($filePointer);
+	   $txt1="data.txt";
+		$txt1=$fileContainer;
+	   $files = array($txt1);
+	   $zipname = 'othersfnincdata.zip';
+   }
+
+   if ($holget==4) {
+	$mccodes = $this->Loan_adv_model->getMNattincentiveData($periodfromdate,$periodtodate,$att_payschm,$holget);
+	$data = [];
+	$fileContainer = "data.csv";
+	  $filePointer = fopen($fileContainer,"w+");
+	  $logMsg='';
+	  $rowIndex = 4;
+
+	foreach ($mccodes as $record) {
+			$empcode=$record->emp_code;
+			$inamount=$record->incamt;
+			$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+		}
+   fputs($filePointer,$logMsg);
+   fclose($filePointer);
+   $txt1="data.txt";
+	$txt1=$fileContainer;
+   $files = array($txt1);
+   $zipname = 'othersmnincdata.zip';
+}
+if ($holget==5) {
+	$mccodes = $this->Loan_adv_model->getattwagesData($periodfromdate,$periodtodate,$att_payschm,$holget);
+	$data = [];
+	$fileContainer = "attdata.csv";
+	  $filePointer = fopen($fileContainer,"w+");
+	  $logMsg='';
+	  $rowIndex = 4;
+	  $logMsg.= 'Emp Code'.",".'Working Hrs'.",".'Fest Hours'.",".'Ot Hours'.",".'NS Hrs'.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+
+	foreach ($mccodes as $record) {
+			$empcode=$record->emp_code;
+			$logMsg.=$as.$record->emp_code.",".$record->whrs.",".$record->festhrs.",".$record->othrs.",".$record->nshrs.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+		}
+   fputs($filePointer,$logMsg);
+   fclose($filePointer);
+   $txt1="data.txt";
+	$txt1=$fileContainer;
+   $files = array($txt1);
+   $zipname = 'attendance.zip';
+}
+if ($holget==6) {
+	$mccodes = $this->Loan_adv_model->getmillwndData($periodfromdate,$periodtodate,$att_payschm,$holget);
+//	var_dump($mccodes);
+	$data = [];
+	$fileContainer = "millwnd.txt";
+	  $filePointer = fopen($fileContainer,"w+");
+	  $logMsg='';
+//	  $rowIndex = 4;
+//	  $logMsg.= 'Emp Code'.",".'Working Hrs'.",".'Fest Hours'.",".'Ot Hours'.",".'NS Hrs'.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+
+	foreach ($mccodes as $record) {
+			$eb=$record->eb_no;
+			
+			$logMsg.= $record->dt.",".$record->dept_code.",".$eb.",".$record->whrs.",0,".
+			$record->othrs.",0,".$record->shift.",,".$record->OCCU_CODE.",".$record->occu_id.
+			"\r\n";
+//		echo $logmsg;
+		}
+		fputs($filePointer,$logMsg);
+		fclose($filePointer);
+		$txt1="data.txt";
+		 $txt1=$fileContainer;
+		$files = array($txt1);
+		$zipname = 'attendance.zip';
+}
+
+
+if ($holget==9) {
+	$mccodes = $this->Loan_adv_model->getnjmwagesData($periodfromdate,$periodtodate,$att_payschm,$payschemeName,$holget);
+	$data = [];
+	$fileContainer = "NjatData.Csv";
+	$filePointer = fopen($fileContainer,"w+");
+	  $logMsg ='';
+	  $rowIndex =4;
+	 // $logMsg.= 'Dept Code'.",".'Emp Code'.",".'Emp_Name'.",".'Piece_Rate_Type_1'.",".'Piece_Rate_Type_2'.",".'Piece_Rate_Hours'.",".'Time_Rate_OT_Hours'.",".'Piece_Rate_OT_Hours'.",".'NS_Hrs'.",".'ED'.",".'Year_Month'.",".'Frome_Date'.",".'To_Date'.",".'Pay_Schime_Name'."\r\n";
+
+	foreach ($mccodes as $record) {
+			$empcode=$record->eb_no;
+			$wname=$record->wrk_name;
+			$aname=Trim($wname);
+			//var_dump($aname);
+			//$logMsg.= $record->dept_code.",".$record->eb_no.",".$record->wrk_name.",".$record->T1.",".$record->T2.",".$record->PH.",".$record->OTT.",".$record->OTP.",".$record->NS.",".$record->ED.",".$record->yearmn."\r\n";
+			$logMsg.= $record->dept_code.",".$record->eb_no.",".$aname.",".$record->T1.",".$record->T2.",".$record->PH.",".$record->OTT.",".$record->OTP.",".$record->NS.",".$record->ED.",".$record->yearmn."\r\n";
+		}
+   fputs($filePointer,$logMsg);
+   fclose($filePointer);
+   $txt1="njmdata.txt";
+   $txt1=$fileContainer;
+   $files = array($txt1);
+   $zipname = 'njmattendance.zip';
+}
+//////// end njm data/////////////////
+//////// change njm Leave data 28.12.23////////////////
+if ($holget==10) {
+	$mccodes = $this->Loan_adv_model->getnjmleavData($periodfromdate,$periodtodate,$att_payschm,$payschemeName,$holget);
+	$data = [];
+	$fileContainer = "Njlvdata.Csv";
+	$filePointer = fopen($fileContainer,"w+");
+	  $logMsg ='';
+	  $rowIndex =4;
+	 // $logMsg.= 'Dept Code'.",".'Emp Code'.",".'Emp_Name'.",".'Piece_Rate_Type_1'.",".'Piece_Rate_Type_2'.",".'Piece_Rate_Hours'.",".'Time_Rate_OT_Hours'.",".'Piece_Rate_OT_Hours'.",".'NS_Hrs'.",".'ED'.",".'Year_Month'.",".'Frome_Date'.",".'To_Date'.",".'Pay_Schime_Name'."\r\n";
+
+	foreach ($mccodes as $record) {
+			$empcode=$record->eb_no;
+			$wname=$record->wrk_name;
+			$afg=$record->fl+$record->el;
+			$aname=Trim($wname);
+			//var_dump($aname);
+			//$logMsg.= $record->dept_code.",".$record->eb_no.",".$record->wrk_name.",".$record->T1.",".$record->T2.",".$record->PH.",".$record->OTT.",".$record->OTP.",".$record->NS.",".$record->ED.",".$record->yearmn."\r\n";
+			$logMsg.= $record->dpt.",".$record->eb_no.",".$aname.",".$record->dept_desc.",".$record->fl.",".$record->sl.",".$record->ul.",".$record->el.",".$record->ss.",".$record->ml.",".$afg.",".$record->yearmn."\r\n";
+		}
+   fputs($filePointer,$logMsg);
+   fclose($filePointer);
+   $txt1="njmdata.txt";
+   $txt1=$fileContainer;
+   $files = array($txt1);
+   $zipname = 'njmLeaveData.zip';
+}
+//////// end njm data/////////////////
+//////// change njm sardar/helper Hours Trasfer data 28.12.23////////////////
+if ($holget==11) {
+	$mccodes = $this->Loan_adv_model->getnjmsdrhrlData($periodfromdate,$periodtodate,$att_payschm,$payschemeName,$holget);
+	$data = [];
+	$fileContainer = "NjshData.Csv";
+	$filePointer = fopen($fileContainer,"w+");
+	  $logMsg ='';
+	  $rowIndex =4;
+	 // $logMsg.= 'Dept Code'.",".'Emp Code'.",".'Emp_Name'.",".'Piece_Rate_Type_1'.",".'Piece_Rate_Type_2'.",".'Piece_Rate_Hours'.",".'Time_Rate_OT_Hours'.",".'Piece_Rate_OT_Hours'.",".'NS_Hrs'.",".'ED'.",".'Year_Month'.",".'Frome_Date'.",".'To_Date'.",".'Pay_Schime_Name'."\r\n";
+
+	foreach ($mccodes as $record) {
+			$empcode=$record->eb_no;
+			//$aname=Trim($sard_help);
+			//var_dump($aname);
+			//$logMsg.= $record->dept_code.",".$record->eb_no.",".$record->wrk_name.",".$record->T1.",".$record->T2.",".$record->PH.",".$record->OTT.",".$record->OTP.",".$record->NS.",".$record->ED.",".$record->yearmn."\r\n";
+			$logMsg.= $record->eb_no.",".$record->mach_shr_code.",".$record->sard_help.",".$record->wrkhrs.",".$record->GROUPP.",".$record->dept_code.",".$record->MASTDEPT."\r\n";
+		}
+   fputs($filePointer,$logMsg);
+   fclose($filePointer);
+   $txt1="njmdata.txt";
+   $txt1=$fileContainer;
+   $files = array($txt1);
+   $zipname = 'njmSardhelpData.zip';
+}
+
+if ($holget==12) {
+	$mccodes = $this->Loan_adv_model->getnjmbeamData($periodfromdate,$periodtodate,$att_payschm,$payschemeName,$holget);
+	$data = [];
+	$fileContainer = "NjbmData.Csv";
+	$filePointer = fopen($fileContainer,"w+");
+	  $logMsg ='';
+	  $rowIndex =4;
+	 // $logMsg.= 'Dept Code'.",".'Emp Code'.",".'Emp_Name'.",".'Piece_Rate_Type_1'.",".'Piece_Rate_Type_2'.",".'Piece_Rate_Hours'.",".'Time_Rate_OT_Hours'.",".'Piece_Rate_OT_Hours'.",".'NS_Hrs'.",".'ED'.",".'Year_Month'.",".'Frome_Date'.",".'To_Date'.",".'Pay_Schime_Name'."\r\n";
+	foreach ($mccodes as $record) {
+			$empcode=$record->eb_no;
+			//$aname=Trim($sard_help);
+			//var_dump($aname);
+			//$logMsg.= $record->dept_code.",".$record->eb_no.",".$record->wrk_name.",".$record->T1.",".$record->T2.",".$record->PH.",".$record->OTT.",".$record->OTP.",".$record->NS.",".$record->ED.",".$record->yearmn."\r\n";
+			$logMsg.= $record->eb_no.",".$record->beam_wage_code.",".$record->cuts.",".$record->whrs.",".
+			$record->worked_designation_id.",".$record->dept_code.",".$record->yearmn."\r\n";
+		}
+   fputs($filePointer,$logMsg);
+   fclose($filePointer);
+   $txt1="njmdata.txt";
+   $txt1=$fileContainer;
+   $files = array($txt1);
+   $zipname = 'njmbeamData.zip';
+}
+
+	$zip = new ZipArchive;
+	$zip->open($zipname, ZipArchive::CREATE);
+	foreach ($files as $file) {
+	  $zip->addFile($file);
+	}
+	$zip->close();
+ if ($holget<>6) {	
+	header('Content-Type: application/zip');
+	header('Content-disposition: attachment; filename='.$zipname);
+	header('Content-Length: ' . filesize($zipname));
+	readfile($zipname);
+ } else {
+	
+	header('Content-Type: application/text');
+	header('Content-disposition: attachment; filename='.$txt1);
+	header('Content-Length: ' . filesize($txt1));
+	readfile($txt1);
+ }	
+			unlink($fileContainer);
+ 			unlink($zipname);
+	
+	
+	
+		}
+
+		public function payslipprint() {
+			$periodfromdate= $this->input->get('periodfromdate');
+			$periodtodate= $this->input->get('periodtodate');
+			$att_payschm =  $this->input->get('att_payschm');
+			$holget =  $this->input->get('holget');
+			$payschemeName =  $this->input->get('payschemeName');
+				 $company_name = $this->session->userdata('companyname');
+				 $comp = $this->session->userdata('companyId');
+				 $fileContainer = "paydata.txt";
+				 $filePointer = fopen($fileContainer,"w+");
+			if ($holget==4 || $holget ==5 ) {
+					$mccodes = $this->Loan_adv_model->getpayregisterdata($periodfromdate,$periodtodate,$att_payschm,$holget);
+					$data = [];
+					  $line = str_repeat('-', 79);
+				//	  $logMsg=$company_name."\n";
+
+   					$pg=1;
+					  $logMsg='';
+					  $ln1=$payschemeName."\n";
+					  $ln2= "Voucher Payslip for FNE ".$periodtodate.'              '.'Dept Code ';
+					  $ln3= $line."\n";
+					  $ln4= '  EBNO  | NAME                | TOTAL | RATE  | ADJ AMT | AMOUNT   | SIGNATURE '."\n";
+					  $ln6= '        |                     | HOURS |       | ADV DED |          | '."\n";
+					  $ln7= '        |                     |       |       | ADH AMT |          |'."\n";
+					  $ln5.= $line."\n";
+
+					  $totamt=0;
+					  $tothrs=0;
+					  $gtotamt=0;
+					  $gtothrs=0;
+					  $lnn=1;
+					  $dpc='';
+					  $noslp=1;
+					foreach ($mccodes as $record) {
+						if ($dpc<>$record->dept_code) { 	
+							if ($pg>1) {
+//								$logMsg .= Chr(12)."\n";
+								$gt="Dept Total ".$dpc;
+								$blnk='';
+								$logMsg .=$Blnk.str_repeat(' ', 10- strlen($blnk)).
+								substr($gt,0,20).str_repeat(' ', 20 - strlen(substr($gt,0,20))).
+								str_repeat(' ', 9 - strlen($tothrs)).$tothrs.
+								str_repeat(' ', 8 - strlen($blnk)).$blnk.
+								str_repeat(' ', 8 - strlen($blnk)).$blnk.
+								str_repeat(' ', 10 - strlen($totamt)).$totamt.
+								"\n";
+			
+								$totamt=0;
+								$tothrs=0;
+								$logMsg .= 'pgb'.$line."\n";
+								$logMsg .= Chr(12)."\n";
+								$lnn=1;
+								$noslp=1;
+							}	
+
+							$dpc=$record->dept_code;
+							$dptcode=$dpc;
+							$pg++;
+						}		
+
+						if ($lnn>58) {
+							$logMsg .= Chr(12)."\n";
+							$lnn=1;
+						}	
+							if ($noslp>=6) {
+								$logMsg .= 'pgb'.$line."\n";
+								$logMsg .= Chr(12)."\n";
+								$lnn=1;
+								$noslp=1;
+							} 
+	//					if  ($lnn==1) {
+							$dpc=$record->dept_code;
+							$dptcode=$dpc;
+							$logMsg .=$payschemeName."\n";
+							$logMsg .= $ln2.$dptcode."\n";
+							$logMsg .= $noslp.$ln3;
+							$logMsg .= $ln4;
+							$logMsg .= $ln6;
+							$logMsg .= $ln7;
+							$logMsg .= $ln5;
+							$lnn=8;
+	//					}														//			$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+							$whrs = number_format($record->WORKING_HOURS+$record->HOLIDAY_HR+$record->OT_HOURS, 2);
+							$arr=number_format($record->ARR_PLUS+$record->ARR_MINUS, 2);
+							$adv=number_format($record->ADVANCE, 2);
+							$npay=number_format($record->Net_Payble, 0);
+							$RATE= $record->RATE_PER_DAY;
+							$logMsg .=$record->eb_no.str_repeat(' ', 10- strlen($record->eb_no)).
+							substr($record->wname,0,20).str_repeat(' ', 20 - strlen(substr($record->wname,0,20))).
+							str_repeat(' ', 9 - strlen($whrs)).$whrs.
+							str_repeat(' ', 8 - strlen($RATE)).$RATE.
+							str_repeat(' ', 10 - strlen($arr)).$arr.
+							str_repeat(' ', 10 - strlen($npay)).$npay.
+							$$periodtodate.
+							"\n";
+							$bln='';
+							$dbnc='Dept Code '.$dpc;
+							$logMsg .=$bln.str_repeat(' ', 10- strlen($bln)).
+							substr($bln,0,20).str_repeat(' ', 20 - strlen(substr($bln,0,20))).
+							str_repeat(' ', 9 - strlen($bln)).$bln.
+							str_repeat(' ', 8 - strlen($bln)).$bln.
+							str_repeat(' ', 10 - strlen($adv)).$adv.
+							"\n";
+							$logMsg .= ' '."\n";
+							$logMsg .= ' '."\n";
+							$logMsg .= ' '."\n";
+   						    $logMsg .= $line."\n";
+							$totamt=$totamt+$record->Net_Payble;
+							$tothrs=$tothrs+$whrs;
+							$lnn=$lnn+6;
+							$gtotamt=$gtotamt+$record->Net_Payble;
+							$gtothrs=$gtothrs+$whrs;
+							$noslp++;
+							
+
+						}
+						$logMsg .= Chr(12)."\n";
+						$logMsg .= $line."\n";
+/*						
+						$gt="Grand Total";
+						$blnk='';
+						$logMsg .=$Blnk.str_repeat(' ', 10- strlen($blnk)).
+						substr($gt,0,20).str_repeat(' ', 20 - strlen(substr($gt,0,20))).
+						str_repeat(' ', 9 - strlen($gtothrs)).$gtothrs.
+						str_repeat(' ', 8 - strlen($blnk)).$blnk.
+						str_repeat(' ', 10 - strlen($gtotamt)).$gtotamt.
+						"\n";
+	
+						$logMsg .= $line."\n";
+						$logMsg .= Chr(12)."\n";
+*/
+					fputs($filePointer,$logMsg);
+					fclose($filePointer);
+					 $txt1="paydata.txt";
+					$txt1=$fileContainer;
+					$files = array($txt1);
+					$zipname = 'payregister.zip';
+			   }
+			   if ($holget==6 ) {
+					if ($att_payschm==159) {$payschemeName='A.B.ENTERPRISE';}
+					if ($att_payschm==160) {$payschemeName='JAY MAA TARA ANITA ENTERPRISE';}
+					if ($att_payschm==158) {$payschemeName='PANIGRAHI ENTERPRISE';}
+				
+					$mccodes = $this->Loan_adv_model->getpayregisterdata($periodfromdate,$periodtodate,$att_payschm,$holget);
+					$data = [];
+				  	$line = str_repeat('-', 136);
+			//	  $logMsg=$company_name."\n";
+     				$fnedate=substr($periodtodate,8,2).'-'.substr($periodtodate,5,2).'-'.substr($periodtodate,0,4);
+                  $pg=1;
+				  $logMsg='';
+				  $ln1=chr(14).$payschemeName."\n";
+				  $ln2= 'Pay Ticket for FNE '.$fnedate."\n";
+				  $ln3= $line."\n";
+				  $ln4= 'Dept Code    EB No             W.Hours    BASIC     PF (12%)    Tiffin    Washing Allow     P.Tax     Total Earn   R/off     PF (13.00%)|  PAY TICKET '."\n";
+				  $ln6= 'Dept Name    Name                Rate     Other     ESI(0.75%)    Conv       Gross2         Advance   Total Ded   Net Pay    ESI (3.25%)|  ---------- '."\n";
+				  $ln7= '                                                                         Adjust  Amt                                                    |'."\n";
+				  $ln5.= $line."\n";
+
+				  $totamt=0;
+				  $tothrs=0;
+				  $gtotamt=0;
+				  $gtothrs=0;
+				  $lnn=1;
+				  $dpc='';
+				foreach ($mccodes as $record) {
+					if ($dpc<>$record->dept_code) { 	
+						if ($pg>1) {
+						}	
+						$dpc=$record->dept_code;
+						$dptcode=$dpc;
+						//$pg++;
+					}		
+
+					if ($pg>5) {
+						$logMsg .= Chr(12).chr(18)."\n";
+						$lnn=1;
+						$pg=1;
+					}	
+
+//					if  ($lnn==1) {
+						$logMsg .=$ln1;
+						$logMsg .=$ln2;
+						$logMsg .= chr(15).$ln3;
+						$logMsg .= $ln4;
+						$logMsg .= $ln6;
+						$logMsg .= $ln7;
+						$logMsg .= $ln5;
+						$lnn=8;
+//					}			
+					///////////pintu///////////////											//			$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+						$whrs = number_format($record->WORKING_HOURS,2);
+						//+$record->HOLIDAY_HR+$record->OT_HOURS, 2);
+						//$arr=number_format($record->ARR_PLUS+$record->ARR_MINUS, 2);
+						//$adv=number_format($record->ADVANCE, 2);
+						//$npay=number_format($record->Net_Payble, 0);
+						//$RATE= $record->RATE_PER_DAY;
+						$Basic=$record->BASIC;
+						$EPF=$record->EPF;
+						$ESI=$record->ESI;
+						$TIFFIN_AMOUNT=$record->TIFFIN_AMOUNT;
+						$WASHING_ALLOWANCE=$record->WASHING_ALLOWANCE;
+						$EMPL_EPF=$record->EMPL_EPF;
+						$dept_code=$record->dept_code;
+						//$ptax=$record->ptax;
+						$ptax = number_format($record->ptax,2);
+						//$GROSS2=$record->GROSS2;
+						$B_F = number_format($record->B_F,2);
+						$RATE_PER_DAY = number_format($record->RATE_PER_DAY,2);
+						$OTHER_ALLOWANCE=number_format($record->OTHER_ALLOWANCE,2);
+						$ESI=number_format($record->ESI,2);
+						$CONV_ALLOWANCE=number_format($record->CONV_ALLOWANCE,2);
+						$GROSS2=number_format($record->GROSS2,2);
+						$ADVANCE=number_format($record->ADVANCE,2);
+						$GROSS_DED=number_format($record->GROSS_DED,2);
+						$Net_Payble=number_format($record->Net_Payble,2);
+						$EMPL_ESI=number_format($record->EMPL_ESI,2);
+						$uanno=$record->pf_uan_no;
+						$esino=$record->esi_no;
+						//$B_F=$record->B_F;
+
+						$logMsg .= '             ' .$record->eb_no.str_repeat(' ', 10- strlen($record->eb_no)).
+						//substr($record->wname,0,20).str_repeat(' ', 20 - strlen(substr($record->wname,0,20))).
+						str_repeat(' ', 16 - strlen($whrs)).$whrs.
+						//str_repeat(' ', 8 - strlen($RATE)).$RATE.
+						str_repeat(' ', 11 - strlen($Basic)).$Basic.
+						str_repeat(' ', 8 - strlen($EPF)).$EPF.
+						//str_repeat(' ', 6 - strlen($npay)).$ESI.
+						str_repeat(' ', 14 - strlen($TIFFIN_AMOUNT)).$TIFFIN_AMOUNT.
+						str_repeat(' ', 15 - strlen($WASHING_ALLOWANCE)).$WASHING_ALLOWANCE.
+						str_repeat(' ', 11 - strlen($ptax)).$ptax.
+						str_repeat(' ', 14 - strlen($GROSS2)).$GROSS2.
+						str_repeat(' ', 11- strlen($B_F)).$B_F.
+						str_repeat(' ', 13 - strlen($EMPL_EPF)).$EMPL_EPF.'|  EB NO : '.$record->eb_no.
+						"\n";
+						$bln='';
+						$dbnc=' '.$dpc;
+						$logMsg .= $dbnc.'          '.
+						//substr($dbnc,0,20).str_repeat(' ', 20 - strlen(substr($dbnc,0,20))).
+						//str_repeat(' ', 0 - strlen($dbnc)).$dbnc.
+						substr($record->wname,0,20).str_repeat(' ', 20 - strlen(substr($record->wname,0,20))).
+						str_repeat(' ', 6 - strlen($RATE_PER_DAY)).$RATE_PER_DAY.
+						str_repeat(' ', 11 - strlen($OTHER_ALLOWANCE)).$OTHER_ALLOWANCE.
+						str_repeat(' ', 8 - strlen($ESI)).$ESI.
+						str_repeat(' ', 14 - strlen($CONV_ALLOWANCE)).$CONV_ALLOWANCE.
+						str_repeat(' ', 15 - strlen($GROSS2)).$GROSS2.
+						str_repeat(' ', 11 - strlen($ADVANCE)).$ADVANCE.
+						str_repeat(' ', 14 - strlen($GROSS_DED)).$GROSS_DED.
+						str_repeat(' ', 11 - strlen($Net_Payble)).$Net_Payble.
+						str_repeat(' ', 13 - strlen($EMPL_ESI)).$EMPL_ESI.'|  NAME  :'.$record->wname.
+		//				str_repeat(' ', 8 - strlen($bln)).$bln.
+		//				str_repeat(' ', 10 - strlen($adv)).$adv.'     |'.
+						"\n";
+						$logMsg .= str_repeat(' ', 136 - strlen($bln)).$bln.'|  NET PAY '.$Net_Payble."\n";
+						$logMsg .= 'ESI NO: '.$esino.'              UAN NO: '.$uanno.str_repeat(' ', 50 - strlen($bln)).$bln.'     |'.
+						"\n";
+
+					//	$logMsg .= ' '."\n";
+					//	$logMsg .= ' '."\n";
+					//	$logMsg .= ' '."\n";
+						$logMsg .= $line."\n";
+						$totamt=$totamt+$record->Net_Payble;
+						$tothrs=$tothrs+$whrs;
+						$twash=$twash+$record->WASHING_ALLOWANCE;
+						$tconv=$tconv+$record->CONV_ALLOWANCE;
+						$tiffin=$tiffin+$record->TIFFIN_AMOUNT;
+						$tadvance=$tadvance+$record->vADVANCE;
+						$tgross=$tgross+$record->TOTAL_EARN;
+						$tdeduct=$tdeduct+$record->GROSS_DED;
+						$tother=$tother+$record->OTHER_ALLOWANCE;
+						$lnn=$lnn+6;
+						$gtotamt=$gtotamt+$record->Net_Payble;
+						$gtothrs=$gtothrs+$whrs;
+						$gtiffin=$gtiffin+$record->TIFFIN_AMOUNT;
+						$gconv=$gconv+$record->CONV_ALLOWANCE;
+						$gtwash=$gtwash+$record->WASHING_ALLOWANCE;
+						$gtadvance=$gtadvance+$record->vADVANCE;
+						$gtgross=$gtgross+$record->TOTAL_EARN;
+						$gtdeduct=$gtdeduct+$record->GROSS_DED;
+						$gtother=$gtother+$record->OTHER_ALLOWANCE;
+						$logMsg .= $line."\n";
+						$pg++;
+					}
+					$logMsg .= Chr(12)."\n";
+					$logMsg .= $line."\n";
+/*					
+					$gt="Grand Total";
+					$blnk='';
+					$logMsg .=$Blnk.str_repeat(' ', 10- strlen($blnk)).
+					substr($gt,0,20).str_repeat(' ', 20 - strlen(substr($gt,0,20))).
+					str_repeat(' ', 9 - strlen($gtothrs)).$gtothrs.
+					str_repeat(' ', 3 - strlen($blnk)).$blnk.
+					str_repeat(' ', 9 - strlen($gtother)).$gtother.
+					str_repeat(' ', 3 - strlen($blnk)).$blnk.
+					str_repeat(' ', 9 - strlen($gtiffin)).$gtiffin.
+					str_repeat(' ', 3 - strlen($blnk)).$blnk.
+					str_repeat(' ', 9 - strlen($gconv)).$gconv.
+					str_repeat(' ', 3 - strlen($blnk)).$blnk.
+					str_repeat(' ', 9 - strlen($gtwash)).$gtwash.
+					str_repeat(' ', 3 - strlen($blnk)).$blnk.
+					str_repeat(' ', 6 - strlen($gtadvance)).$gtadvance.
+					str_repeat(' ', 3 - strlen($blnk)).$blnk.
+					str_repeat(' ', 9 - strlen($gtgross)).$gtgross.
+					str_repeat(' ', 3 - strlen($blnk)).$blnk.
+					str_repeat(' ', 9 - strlen($gtdeduct)).$gtdeduct.
+					str_repeat(' ', 3 - strlen($blnk)).$blnk.
+					str_repeat(' ', 9 - strlen($gtotamt)).$gtotamt.
+					"\n";
+*/
+					$logMsg .= $line."\n";
+					$logMsg .= Chr(12)."\n";
+				fputs($filePointer,$logMsg);
+				fclose($filePointer);
+				 $txt1="paydata.txt";
+				$txt1=$fileContainer;
+				$files = array($txt1);
+				$zipname = 'payregister.zip';
+		   }
+
+
+
+			   if ($holget==1) {
+				$mccodes = $this->Loan_adv_model->otregisterprint($periodfromdate,$periodtodate,$att_payschm,$holget);
+				$data = [];
+				  $line = str_repeat('-', 72);
+			//	  $logMsg=$company_name."\n";
+				  $pg=1;
+				  $logMsg=$payschemeName."\n";
+				  $logMsg .= "Main Pay Roll OT Sheet for the period From ".$periodfromdate." To ".$periodtodate.'       '.'Page No '.$pg."\n";
+				  $logMsg .= $line."\n";
+				  $logMsg .= 'Department   EB No     Name                    Hours    Rate     Amount'."\n";
+				  $logMsg .= $line."\n";
+				  $logMsg .= ' '."\n";
+				  $logMsg .= ' '."\n";
+				  $rowIndex = 4;
+				  $totamt=0;
+				  $tothrs=0;
+				  $lnn=8;
+				foreach ($mccodes as $record) {
+					if ($lnn>58) {
+						$logMsg .= Chr(12)."\n";
+						$pg++;
+						$logMsg .=$payschemeName."\n";
+						$logMsg .= "Contractor OT Sheet for the period From ".$periodfromdate." To ".$periodtodate.'       '.'Page No '.$pg."\n";
+						$logMsg .= $line."\n";
+						$logMsg .= 'Department   EB No     Name                    Hours    Rate     Amount'."\n";
+						$logMsg .= $line."\n";
+						$logMsg .= ' '."\n";
+						$logMsg .= ' '."\n";
+						$lnn=8;
+					}														//			$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+
+						$OT_HOURS = number_format($record->OT_HOURS, 2);
+						$RATE= $record->RATE;
+						$logMsg .='   '.$record->dept_code.'        '.$record->eb_no.str_repeat(' ', 10- strlen($record->eb_no)).
+						substr($record->wname,1,20).str_repeat(' ', 20 - strlen(substr($record->wname,1,20))).
+						str_repeat(' ', 9 - strlen($OT_HOURS)).$OT_HOURS.
+						str_repeat(' ', 8 - strlen($RATE)).$RATE.
+						str_repeat(' ', 10 - strlen($record->OVERTIME_PAY)).$record->OVERTIME_PAY.
+						"\n";
+						$logMsg .= ' '."\n";
+						$logMsg .= ' '."\n";
+						   $logMsg .= $line."\n";
+						$totamt=$totamt+$record->OVERTIME_PAY;
+						$tothrs=$tothrs+$OT_HOURS;
+						$lnn=$lnn+4;
+					}
+					$gt="Grand Total";
+					$logMsg .= $gt.str_repeat(' ', 11 - strlen($gt)).str_repeat(' ', 11).str_repeat(' ', 15).
+					str_repeat(' ', 7 - strlen($tothrs)).$tothrs.str_repeat(' ', 8 - strlen($totamt)).$totamt.
+					"\n";
+					$logMsg .= $line."\n";
+					$logMsg .= Chr(12)."\n";
+				fputs($filePointer,$logMsg);
+				fclose($filePointer);
+				 $txt1="otdata.txt";
+				$txt1=$fileContainer;
+				$files = array($txt1);
+				$zipname = 'othersotregister.zip';
+		   }
+ 
+	
+		$zip = new ZipArchive;
+		$zip->open($zipname, ZipArchive::CREATE);
+		foreach ($files as $file) {
+		  $zip->addFile($file);
+		}
+		$zip->close();
+		
+		header('Content-Type: application/zip');
+		header('Content-disposition: attachment; filename='.$zipname);
+		header('Content-Length: ' . filesize($zipname));
+		readfile($zipname);
+		
+				unlink($fileContainer);
+				 unlink($zipname);
+		
+		
+		
+			}
+
+
+		public function otregisterprint() {
+			$periodfromdate= $this->input->get('periodfromdate');
+			$periodtodate= $this->input->get('periodtodate');
+			$att_payschm =  $this->input->get('att_payschm');
+			$holget =  $this->input->get('holget');
+			$payschemeName =  $this->input->get('payschemeName');
+				 $company_name = $this->session->userdata('companyname');
+				 $comp = $this->session->userdata('companyId');
+				 $fileContainer = "otdata.txt";
+				 $filePointer = fopen($fileContainer,"w+");
+			if ($holget==2) {
+					$mccodes = $this->Loan_adv_model->otregisterprint($periodfromdate,$periodtodate,$att_payschm,$holget);
+					$data = [];
+					  $line = str_repeat('-', 72);
+				//	  $logMsg=$company_name."\n";
+					  $pg=1;
+					  $logMsg=$payschemeName."\n";
+					  $logMsg .= "Contractor OT Sheet for the period From ".$periodfromdate." To ".$periodtodate.'       '.'Page No '.$pg."\n";
+					  $logMsg .= $line."\n";
+					  $logMsg .= 'Department   EB No     Name                    Hours    Rate     Amount'."\n";
+					  $logMsg .= $line."\n";
+					  $logMsg .= ' '."\n";
+					  $logMsg .= ' '."\n";
+					  $rowIndex = 4;
+					  $totamt=0;
+					  $tothrs=0;
+					  $lnn=8;
+					foreach ($mccodes as $record) {
+						if ($lnn>58) {
+							$logMsg .= Chr(12)."\n";
+							$pg++;
+							$logMsg .=$payschemeName."\n";
+							$logMsg .= "Contractor OT Sheet for the period From ".$periodfromdate." To ".$periodtodate.'       '.'Page No '.$pg."\n";
+							$logMsg .= $line."\n";
+							$logMsg .= 'Department   EB No     Name                    Hours    Rate     Amount'."\n";
+							$logMsg .= $line."\n";
+							$logMsg .= ' '."\n";
+							$logMsg .= ' '."\n";
+							$lnn=8;
+						}														//			$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+
+							$OT_HOURS = number_format($record->OT_HOURS, 2);
+							$RATE= $record->RATE;
+							$logMsg .='   '.$record->dept_code.'        '.$record->eb_no.str_repeat(' ', 10- strlen($record->eb_no)).
+							substr($record->wname,0,20).str_repeat(' ', 20 - strlen(substr($record->wname,0,20))).
+							str_repeat(' ', 9 - strlen($OT_HOURS)).$OT_HOURS.
+							str_repeat(' ', 8 - strlen($RATE)).$RATE.
+							str_repeat(' ', 10 - strlen($record->OVERTIME_PAY)).$record->OVERTIME_PAY.
+							"\n";
+							$logMsg .= ' '."\n";
+							$logMsg .= ' '."\n";
+       					    $logMsg .= $line."\n";
+							$totamt=$totamt+$record->OVERTIME_PAY;
+							$tothrs=$tothrs+$OT_HOURS;
+							$lnn=$lnn+4;
+						}
+						$gt="Grand Total";
+						$blnk='';
+						$logMsg .='             '.$Blnk.str_repeat(' ', 10- strlen($blnk)).
+						substr($gt,0,20).str_repeat(' ', 20 - strlen(substr($gt,0,20))).
+						str_repeat(' ', 9 - strlen($tothrs)).$tothrs.
+						str_repeat(' ', 8 - strlen($blnk)).$blnk.
+						str_repeat(' ', 10 - strlen($totamt)).$totamt.
+						"\n";
+	
+						$logMsg .= $line."\n";
+						$logMsg .= Chr(12)."\n";
+					fputs($filePointer,$logMsg);
+				    fclose($filePointer);
+				 	$txt1="otdata.txt";
+					$txt1=$fileContainer;
+				    $files = array($txt1);
+				    $zipname = 'othersotregister.zip';
+			   }
+  	
+			   if ($holget==1) {
+				$mccodes = $this->Loan_adv_model->otregisterprint($periodfromdate,$periodtodate,$att_payschm,$holget);
+				$data = [];
+				  $line = str_repeat('-', 72);
+			//	  $logMsg=$company_name."\n";
+				  $pg=1;
+				  $logMsg=$payschemeName."\n";
+				  $logMsg .= "Main Pay Roll OT Sheet for the period From ".$periodfromdate." To ".$periodtodate.'       '.'Page No '.$pg."\n";
+				  $logMsg .= $line."\n";
+				  $logMsg .= 'Department   EB No     Name                    Hours    Rate     Amount'."\n";
+				  $logMsg .= $line."\n";
+				  $logMsg .= ' '."\n";
+				  $logMsg .= ' '."\n";
+				  $rowIndex = 4;
+				  $totamt=0;
+				  $tothrs=0;
+				  $lnn=8;
+				foreach ($mccodes as $record) {
+					if ($lnn>58) {
+						$logMsg .= Chr(12)."\n";
+						$pg++;
+						$logMsg .=$payschemeName."\n";
+						$logMsg .= "Contractor OT Sheet for the period From ".$periodfromdate." To ".$periodtodate.'       '.'Page No '.$pg."\n";
+						$logMsg .= $line."\n";
+						$logMsg .= 'Department   EB No     Name                    Hours    Rate     Amount'."\n";
+						$logMsg .= $line."\n";
+						$logMsg .= ' '."\n";
+						$logMsg .= ' '."\n";
+						$lnn=8;
+					}														//			$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+
+						$OT_HOURS = number_format($record->OT_HOURS, 2);
+						$RATE= $record->RATE;
+						$logMsg .='   '.$record->dept_code.'        '.$record->eb_no.str_repeat(' ', 10- strlen($record->eb_no)).
+						substr($record->wname,1,20).str_repeat(' ', 20 - strlen(substr($record->wname,1,20))).
+						str_repeat(' ', 9 - strlen($OT_HOURS)).$OT_HOURS.
+						str_repeat(' ', 8 - strlen($RATE)).$RATE.
+						str_repeat(' ', 10 - strlen($record->OVERTIME_PAY)).$record->OVERTIME_PAY.
+						"\n";
+						$logMsg .= ' '."\n";
+						$logMsg .= ' '."\n";
+						   $logMsg .= $line."\n";
+						$totamt=$totamt+$record->OVERTIME_PAY;
+						$tothrs=$tothrs+$OT_HOURS;
+						$lnn=$lnn+4;
+					}
+					$gt="Grand Total";
+					$logMsg .= $gt.str_repeat(' ', 11 - strlen($gt)).str_repeat(' ', 11).str_repeat(' ', 15).
+					str_repeat(' ', 7 - strlen($tothrs)).$tothrs.str_repeat(' ', 8 - strlen($totamt)).$totamt.
+					"\n";
+					$logMsg .= $line."\n";
+					$logMsg .= Chr(12)."\n";
+				fputs($filePointer,$logMsg);
+				fclose($filePointer);
+				 $txt1="otdata.txt";
+				$txt1=$fileContainer;
+				$files = array($txt1);
+				$zipname = 'othersotregister.zip';
+		   }
+ 
+	
+		$zip = new ZipArchive;
+		$zip->open($zipname, ZipArchive::CREATE);
+		foreach ($files as $file) {
+		  $zip->addFile($file);
+		}
+		$zip->close();
+		
+		header('Content-Type: application/zip');
+		header('Content-disposition: attachment; filename='.$zipname);
+		header('Content-Length: ' . filesize($zipname));
+		readfile($zipname);
+		
+				unlink($fileContainer);
+				 unlink($zipname);
+		
+		
+		
+			}
+			public function paystatement() {
+				$periodfromdate= $this->input->get('periodfromdate');
+				$periodtodate= $this->input->get('periodtodate');
+				$periodtodt= substr($periodtodate,8,2);
+				$periodfrmdate=substr($periodfromdate,8,2).'-'.substr($periodfromdate,5,2).'-'.substr($periodfromdate,0,4); 
+				$periodtdate=substr($periodtodate,8,2).'-'.substr($periodtodate,5,2).'-'.substr($periodtodate,0,4); 
+
+				$att_payschm =  $this->input->get('att_payschm');
+				$holget =  $this->input->get('holget');
+				$payschemeName =  $this->input->get('payschemeName');
+					 $company_name = $this->session->userdata('companyname');
+					 $comp = $this->session->userdata('companyId');
+					 $fileContainer = "summreg.txt";
+					 $filePointer = fopen($fileContainer,"w+");
+
+					 if ($holget==6 ) {
+						if ($att_payschm==159) {$payschemeName='A.B.ENTERPRISE';}
+						if ($att_payschm==160) {$payschemeName='JAY MAA TARA ANITA ENTERPRISE';}
+						if ($att_payschm==158) {$payschemeName='PANIGRAHI ENTERPRISE';}
+						
+						$mccodes = $this->Loan_adv_model->getpaystatement($periodfromdate,$periodtodate,$att_payschm,$holget);
+						$mcsumm = $this->Loan_adv_model->getpaystatementsumm($periodfromdate,$periodtodate,$att_payschm,$holget);
+						$data = [];
+						  $line = str_repeat('-', 79);
+					//	  $logMsg=$company_name."\n";
+	
+							$pg=1;
+						  $logMsg='';
+						  $ln1=$payschemeName."\n";
+						  $ln2= "Summary Statement for the period from  ".$periodfrmdate.'    ' . 'To '.$periodtdate;
+						  $ln3= $line."\n";
+						  $ln4= 'Dept Code  EB No     Name                         Amount   OT Amt   TOT Amount'."\n";
+						  $ln5.= $line."\n";
+	
+						  $totamt=0;
+						  $tothrs=0;
+						  $gtotamt=0;
+						  $gotpay=0;
+						  $gtotpay=0;
+						  $lnn=1;
+						  $dpc='';
+						foreach ($mccodes as $record) {
+							if ($dpc<>$record->dept_code) { 	
+								if ($pg>1) {
+			//						$logMsg .= Chr(12)."\n";
+									/*$gt="Dept Total ".$dpc;
+									$blnk='';
+									$logMsg .=$Blnk.str_repeat(' ', 10- strlen($blnk)).
+									substr($gt,0,20).str_repeat(' ', 20 - strlen(substr($gt,0,20))).
+									str_repeat(' ', 9 - strlen($tothrs)).$tothrs.
+									str_repeat(' ', 8 - strlen($blnk)).$blnk.
+									str_repeat(' ', 10 - strlen($totamt)).$totamt.*/
+									"\n";
+				
+									$totamt=0;
+									$tothrs=0;
+									$logMsg .= $line."\n";
+									//$logMsg .= Chr(12)."\n";
+									$lnn=1;
+								}	
+								$dpc=$record->dept_code;
+								$dptcode=$dpc;
+								//$pg++;
+							}		
+							if ($lnn>58) {
+								$logMsg .= Chr(12)."\n";
+								$lnn=1;
+							}	
+	
+							if  ($lnn==1) {
+								$logMsg .=$payschemeName."\n";
+								$logMsg .=$ln2."\n";
+								$logMsg .= $ln3;
+								$logMsg .= $ln4;
+								$logMsg .= $ln5;
+								$lnn=5;
+							}			
+								$Net_Payble=number_format($record->Net_Payble,0);
+								$otpay=number_format($record->OVERTIME_PAY,0);
+								$totpay=number_format($record->total_amt,0);
+					
+								$logMsg .=$dpc.'         ' .$record->eb_no.str_repeat(' ', 10- strlen($record->eb_no)).
+								substr($record->wname,0,20).str_repeat(' ', 20 - strlen(substr($record->wname,0,20))).
+								str_repeat(' ', 15 - strlen($Net_Payble)).$Net_Payble.
+								str_repeat(' ', 9 - strlen($otpay)).$otpay.
+								str_repeat(' ', 13 - strlen($totpay)).$totpay.
+								"\n";
+								$logMsg .= $line."\n";
+								$gtotpay=$gtotpay+$record->total_amt;
+								$gtotamt=$gtotamt+$record->Net_Payble;
+								$gotpay=$gotpay+$record->OVERTIME_PAY;
+								$lnn=$lnn+2;
+							}
+					//		$logMsg .= Chr(12)."\n";
+							$logMsg .= $line."\n";
+							
+							$gt="Grand Total";
+							$blnk='';
+							$logMsg .=$Blnk.str_repeat(' ', 21- strlen($blnk)).
+							substr($gt,0,20).str_repeat(' ', 20 - strlen(substr($gt,0,20))).
+							str_repeat(' ', 15 - strlen($gtotamt)).$gtotamt.
+							str_repeat(' ', 9 - strlen($gotpay)).$gotpay.
+							str_repeat(' ', 13 - strlen($gtotpay)).$gtotpay.
+							"\n";
+		
+							$logMsg .= $line."\n";
+							$logMsg .= Chr(12)."\n";
+
+							$ln1=$payschemeName."\n";
+							$ln2= "Departmentwise Summary Statement for the period from  ".$periodfrmdate.'    ' . 'To '.$periodtdate;
+							$ln3= $line."\n";
+							$ln4= 'Dept Code    Department                W.hours       Amount   OT Amt   TOT Amount'."\n";
+							$ln5.= $line."\n";
+							$logMsg .=$payschemeName."\n";
+							$logMsg .=$ln2."\n";
+							$logMsg .= $ln3;
+							$logMsg .= $ln4;
+							$logMsg .= $ln5;
+							$lnn=5;
+
+							$totamt=0;
+							$tothrs=0;
+							$gtotamt=0;
+							$gotpay=0;
+							$gtotpay=0;
+							foreach ($mcsumm as $record) {
+						
+								$Net_Payble=number_format($record->Net_Payble,0);
+								$otpay=number_format($record->OVERTIME_PAY,0);
+								$totpay=number_format($record->total_amt,0);
+								$whrs=number_format($record->whrs,2);
+								$department=$record->department;
+								$dpc=$record->dept_code;
+							
+								$logMsg .=$dpc.'         ' .$record->eb_no.str_repeat(' ', 10- strlen($record->eb_no)).
+								substr($department,0,15).str_repeat(' ', 15 - strlen(substr($department,0,15))).
+								str_repeat(' ', 11 - strlen($whrs)).$whrs.
+								str_repeat(' ', 11 - strlen($Net_Payble)).$Net_Payble.
+								str_repeat(' ', 9 - strlen($otpay)).$otpay.
+								str_repeat(' ', 13 - strlen($totpay)).$totpay.
+								"\n";
+								$logMsg .= $line."\n";
+								$gtotpay=$gtotpay+$record->total_amt;
+								$gtotamt=$gtotamt+$record->Net_Payble;
+								$gotpay=$gotpay+$record->OVERTIME_PAY;
+								$tothrs=$tothrs+$record->whrs;
+								$lnn=$lnn+2;
+							}
+					//		$logMsg .= Chr(12)."\n";
+							$logMsg .= $line."\n";
+							
+							$gt="Grand Total";
+							$blnk='';
+							$logMsg .=$Blnk.str_repeat(' ', 21- strlen($blnk)).
+							substr($gt,0,15).str_repeat(' ', 15 - strlen(substr($gt,0,15))).
+							str_repeat(' ', 11 - strlen($tothrs)).$tothrs.
+							str_repeat(' ', 11 - strlen($gtotamt)).$gtotamt.
+							str_repeat(' ', 9 - strlen($gotpay)).$gotpay.
+							str_repeat(' ', 13 - strlen($gtotpay)).$gtotpay.
+							"\n";
+		
+							$logMsg .= $line."\n";
+							$logMsg .= Chr(12)."\n";
+
+						fputs($filePointer,$logMsg);
+						fclose($filePointer);
+						 $txt1="paydata.txt";
+						$txt1=$fileContainer;
+						$files = array($txt1);
+						$zipname = 'summreg.zip';
+
+						$zip = new ZipArchive;
+						$zip->open($zipname, ZipArchive::CREATE);
+						foreach ($files as $file) {
+						  $zip->addFile($file);
+						}
+			
+			
+						$zip->close();
+						
+						header('Content-Type: application/zip');
+						header('Content-disposition: attachment; filename='.$zipname);
+						header('Content-Length: ' . filesize($zipname));
+						readfile($zipname);
+						
+								unlink($fileContainer);
+								 unlink($zipname);
+
+					}
+	
+
+
+			}
+
+			public function payregisterprint() {
+				$periodfromdate= $this->input->get('periodfromdate');
+				$periodtodate= $this->input->get('periodtodate');
+				$periodtodt= substr($periodtodate,8,2);
+				$periodfrmdate=substr($periodfromdate,8,2).'-'.substr($periodfromdate,5,2).'-'.substr($periodfromdate,0,4); 
+				$periodtdate=substr($periodtodate,8,2).'-'.substr($periodtodate,5,2).'-'.substr($periodtodate,0,4); 
+
+				$att_payschm =  $this->input->get('att_payschm');
+				$holget =  $this->input->get('holget');
+				$payschemeName =  $this->input->get('payschemeName');
+					 $company_name = $this->session->userdata('companyname');
+					 $comp = $this->session->userdata('companyId');
+					 $fileContainer = "paydata.txt";
+					 $filePointer = fopen($fileContainer,"w+");
+				if ($holget==4 || $holget ==5 ) {
+						$mccodes = $this->Loan_adv_model->getpayregisterdata($periodfromdate,$periodtodate,$att_payschm,$holget);
+						$dpsumm = $this->Loan_adv_model->getpayregistersummdata($periodfromdate,$periodtodate,$att_payschm,$holget);
+						$data = [];
+						  $line = str_repeat('-', 79);
+					//	  $logMsg=$company_name."\n";
+
+	  					  $pg=1;
+						  $logMsg='';
+						  $ln1=$payschemeName."\n";
+						  $ln2= "Voucher Register for FNE To ".$periodtodate.'           '.'Dept Code ';
+						  $ln2a= $payschemeName;
+						  $ln3= $line."\n";
+						  $ln4= '  EBNO  | NAME                | TOTAL | RATE  | ADJ AMT | AMOUNT   | SIGNATURE '."\n";
+						  $ln6= '        |                     | HOURS |       | ADV DED |          | '."\n";
+						  $ln7= '        |                     |       |       | ADH AMT |          |'."\n";
+						  $ln5.= $line."\n";
+
+						  $totamt=0;
+						  $tothrs=0;
+						  $gtotamt=0;
+						  $gtothrs=0;
+						  $lnn=1;
+						  $dpc='';
+						foreach ($mccodes as $record) {
+							if ($dpc<>$record->dept_code) { 	
+								if ($pg>1) {
+			//						$logMsg .= Chr(12)."\n";
+									$gt="Dept Total ".$dpc;
+									$blnk='';
+									$logMsg .=$Blnk.str_repeat(' ', 10- strlen($blnk)).
+									substr($gt,0,20).str_repeat(' ', 20 - strlen(substr($gt,0,20))).
+									str_repeat(' ', 9 - strlen($tothrs)).$tothrs.
+									str_repeat(' ', 8 - strlen($blnk)).$blnk.
+									str_repeat(' ', 10 - strlen($totamt)).$totamt.
+									"\n";
+				
+									$totamt=0;
+									$tothrs=0;
+									$logMsg .= $line."\n";
+									$logMsg .= ' '."\n";
+									$logMsg .= ' '."\n";
+//									$logMsg .= Chr(12)."\n";
+									$lnn=$lnn+2;
+								}	
+								$dpc=$record->dept_code;
+								$dptcode=$dpc;
+								$pg++;
+							}		
+							if ($lnn>58) {
+								$logMsg .= Chr(12)."\n";
+								$lnn=1;
+							}	
+
+							if  ($lnn==1) {
+								$logMsg .=$payschemeName."\n";
+								$logMsg .=$ln2.$dptcode."\n";
+								$logMsg .=$ln2a."\n";
+								$logMsg .= $ln3;
+								$logMsg .= $ln4;
+								$logMsg .= $ln6;
+								$logMsg .= $ln7;
+								$logMsg .= $ln5;
+								$lnn=8;
+							}														//			$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+								$whrs = number_format($record->WORKING_HOURS+$record->HOLIDAY_HR+$record->OT_HOURS, 2);
+								$arr=number_format($record->ARR_PLUS+$record->ARR_MINUS, 2);
+								$adv=number_format($record->ADVANCE, 2);
+								$npay=number_format($record->Net_Payble, 0);
+								$RATE= $record->RATE_PER_DAY;
+								$logMsg .=$record->eb_no.str_repeat(' ', 10- strlen($record->eb_no)).
+								substr($record->wname,0,20).str_repeat(' ', 20 - strlen(substr($record->wname,0,20))).
+								str_repeat(' ', 9 - strlen($whrs)).$whrs.
+								str_repeat(' ', 8 - strlen($RATE)).$RATE.
+								str_repeat(' ', 10 - strlen($arr)).$arr.
+								str_repeat(' ', 10 - strlen($npay)).$npay.
+								$$periodtodate.
+								"\n";
+								$bln='';
+								$dbnc='Dept Code '.$dpc;
+								$logMsg .=$bln.str_repeat(' ', 10- strlen($bln)).
+								substr($dbnc,0,20).str_repeat(' ', 20 - strlen(substr($dbnc,0,20))).
+								str_repeat(' ', 9 - strlen($bln)).$bln.
+								str_repeat(' ', 8 - strlen($bln)).$bln.
+								str_repeat(' ', 10 - strlen($adv)).$adv.
+								"\n";
+								$logMsg .= ' '."\n";
+								$logMsg .= ' '."\n";
+								$logMsg .= ' '."\n";
+ 	  						   $logMsg .= $line."\n";
+								$totamt=$totamt+$record->Net_Payble;
+								$tothrs=$tothrs+$whrs;
+								$lnn=$lnn+6;
+								$gtotamt=$gtotamt+$record->Net_Payble;
+								$gtothrs=$gtothrs+$whrs;
+							}
+							$gt="Dept Total ".$dpc;
+							$blnk='';
+							$logMsg .=$Blnk.str_repeat(' ', 10- strlen($blnk)).
+							substr($gt,0,20).str_repeat(' ', 20 - strlen(substr($gt,0,20))).
+							str_repeat(' ', 9 - strlen($tothrs)).$tothrs.
+							str_repeat(' ', 8 - strlen($blnk)).$blnk.
+							str_repeat(' ', 10 - strlen($totamt)).$totamt.
+							"\n";
+
+//							$logMsg .= Chr(12)."\n";
+							$logMsg .= $line."\n";
+							$logMsg .= $line."\n";
+							
+							$gt="Grand Total";
+							$blnk='';
+							$logMsg .=$Blnk.str_repeat(' ', 10- strlen($blnk)).
+							substr($gt,0,20).str_repeat(' ', 20 - strlen(substr($gt,0,20))).
+							str_repeat(' ', 9 - strlen($gtothrs)).$gtothrs.
+							str_repeat(' ', 8 - strlen($blnk)).$blnk.
+							str_repeat(' ', 10 - strlen($gtotamt)).$gtotamt.
+							"\n";
+		
+							$logMsg .= $line."\n";
+							$logMsg .= Chr(12)."\n";
+
+							$ln1=$payschemeName."\n";
+							$ln2= "Voucher Summary Register for FNE To ".$periodtodate.'           '.'Dept Code ';
+							$ln2a= $payschemeName;
+							$ln3= $line."\n";
+							$ln4= '  DEPT CODE  | TOTAL HOURS            | TOTAL AMOUNT    |  DEPARTMENT.'."\n";
+							$ln5.= $line."\n";
+							$logMsg .=$payschemeName."\n";
+							$logMsg .=$ln2."\n";
+							$logMsg .=$ln2a."\n";
+							$logMsg .= $ln3;
+							$logMsg .= $ln4;
+							$logMsg .= $ln3;
+							$lnn=5;
+
+							$totamt=0;
+							$tothrs=0;
+							$gtotamt=0;
+							$gtothrs=0;
+							$lnn=1;
+							$dpc='';
+						foreach ($dpsumm as $record) {
+							
+							$whrs = number_format($record->whrs, 2);
+							$npay=number_format($record->Net_Payble, 0);
+							$tothrs=$tothrs+$whrs;
+							$totamta=$totamta+$record->Net_Payble;
+							$logMsg .='    '.$record->dept_code.str_repeat(' ', 15- strlen($record->dept_code)).
+							str_repeat(' ', 14 - strlen($whrs)).$whrs.
+							str_repeat(' ', 18 - strlen($npay)).$npay.
+							'        '.$record->department.
+							"\n";
+							$logMsg .= $ln3;
+						}	
+						$gt='Grand Total';
+						$logMsg .='    '.$gt.str_repeat(' ', 15- strlen($gt)).
+						str_repeat(' ', 14 - strlen($tothrs)).$tothrs.
+						str_repeat(' ', 18 - strlen($totamta)).$totamta.
+						''.
+						"\n";
+						$ln3= $line."\n";
+						$logMsg .= Chr(12)."\n";
+			
+
+						fputs($filePointer,$logMsg);
+						fclose($filePointer);
+						 $txt1="paydata.txt";
+						$txt1=$fileContainer;
+						$files = array($txt1);
+						$zipname = 'payregister.zip';
+				   }
+				   if ($holget==6 ) {
+					if ($att_payschm==159) {$payschemeName='A.B.ENTERPRISE';}
+					if ($att_payschm==160) {$payschemeName='JAY MAA TARA ANITA ENTERPRISE';}
+					if ($att_payschm==158) {$payschemeName='PANIGRAHI ENTERPRISE';}
+					
+					$mccodes = $this->Loan_adv_model->getpayregisterdata($periodfromdate,$periodtodate,$att_payschm,$holget);
+					$data = [];
+					  $line = str_repeat('-', 136);
+				//	  $logMsg=$company_name."\n";
+
+						$pg=1;
+					  $logMsg='';
+					  $ln1=$payschemeName."\n";
+					  $ln2= "Pay Register for the period from  ".$periodfrmdate.'    ' . 'FNE To'.$periodtdate.'           '.'Dept Code ';
+					  $ln3= $line."\n";
+					  $ln4= 'Dept Code    EB No             W.Hours    BASIC     PF (12%)    Tiffin    Washing Allow     P.Tax     Total Earn   R/off     PF (13.00%)'."\n";
+					  $ln6= 'Dept Name    Name                Rate     Other     ESI(0.75%)    Conv       Gross2         Advance   Total Ded   Net Pay    ESI (3.25%)'."\n";
+					  $ln7= '                                                                         Adjust  Amt                                                  '."\n";
+					  $ln5.= $line."\n";
+
+					  $totamt=0;
+					  $tothrs=0;
+					  $gtotamt=0;
+					  $gtothrs=0;
+
+					  $gtotbas=$gothallow=$gepf=$gesi=$gtifallow=$gconvallow=$gwasallow=$ggros2=$gajamt=$gadvamt=$gtotearn=$gtotded=$groff=$gnpay=$gemppf=$gempesi=$gptax=0;
+					  
+					  $lnn=1;
+					  $dpc='';
+					foreach ($mccodes as $record) {
+						if ($dpc<>$record->dept_code) { 	
+							if ($pg>1) {
+		//						$logMsg .= Chr(12)."\n";
+								/*$gt="Dept Total ".$dpc;
+								$blnk='';
+								$logMsg .=$Blnk.str_repeat(' ', 10- strlen($blnk)).
+								substr($gt,0,20).str_repeat(' ', 20 - strlen(substr($gt,0,20))).
+								str_repeat(' ', 9 - strlen($tothrs)).$tothrs.
+								str_repeat(' ', 8 - strlen($blnk)).$blnk.
+								str_repeat(' ', 10 - strlen($totamt)).$totamt.*/
+								"\n";
+			
+								$totamt=0;
+								$tothrs=0;
+								$logMsg .= $line."\n";
+								//$logMsg .= Chr(12)."\n";
+								$lnn=1;
+							}	
+							$dpc=$record->dept_code;
+							$dptcode=$dpc;
+							//$pg++;
+						}		
+						if ($lnn>58) {
+							$logMsg .= Chr(12)."\n";
+							$lnn=1;
+						}	
+
+						if  ($lnn==1) {
+							$logMsg .=$payschemeName."\n";
+							$logMsg .=$ln2.$dptcode."\n";
+							$logMsg .= $ln3;
+							$logMsg .= $ln4;
+							$logMsg .= $ln6;
+							$logMsg .= $ln7;
+							$logMsg .= $ln5;
+							$lnn=8;
+						}			
+						///////////pintu///////////////											//			$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+							$whrs = number_format($record->WORKING_HOURS,2);
+							//+$record->HOLIDAY_HR+$record->OT_HOURS, 2);
+							//$arr=number_format($record->ARR_PLUS+$record->ARR_MINUS, 2);
+							//$adv=number_format($record->ADVANCE, 2);
+							//$npay=number_format($record->Net_Payble, 0);
+							//$RATE= $record->RATE_PER_DAY;
+							$Basic=$record->BASIC;
+							$EPF=$record->EPF;
+							$ESI=$record->ESI;
+							$TIFFIN_AMOUNT=$record->TIFFIN_AMOUNT;
+							$WASHING_ALLOWANCE=$record->WASHING_ALLOWANCE;
+							$EMPL_EPF=$record->EMPL_EPF;
+							$dept_code=$record->dept_code;
+							//$ptax=$record->ptax;
+							$ptax = number_format($record->ptax,2);
+							//$GROSS2=$record->GROSS2;
+							$B_F = number_format($record->B_F,2);
+							$RATE_PER_DAY = number_format($record->RATE_PER_DAY,2);
+							$OTHER_ALLOWANCE=number_format($record->OTHER_ALLOWANCE,2);
+							$ESI=number_format($record->ESI,2);
+							$CONV_ALLOWANCE=number_format($record->CONV_ALLOWANCE,2);
+							$GROSS2=number_format($record->GROSS2,2);
+							$ADVANCE=number_format($record->ADVANCE,2);
+							$GROSS_DED=number_format($record->GROSS_DED,2);
+							$Net_Payble=number_format($record->Net_Payble,2);
+							$EMPL_ESI=number_format($record->EMPL_ESI,2);
+							$uanno=$record->pf_uan_no;
+							$esino=$record->esi_no;
+							//$B_F=$record->B_F;
+
+							$logMsg .= '             ' .$record->eb_no.str_repeat(' ', 10- strlen($record->eb_no)).
+							//substr($record->wname,0,20).str_repeat(' ', 20 - strlen(substr($record->wname,0,20))).
+							str_repeat(' ', 16 - strlen($whrs)).$whrs.
+							//str_repeat(' ', 8 - strlen($RATE)).$RATE.
+							str_repeat(' ', 11 - strlen($Basic)).$Basic.
+							str_repeat(' ', 8 - strlen($EPF)).$EPF.
+							//str_repeat(' ', 6 - strlen($npay)).$ESI.
+							str_repeat(' ', 14 - strlen($TIFFIN_AMOUNT)).$TIFFIN_AMOUNT.
+							str_repeat(' ', 15 - strlen($WASHING_ALLOWANCE)).$WASHING_ALLOWANCE.
+							str_repeat(' ', 11 - strlen($ptax)).$ptax.
+							str_repeat(' ', 14 - strlen($GROSS2)).$GROSS2.
+							str_repeat(' ', 11- strlen($B_F)).$B_F.
+							str_repeat(' ', 13 - strlen($EMPL_EPF)).$EMPL_EPF.
+							 // $lnn=$lnn+4;
+							
+							$$periodtodate.
+							"\n";
+							$bln='';
+							$dbnc=' '.$dpc;
+							$logMsg .= $dbnc.'          '.
+							//substr($dbnc,0,20).str_repeat(' ', 20 - strlen(substr($dbnc,0,20))).
+							//str_repeat(' ', 0 - strlen($dbnc)).$dbnc.
+							substr($record->wname,0,20).str_repeat(' ', 20 - strlen(substr($record->wname,0,20))).
+							str_repeat(' ', 6 - strlen($RATE_PER_DAY)).$RATE_PER_DAY.
+							str_repeat(' ', 11 - strlen($OTHER_ALLOWANCE)).$OTHER_ALLOWANCE.
+							str_repeat(' ', 8 - strlen($ESI)).$ESI.
+							str_repeat(' ', 14 - strlen($CONV_ALLOWANCE)).$CONV_ALLOWANCE.
+							str_repeat(' ', 15 - strlen($GROSS2)).$GROSS2.
+							str_repeat(' ', 11 - strlen($ADVANCE)).$ADVANCE.
+							str_repeat(' ', 14 - strlen($GROSS_DED)).$GROSS_DED.
+							str_repeat(' ', 11 - strlen($Net_Payble)).$Net_Payble.
+							str_repeat(' ', 13 - strlen($EMPL_ESI)).$EMPL_ESI.
+							str_repeat(' ', 8 - strlen($bln)). 
+							"\n";
+
+							$logMsg .= ' '."\n";
+							$logMsg .= 'ESI NO: '.$esino.'              UAN NO: '.$uanno."\n";
+
+						//	$logMsg .= ' '."\n";
+						//	$logMsg .= ' '."\n";
+						//	$logMsg .= ' '."\n";
+						    $logMsg .= $line."\n";
+							$totamt=$totamt+$record->Net_Payble;
+							$tothrs=$tothrs+$whrs;
+							$twash=$twash+$record->WASHING_ALLOWANCE;
+							$tconv=$tconv+$record->CONV_ALLOWANCE;
+							$tiffin=$tiffin+$record->TIFFIN_AMOUNT;
+							$tadvance=$tadvance+$record->vADVANCE;
+							$tgross=$tgross+$record->TOTAL_EARN;
+							$tdeduct=$tdeduct+$record->GROSS_DED;
+							$tother=$tother+$record->OTHER_ALLOWANCE;
+							$lnn=$lnn+6;
+							$gtotamt=$gtotamt+$record->Net_Payble;
+							$gtotbas=$gtotbas+$Basic;
+							$gepf=$gepf+$EPF;
+							$gesi=$gesi+$ESI;
+							$ggros2=$ggros2+$record->GROSS2;
+							$gadv=$gadv+$ADVANCE;
+							$groff=$groff+$B_F;
+							$gemppf=$gemppf+$EMPL_EPF;
+							$gempesi=$gempesi+round($ESI/.75*3.25,0);
+														
+							$gtothrs=$gtothrs+$whrs;
+							$gtiffin=$gtiffin+$record->TIFFIN_AMOUNT;
+							$gconv=$gconv+$record->CONV_ALLOWANCE;
+							$gtwash=$gtwash+$record->WASHING_ALLOWANCE;
+							$gtadvance=$gtadvance+$record->vADVANCE;
+							$gtgross=$gtgross+$record->TOTAL_EARN;
+							$gtdeduct=$gtdeduct+$record->GROSS_DED;
+							$gtother=$gtother+$record->OTHER_ALLOWANCE;
+
+
+						}
+						$logMsg .= Chr(12)."\n";
+						$logMsg .= $line."\n";
+						
+						$gt="Grand Total";
+						$blnk='';
+
+						$logMsg .= '        ' .$gt.str_repeat(' ', 15- strlen($gt)).
+						//substr($record->wname,0,20).str_repeat(' ', 20 - strlen(substr($record->wname,0,20))).
+						str_repeat(' ', 16 - strlen($gtothrs)).$gtothrs.
+						//str_repeat(' ', 8 - strlen($RATE)).$RATE.
+						str_repeat(' ', 11 - strlen($gtotbas)).$gtotbas.
+						str_repeat(' ', 8 - strlen($gepf)).$gepf.
+						//str_repeat(' ', 6 - strlen($npay)).$ESI.
+						str_repeat(' ', 14 - strlen($gtiffin)).$gtiffin.
+						str_repeat(' ', 15 - strlen($gtwash)).$gtwash.
+						str_repeat(' ', 11 - strlen($gptax)).$gptax.
+						str_repeat(' ', 14 - strlen($gtgross)).$gtgross.
+						str_repeat(' ', 11- strlen($groff)).$groff.
+						str_repeat(' ', 13 - strlen($gemppf)).$gemppf.
+						"\n";
+	
+						$logMsg .= $dbnc.'          '.
+							//substr($dbnc,0,20).str_repeat(' ', 20 - strlen(substr($dbnc,0,20))).
+							//str_repeat(' ', 0 - strlen($dbnc)).$dbnc.
+							substr($blnk,0,20).str_repeat(' ', 20 - strlen(substr($blnk,0,20))).
+							str_repeat(' ', 6 - strlen($blnk)).$blnk.
+							str_repeat(' ', 11 - strlen($gtother)).$gtother.
+							str_repeat(' ', 8 - strlen($gesi)).$gesi.
+							str_repeat(' ', 14 - strlen($gconv)).$gconv.
+							str_repeat(' ', 15 - strlen($ggros2)).$ggros2.
+							str_repeat(' ', 11 - strlen($gadv)).$gadv.
+							str_repeat(' ', 14 - strlen($gtdeduct)).$gtdeduct.
+							str_repeat(' ', 11 - strlen($gtotamt)).$gtotamt.
+							str_repeat(' ', 13 - strlen($gesi)).$gesi.
+							"\n";
+/*
+
+						$logMsg .=$Blnk.str_repeat(' ', 10- strlen($blnk)).
+						substr($gt,0,20).str_repeat(' ', 20 - strlen(substr($gt,0,20))).
+						str_repeat(' ', 9 - strlen($gtothrs)).$gtothrs.
+						str_repeat(' ', 3 - strlen($blnk)).$blnk.
+						str_repeat(' ', 9 - strlen($gtother)).$gtother.
+						str_repeat(' ', 3 - strlen($blnk)).$blnk.
+						str_repeat(' ', 9 - strlen($gtiffin)).$gtiffin.
+						str_repeat(' ', 3 - strlen($blnk)).$blnk.
+						str_repeat(' ', 9 - strlen($gconv)).$gconv.
+						str_repeat(' ', 3 - strlen($blnk)).$blnk.
+						str_repeat(' ', 9 - strlen($gtwash)).$gtwash.
+						str_repeat(' ', 3 - strlen($blnk)).$blnk.
+						str_repeat(' ', 6 - strlen($gtadvance)).$gtadvance.
+						str_repeat(' ', 3 - strlen($blnk)).$blnk.
+						str_repeat(' ', 9 - strlen($gtgross)).$gtgross.
+						str_repeat(' ', 3 - strlen($blnk)).$blnk.
+						str_repeat(' ', 9 - strlen($gtdeduct)).$gtdeduct.
+						str_repeat(' ', 3 - strlen($blnk)).$blnk.
+						str_repeat(' ', 9 - strlen($gtotamt)).$gtotamt.
+						"\n";
+*/	
+						$logMsg .= $line."\n";
+						$logMsg .= Chr(12)."\n";
+					fputs($filePointer,$logMsg);
+					fclose($filePointer);
+					 $txt1="paydata.txt";
+					$txt1=$fileContainer;
+					$files = array($txt1);
+					$zipname = 'payregister.zip';
+			   }
+	  
+				   if ($holget==1) {
+					$mccodes = $this->Loan_adv_model->otregisterprint($periodfromdate,$periodtodate,$att_payschm,$holget);
+					$data = [];
+					  $line = str_repeat('-', 72);
+				//	  $logMsg=$company_name."\n";
+					  $pg=1;
+					  $logMsg=$payschemeName."\n";
+					  $logMsg .= "Main Pay Roll OT Sheet for the period From ".$periodfromdate." To ".$periodtodate.'       '.'Page No '.$pg."\n";
+					  $logMsg .= $line."\n";
+					  $logMsg .= 'Department   EB No     Name                    Hours    Rate     Amount'."\n";
+					  $logMsg .= $line."\n";
+					  $logMsg .= ' '."\n";
+					  $logMsg .= ' '."\n";
+					  $rowIndex = 4;
+					  $totamt=0;
+					  $tothrs=0;
+					  $lnn=8;
+					foreach ($mccodes as $record) {
+						if ($lnn>58) {
+							$logMsg .= Chr(12)."\n";
+							$pg++;
+							$logMsg .=$payschemeName."\n";
+							$logMsg .= "Contractor OT Sheet for the period From ".$periodfromdate." To ".$periodtodate.'       '.'Page No '.$pg."\n";
+							$logMsg .= $line."\n";
+							$logMsg .= 'Department   EB No     Name                    Hours    Rate     Amount'."\n";
+							$logMsg .= $line."\n";
+							$logMsg .= ' '."\n";
+							$logMsg .= ' '."\n";
+							$lnn=8;
+						}														//			$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+	
+							$OT_HOURS = number_format($record->OT_HOURS, 2);
+							$RATE= $record->RATE;
+							$logMsg .='   '.$record->dept_code.'        '.$record->eb_no.str_repeat(' ', 10- strlen($record->eb_no)).
+							substr($record->wname,1,20).str_repeat(' ', 20 - strlen(substr($record->wname,1,20))).
+							str_repeat(' ', 9 - strlen($OT_HOURS)).$OT_HOURS.
+							str_repeat(' ', 8 - strlen($RATE)).$RATE.
+							str_repeat(' ', 10 - strlen($record->OVERTIME_PAY)).$record->OVERTIME_PAY.
+							"\n";
+							$logMsg .= ' '."\n";
+							$logMsg .= ' '."\n";
+							   $logMsg .= $line."\n";
+							$totamt=$totamt+$record->OVERTIME_PAY;
+							$tothrs=$tothrs+$OT_HOURS;
+							$lnn=$lnn+4;
+						}
+						$gt="Grand Total";
+						$logMsg .= $gt.str_repeat(' ', 11 - strlen($gt)).str_repeat(' ', 11).str_repeat(' ', 15).
+						str_repeat(' ', 7 - strlen($tothrs)).$tothrs.str_repeat(' ', 8 - strlen($totamt)).$totamt.
+						"\n";
+						$logMsg .= $line."\n";
+						$logMsg .= Chr(12)."\n";
+					fputs($filePointer,$logMsg);
+					fclose($filePointer);
+					 $txt1="otdata.txt";
+					$txt1=$fileContainer;
+					$files = array($txt1);
+					$zipname = 'othersotregister.zip';
+			   }
+	 
+		
+			$zip = new ZipArchive;
+			$zip->open($zipname, ZipArchive::CREATE);
+			foreach ($files as $file) {
+			  $zip->addFile($file);
+			}
+
+
+			$zip->close();
+			
+			header('Content-Type: application/zip');
+			header('Content-disposition: attachment; filename='.$zipname);
+			header('Content-Length: ' . filesize($zipname));
+			readfile($zipname);
+			
+					unlink($fileContainer);
+					 unlink($zipname);
+			
+			
+			
+				}
+
+				
+			public function hlincprint() {
+				$periodfromdate= $this->input->get('periodfromdate');
+				$periodtodate= $this->input->get('periodtodate');
+				$att_payschm =  $this->input->get('att_payschm');
+				$holget =  $this->input->get('holget');
+				$payschemeName =  $this->input->get('payschemeName');
+					 $company_name = $this->session->userdata('companyname');
+					 $comp = $this->session->userdata('companyId');
+					 $periodfrmdate=substr($periodfromdate,8,2).'-'.substr($periodfromdate,5,2).'-'.substr($periodfromdate,0,4); 
+					 $periodtdate=substr($periodtodate,8,2).'-'.substr($periodtodate,5,2).'-'.substr($periodtodate,0,4); 
+					 $mccodes = $this->Loan_adv_model->getFNattincentiveData($periodfromdate,$periodtodate,$att_payschm,$holget);
+					 $fileContainer = "incdata.txt";
+					 $filePointer = fopen($fileContainer,"w+");
+					$totamt=0;
+					$othrs=0;
+					$line = str_repeat('-', 81);
+					$logMsg=$payschemeName;
+					$hdm1="Attendance Incentive Register for the period From ".$periodfrmdate." To ".$periodtdate;
+					$hdm2='EB No    Name                 Dept Name        W.Days   Inc Amt   Signature ';
+					
+						  $pg=1;
+						  $logMsg=$payschemeName."\n";
+
+						  $logMsg .= $hdm1."\n";
+						  $logMsg .= $line."\n";
+						  $logMsg .= $hdm2."\n";
+						  $logMsg .= $line."\n";
+ 						  $totamt=0;
+						  $tothrs=0;
+						  $lnn=5;
+						foreach ($mccodes as $record) {
+							if ($lnn>58) {
+								$logMsg .= Chr(12)."\n";
+								$pg++;
+								$logMsg .=$payschemeName."\n";
+								$logMsg .= $hdm1."\n";
+								$logMsg .= $line."\n";
+								$logMsg .= $hdm2."\n";
+								$logMsg .= $line."\n";
+								$lnn=5;
+							}														//			$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+							$logMsg .=$record->emp_code.str_repeat(' ', 8- strlen($record->emp_code)).
+							substr($record->empname,0,20).str_repeat(' ', 21 - strlen(substr($record->empname,0,20))).
+							substr($record->dept_desc,0,15).str_repeat(' ', 15 - strlen(substr($record->dept_desc,0,15))).
+							str_repeat(' ', 9 - strlen($record->incdays)).$record->incdays.
+							str_repeat(' ', 10 - strlen($record->incamt)).$record->incamt.
+							"\n";
+ 								$logMsg .= ' '."\n";
+								$logMsg .= ' '."\n";
+			 	 			   $logMsg .= $line."\n";
+								$totamt=$totamt+$record->incamt;
+								$tothrs=$tothrs+$record->incdays;
+								
+								$lnn=$lnn+4;
+							}
+
+							$gt="Grand Total";
+							$empc=" ";
+							$logMsg .=$empc.str_repeat(' ', 8- strlen($empc)).
+							substr($gt,0,20).str_repeat(' ', 21 - strlen(substr($gt,0,20))).
+							substr($empc,0,15).str_repeat(' ', 15 - strlen(substr($empc,0,15))).
+							str_repeat(' ', 9 - strlen($tothrs)).$tothrs.
+							str_repeat(' ', 10 - strlen($totamt)).$totamt.
+							"\n";
+							$logMsg .= $line."\n";
+							$logMsg .= Chr(12)."\n";
+				
+							$logMsg .= $line."\n";
+							$logMsg.=$payschemeName."\n";
+							$logMsg .= $hdm1."\n";
+							$logMsg .= $line."\n";
+							$logMsg .= $hdm2."\n";
+							$logMsg .= $line."\n";
+							  
+							$gt="Summary";
+							$logMsg .=$empc.str_repeat(' ', 8- strlen($empc)).
+							substr($gt,0,20).str_repeat(' ', 21 - strlen(substr($gt,0,20))).
+							substr($empc,0,15).str_repeat(' ', 15 - strlen(substr($empc,0,15))).
+							str_repeat(' ', 9 - strlen($tothrs)).$tothrs.
+							str_repeat(' ', 10 - strlen($totamt)).$totamt.
+							"\n";
+							$logMsg .= $line."\n";
+							$logMsg .= Chr(12)."\n";
+
+							fputs($filePointer,$logMsg);
+						fclose($filePointer);
+						 $txt1="incdata.txt";
+						$txt1=$fileContainer;
+						$files = array($txt1);
+						$zipname = 'incprint.zip';
+				   
+		  
+ 			   
+	 
+		
+			$zip = new ZipArchive;
+			$zip->open($zipname, ZipArchive::CREATE);
+			foreach ($files as $file) {
+			  $zip->addFile($file);
+			}
+			$zip->close();
+			
+			header('Content-Type: application/zip');
+			header('Content-disposition: attachment; filename='.$zipname);
+			header('Content-Length: ' . filesize($zipname));
+			readfile($zipname);
+/*	
+	header('Content-Type: application/octet-stream');
+header('Content-disposition: attachment; filename=' . basename($fileContainer));
+header('Content-Length: ' . filesize($fileContainer));
+
+// Read the file and output it to the browser
+readfile($fileContainer);
+*/		
+					unlink($fileContainer);
+					 unlink($zipname);
+			
+			
+			
+				}
+				
+				public function mlincprint() {
+					$periodfromdate= $this->input->get('periodfromdate');
+					$periodtodate= $this->input->get('periodtodate');
+					$att_payschm =  $this->input->get('att_payschm');
+					$holget =  $this->input->get('holget');
+					$payschemeName =  $this->input->get('payschemeName');
+						 $company_name = $this->session->userdata('companyname');
+						 $comp = $this->session->userdata('companyId');
+						 $periodfrmdate=substr($periodfromdate,8,2).'-'.substr($periodfromdate,5,2).'-'.substr($periodfromdate,0,4); 
+						 $periodtdate=substr($periodtodate,8,2).'-'.substr($periodtodate,5,2).'-'.substr($periodtodate,0,4); 
+						 $mccodes = $this->Loan_adv_model->getMNattincentiveData($periodfromdate,$periodtodate,$att_payschm,$holget);
+						 $fileContainer = "incdata.txt";
+						 $filePointer = fopen($fileContainer,"w+");
+						$totamt=0;
+						$othrs=0;
+						$line = str_repeat('-', 81);
+						$logMsg=$payschemeName;
+						$hdm1="Attendance Incentivem Register for the period From ".$periodfrmdate." To ".$periodtdate;
+						$hdm2='EB No    Name                 Dept Name        W.Days   Inc Amt   Signature ';
+						
+							  $pg=1;
+							  $logMsg=$payschemeName."\n";
+	
+							  $logMsg .= $hdm1."\n";
+							  $logMsg .= $line."\n";
+							  $logMsg .= $hdm2."\n";
+							  $logMsg .= $line."\n";
+							   $totamt=0;
+							  $tothrs=0;
+							  $lnn=5;
+							foreach ($mccodes as $record) {
+								if ($lnn>58) {
+									$logMsg .= Chr(12)."\n";
+									$pg++;
+									$logMsg .=$payschemeName."\n";
+									$logMsg .= $hdm1."\n";
+									$logMsg .= $line."\n";
+									$logMsg .= $hdm2."\n";
+									$logMsg .= $line."\n";
+									$lnn=5;
+								}														//			$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+								$logMsg .=$record->emp_code.str_repeat(' ', 8- strlen($record->emp_code)).
+								substr($record->empname,0,20).str_repeat(' ', 21 - strlen(substr($record->empname,0,20))).
+								substr($record->dept_desc,0,15).str_repeat(' ', 15 - strlen(substr($record->dept_desc,0,15))).
+								str_repeat(' ', 9 - strlen($record->incdays)).$record->incdays.
+								str_repeat(' ', 10 - strlen($record->incamt)).$record->incamt.
+								"\n";
+									 $logMsg .= ' '."\n";
+									$logMsg .= ' '."\n";
+									 $logMsg .= $line."\n";
+									$totamt=$totamt+$record->incamt;
+									$tothrs=$tothrs+$record->incdays;
+									
+									$lnn=$lnn+4;
+								}
+	
+								$gt="Grand Total";
+								$empc=" ";
+								$logMsg .=$empc.str_repeat(' ', 8- strlen($empc)).
+								substr($gt,0,20).str_repeat(' ', 21 - strlen(substr($gt,0,20))).
+								substr($empc,0,15).str_repeat(' ', 15 - strlen(substr($empc,0,15))).
+								str_repeat(' ', 9 - strlen($tothrs)).$tothrs.
+								str_repeat(' ', 10 - strlen($totamt)).$totamt.
+								"\n";
+								$logMsg .= $line."\n";
+								$logMsg .= Chr(12)."\n";
+					
+								$logMsg .= $line."\n";
+								$logMsg.=$payschemeName."\n";
+								$logMsg .= $hdm1."\n";
+								$logMsg .= $line."\n";
+								$logMsg .= $hdm2."\n";
+								$logMsg .= $line."\n";
+								  
+								$gt="Summary";
+								$logMsg .=$empc.str_repeat(' ', 8- strlen($empc)).
+								substr($gt,0,20).str_repeat(' ', 21 - strlen(substr($gt,0,20))).
+								substr($empc,0,15).str_repeat(' ', 15 - strlen(substr($empc,0,15))).
+								str_repeat(' ', 9 - strlen($tothrs)).$tothrs.
+								str_repeat(' ', 10 - strlen($totamt)).$totamt.
+								"\n";
+								$logMsg .= $line."\n";
+								$logMsg .= Chr(12)."\n";
+	
+								fputs($filePointer,$logMsg);
+							fclose($filePointer);
+							 $txt1="incdata.txt";
+							$txt1=$fileContainer;
+							$files = array($txt1);
+							$zipname = 'incprint.zip';
+					   
+			  
+					
+		 
+			
+				$zip = new ZipArchive;
+				$zip->open($zipname, ZipArchive::CREATE);
+				foreach ($files as $file) {
+				  $zip->addFile($file);
+				}
+				$zip->close();
+				
+				header('Content-Type: application/zip');
+				header('Content-disposition: attachment; filename='.$zipname);
+				header('Content-Length: ' . filesize($zipname));
+				readfile($zipname);
+	/*	
+		header('Content-Type: application/octet-stream');
+	header('Content-disposition: attachment; filename=' . basename($fileContainer));
+	header('Content-Length: ' . filesize($fileContainer));
+	
+	// Read the file and output it to the browser
+	readfile($fileContainer);
+	*/		
+						unlink($fileContainer);
+						 unlink($zipname);
+				
+				
+				
+					}
+		
+
+			public function getotregisterdatap() {
+				$periodfromdate= $this->input->post('periodfromdate');
+				$periodtodate= $this->input->post('periodtodate');
+				$att_payschm =  $this->input->post('att_payschm');
+				$holget =  $this->input->post('holget');
+			//	$payschemeName =  $this->input->post('payschemeName');
+					 $company_name = $this->session->userdata('companyname');
+					 $comp = $this->session->userdata('companyId');
+					 $mccodes = $this->Loan_adv_model->otregisterprint($periodfromdate,$periodtodate,$att_payschm,$holget);
+					 $data = [];
+					 foreach ($mccodes as $record) {
+						 $data[] = [
+							 $deptcode=$record->dept_code,
+							 $deptname=$record->department,
+							 $empcode=$record->eb_no,
+							 $empname=$record->wname,
+							 $othours=$record->OT_HOURS,
+							 $otrate=$record->RATE,
+							 $otamount=$record->OVERTIME_PAY
+							  
+							  
+							 
+						 ];
+					 }
+		 
+					 echo json_encode(['data' => $data]);
+						 
+
+			}
+
+
+			public function getotregisterdata() {
+				$this->load->model('Loan_adv_model');
+			 //   $selectedDepartment = $this->input->post('date');
+				$periodfromdate= $this->input->post('periodfromdate');
+				$periodtodate= $this->input->post('periodtodate');
+				$att_payschm =  $this->input->post('att_payschm');
+		
+				
+		
+		
+		//echo $periodfromdate,$periodtodate,$att_payschm;
+		$mccodes = $this->Loan_adv_model->otregisterprint($periodfromdate,$periodtodate,$att_payschm,$holget);
+		//var_dump($mccodes);
+				$data = [];
+				$totamt=0;
+				$tothrs=0;
+					foreach ($mccodes as $record) {
+						$totamt=$totamt+$record->OVERTIME_PAY;	
+						$tothrs=$tothrs+$record->OT_HOURS;	
+						$data[] = [
+							$deptcode=$record->dept_code,
+							$deptname=$record->department,
+							$empcode=$record->eb_no,
+							$empname=$record->wname,
+							$othours=$record->OT_HOURS,
+							$otrate=$record->RATE,
+							$otamount=$record->OVERTIME_PAY
+						];
+					}
+					$data[] = [
+						$deptcode='',
+						$deptname='grand Total',
+						$empcode=' ',
+						$empname='',
+						$othours=$tothrs,
+						$otrate='',
+						$otamount=$totamt
+							];
+		
+					echo json_encode(['data' => $data]);
+			}
+			public function getpayregisterdata() {
+				$this->load->model('Loan_adv_model');
+			 //   $selectedDepartment = $this->input->post('date');
+				$periodfromdate= $this->input->post('periodfromdate');
+				$periodtodate= $this->input->post('periodtodate');
+				$att_payschm =  $this->input->post('att_payschm');
+				$holget =  $this->input->post('hol_get');
+		
+			//	echo $holget;
+		
+		
+		//echo $periodfromdate,$periodtodate,$att_payschm;
+		$mccodes = $this->Loan_adv_model->getpayregisterdata($periodfromdate,$periodtodate,$att_payschm,$holget);
+		//var_dump($mccodes);
+		if ($holget==1 || $holget==2) {
+			$data = [];
+					foreach ($mccodes as $record) {
+						$data[] = [
+							$FROM_DATE=$record->FROM_DATE,
+							$TO_DATE=$record->TO_DATE,
+							$eb_no=$record->eb_no,
+							$wname=$record->wname,
+							$department=$record->department,
+							$designation=$record->designation,
+							$FIXED_BASIC_PER_HOUR=$record->FIXED_BASIC_PER_HOUR,
+							$DA_RATE=$record->DA_RATE,
+							$WORKING_HOURS=$record->WORKING_HOURS,
+							$NIGHT_SHIFT_HR=$record->NIGHT_SHIFT_HR,
+							$HOLIDAY_HR=$record->HOLIDAY_HR,
+							$STLD=$record->STLD,
+							$OT_HOURS=$record->OT_HOURS,
+							$MISC_EARNING=$record->MISC_EARNING,
+							$HRA=$record->HRA,
+							$WRK_HOURS_ON_EFF=$record->WRK_HOURS_ON_EFF,
+							$FIX_BASIC=$record->FIX_BASIC,
+							$Night_Allowance=$record->Night_Allowance,
+							$DA=$record->DA,
+							$Festival_Wage=$record->Festival_Wage,
+							$STL_Wage=$record->STL_Wage,
+							$PF_Gross=$record->PF_Gross,
+							$HRA=$record->HRA,
+							$Gross_Earnings=$record->Gross_Earnings,
+							$EPF=$record->EPF,
+							$ESI=$record->ESI,
+							$COMPANY_LOAN=$record->COMPANY_LOAN,
+							$PUJA_ADVANCE=$record->PUJA_ADVANCE,
+							$PTAX=$record->PTAX,
+							$Gross_Deductions=$record->Gross_Deductions,
+							$Net_Payble=$record->Net_Payble,
+							$OVERTIME_PAY=$record->OVERTIME_PAY,
+							$ATT_INC=$record->ATT_INC,
+							$prod_bsc=$record->prod_bsc,
+							$TIME_RATED_BASIC=$record->TIME_RATED_BASIC
+
+						];
+					}
+		}	
+		if ($holget==3 || $holget==4 || $holget==5 ) {
+			$twhrs=$tfhrs=$tothrs=$tbas=$toth=$ttif=$tconv=$twash=$tgros2=$tepf=$tesi=$tarr=$tadv=$ttotearn=$tgrsded=$roff=$tnpay=$temppf=$tempesi=0;
+
+			$data = [];
+					foreach ($mccodes as $record) {
+						$data[] = [
+							$FROM_DATE=$periodfromdate,
+							$TO_DATE=$periodtodate,
+							$eb_no=$record->eb_no,
+							$wname=$record->wname,
+							$dept_code=$record->dept_code,
+							$department=$record->department,
+							$WORKING_HOURS=$record->WORKING_HOURS,
+							$festval_hrs=$record->HOLIDAY_HR,
+							$ot_hrs=$record->OT_HOURS,
+							$RATE=$record->RATE_PER_DAY,
+							$ARR=$record->ARR_PLUS-$record->ARR_MINUS,
+							$ADV=$record->ADVANCE,
+							$NETPAY=$record->Net_Payble
+				 
+						];
+						$twhrs=$twhrs+$record->WORKING_HOURS;
+						$tfhrs=$tfhrs+$record->HOLIDAY_HR;
+						$tothrs=$tothrs+$record->OT_HOURS;
+						$tarr=$tarr+$record->ARR_PLUS-$record->ARR_MINUS;
+						$tadv=$tadv+$record->ADVANCE;
+						$tnpay=$tnpay+$record->Net_Payble;
+
+					}
+					$data[] = [
+						$FROM_DATE=$periodfromdate,
+						$TO_DATE=$periodtodate,							
+						$eb_no='',
+						$wname='Grand Total',
+						$dept_code='',
+						$department='',
+						$WORKING_HOURS=$twhrs,
+						$festval_hrs=$tfhrs,
+						$ot_hrs=$tothrs,
+						$RATE='',
+						$ARR=$tarr,
+						$ADV=$tadv,
+						$NETPAY=$tnpay,
+				];
+
+				}	
+		if ($holget==6  ) {
+			$twhrs=$tfhrs=$tothrs=$tbas=$toth=$ttif=$tconv=$twash=$tgros2=$tepf=$tesi=$tarr=$tadv=$ttotearn=$tgrsded=$roff=$tnpay=$temppf=$tempesi=0;
+			$data = [];
+					foreach ($mccodes as $record) {
+						$data[] = [
+							$FROM_DATE=$periodfromdate,
+							$TO_DATE=$periodtodate,							
+							$eb_no=$record->eb_no,
+							$wname=$record->wname,
+							$dept_code=$record->dept_code,
+							$department=$record->department,
+							$WORKING_HOURS=$record->WORKING_HOURS+$record->NIGHT_SHIFT_HR,
+							$festival_hrs=$record->HOLIDAY_HR,
+							$othrs=$record->OT_HOURS,
+							$RATE=$record->RATE_PER_DAY,
+							$basic=$record->BASIC,
+							$others=$record->OTHER_ALLOWANCE,
+							$tiffin=$record->TIFFIN_AMOUNT,
+							$conv=$record->CONV_ALLOWANCE,
+							$washing=$record->WASHING_ALLOWANCE,
+							$gross2=$record->GROSS2,							
+							$epf=$record->EPF,
+							$esi=$record->ESI,
+							$arrear=$record->ARR_PLUS-$record->ARR_MINUS,
+							$ptax='',
+							$advance=$record->ADVANCE,
+							$tot_earn=$record->TOTAL_EARN,
+							$grs_ded=$record->GROSS_DED,
+							$r_off=$record->B_F,
+							$netpay=$record->Net_Payble,
+							$emplpf=$record->EMPL_EPF,
+							$emplesi=$record->EMPL_ESI,
+							$uanno=$record->pf_uan_no,
+							$esino=$record->esi_no
+				 
+				
+
+
+						];
+						$twhrs=$twhrs+$record->WORKING_HOURS+$record->NIGHT_SHIFT_HR;
+						$tfhrs=$tfhrs+$record->HOLIDAY_HR;
+						$tothrs=$tothrs+$record->OT_HOURS;
+						$tbas=$tbas+$record->BASIC;
+						$toth=$toth+$record->OTHER_ALLOWANCE;
+						$ttif=$ttif+$record->TIFFIN_AMOUNT;
+						$tconv=$tconv+$record->CONV_ALLOWANCE;
+						$twash=$twash+$record->WASHING_ALLOWANCE;
+						$tgros2=$tgros2+$record->GROSS2;
+						$tepf=$tepf+$record->EPF;
+						$tesi=$tesi+$record->ESI;
+						$tarr=$tarr+$record->ARR_PLUS-$record->ARR_MINUS;
+						$tadv=$tadv+$record->ADVANCE;
+						$ttotearn=$ttotearn+$record->TOTAL_EARN;
+						$tgrsded=$tgrsded+$record->GROSS_DED;
+						$roff=$roff+$record->B_F;
+						$tnpay=$tnpay+$record->Net_Payble;
+						$temppf=$temppf+$record->EMPL_EPF;
+						$tempesi=$tempesi+$record->EMPL_ESI;
+
+					}
+			 
+					$data[] = [
+						$FROM_DATE=$periodfromdate,
+						$TO_DATE=$periodtodate,							
+						$eb_no='',
+						$wname='Grand Total',
+						$dept_code='',
+						$department='',
+						$WORKING_HOURS=$twhrs,
+						$festival_hrs=$tfhrs,
+						$othrs=$tothrs,
+						$RATE='',
+						$basic=$tbas,
+						$others=$toth,
+						$tiffin=$ttif,
+						$conv=$tconv,
+						$washing=$twash,
+						$gross2=$tgros2,							
+						$epf=$tepf,
+						$esi=$tesi,
+						$arrear=$tarr,
+						$ptax='',
+					$advance=$tadv,
+					$tot_earn=$ttotearn,
+					$grs_ded=$tgrsded,
+					$r_off=$roff,
+					$netpay=$tnpay,
+					$emplpf=$temppf,
+					$emplesi=$tempesi,
+					$uanno='',
+					$esino=''
+		];
+								 
+				}	
+
+					echo json_encode(['data' => $data]);
+			}
+			public function getebmcdata() {
+				$this->load->model('Loan_adv_model');
+			 //   $selectedDepartment = $this->input->post('date');
+				$periodfromdate= $this->input->post('periodfromdate');
+				$periodtodate= $this->input->post('periodtodate');
+				$att_spell =  $this->input->post('att_spell');
+				$att_dept =  $this->input->post('att_dept');
+				$holget =  $this->input->post('hol_get');
+		 
+		
+		
+		//echo $periodfromdate,$periodtodate,$att_payschm;
+		$mccodes = $this->Loan_adv_model->getebmcdata($periodfromdate,$periodtodate,$att_spell,$holget,$att_dept);
+		//var_dump($mccodes);
+		if ($holget==1 ) {
+			$data = [];
+					foreach ($mccodes as $record) {
+						$data[] = [
+							$FROM_DATE=$record->attendace_date,
+							$spell=$record->spell,
+							$eb_no=$record->eb_no,
+							$wname=$record->wname,
+							$designation=$record->desig,
+							$mech_code=$record->mech_code,
+							$mechine_name=$record->mechine_name,
+							$whrs=$record->whrs,
+							$cnt=$record->cnt
+
+						];
+					}
+		}	
+		if ($holget==2 ) {
+			$data = [];
+			$dpt=0;
+			$n=1;
+					foreach ($mccodes as $record) {
+/*
+						if ($dpt<>$record->dept_code)	{
+							if ($n>1) {
+
+							}
+							$dpt=$record->dept_code;
+						}	
+*/
+						$data[] = [
+							$ATTANDANCE_DATE=$record->attdate,
+							$dept_code= $record->dept_code,
+							$dept_desc= $record->dept_desc,
+							$HOCCU_CODE= $record->HOCCU_CODE, 
+							$OCCU_DESC=$record->OCCU_DESC,
+							$AHND=number_format($record->AHND,3),
+							$BHND=number_format($record->BHND,3),
+							$CHND=number_format($record->CHND,3),
+							$STOTAL=number_format($record->STOTAL,3),
+							$OAHND=number_format($record->OAHND,3),
+							$OBHND=number_format($record->OBHND,3),
+							$OCHND=number_format($record->OCHND,3),
+							$OTOTAL=number_format($record->OTOTAL,3)
+							 
+						];
+					}
+		/*		
+					$mccodes = $this->Loan_adv_model->getebmcdatal($periodfromdate,$periodtodate,$att_spell,$holget,$att_dept,$number);
+					foreach ($mccodes as $record) {
+					 
+						$data[] = [
+							$ATTANDANCE_DATE=$record->ATTANDANCE_DATE,
+							$dept_code= $record->dept_code,
+							$GRAND= $record->GRAND,
+							$dept_code= $record->dept_code,
+							$dept_desc= $record->dept_desc, 
+							$ASHIFT=number_format($record->ASHIFT,3),
+							$BSHIFT=number_format($record->BSHIFT,3),
+							$CSHIFT=number_format($record->CSHIFT,3),
+							$STOTAL=number_format($record->STOTAL,3),
+							$OASHIFT=number_format($record->OASHIFT,3),
+							$OBSHIFT=number_format($record->OBSHIFT,3),
+							$OCSHIFT=number_format($record->OCSHIFT,3),
+							$OTOTAL=number_format($record->OTOTAL,3)
+							
+						];
+					}
+		*/
+				}
+
+		
+				
+		if ($holget==3 ) {
+			$data = [];
+					foreach ($mccodes as $record) {
+						$data[] = [
+							$periodfromdate=$periodfromdate, 
+							$periodtodate= $periodtodate,
+							$eb_no= $record->eb_no, 
+							$WRK_NAME=$record->WRK_NAME,
+							$shift=$record->shift,
+							$dept_code=$record->dept_code,
+							$dept_desc=$record->dept_desc,
+							$occu_code=$record->occu_code,
+							$occu_desc=$record->occu_desc,
+							$rwhrs=$record->rwhrs,
+							$nwhrs=$record->nwhrs,
+							$fhrs=$record->fhrs,
+							$owhrs=$record->owhrs
+												 
+						];
+					}
+		}
+		if ($holget==4 ) {
+			$data = [];
+					foreach ($mccodes as $record) {
+						$data[] = [
+							$periodfromdate=$periodfromdate, 
+							$periodtodate= $periodtodate,
+							$eb_no= $record->eb_no, 
+							$WRK_NAME=$record->WRK_NAME,
+							$shift=$record->mcnos,
+							$dept_code=$record->dept_code,
+							$dept_desc=$record->dept_desc,
+							$occu_code=$record->occu_code,
+							$occu_desc=$record->occu_desc,
+							$rwhrs=$record->rwhrs,
+							$nwhrs=$record->nwhrs,
+							$fhrs=$record->fhrs,
+							$owhrs=$record->owhrs
+												 
+						];
+					}
+		}
+
+		
+
+
+
+					echo json_encode(['data' => $data]);
+			}
+
+
+			public function otherdataprint() {
+				$periodfromdate= $this->input->get('periodfromdate');
+				$periodtodate= $this->input->get('periodtodate');
+				$att_payschm =  $this->input->get('att_payschm');
+				$holget =  $this->input->get('holget');
+				$payschemeName =  $this->input->get('payschemeName');
+				$att_spell =  $this->input->get('att_spell');
+				$att_dept =  $this->input->get('att_dept');
+				$sql="select dept_code,dept_desc from vowsls.department_master where dept_id=".$att_dept;
+				$query = $this->db->query($sql);
+				$data = $query->result_array();
+				$deptdesc='';
+				foreach ($data as $row) {
+					$deptdesc= $row['dept_desc'];
+					$deptcode=$row['dept_code'];
+				}	
+
+
+
+					 $company_name = $this->session->userdata('companyname');
+					 $comp = $this->session->userdata('companyId');
+					 $periodfrmdate=substr($periodfromdate,8,2).'-'.substr($periodfromdate,5,2).'-'.substr($periodfromdate,0,4); 
+					 $periodtdate=substr($periodtodate,8,2).'-'.substr($periodtodate,5,2).'-'.substr($periodtodate,0,4); 
+					 $mccodes = $this->Loan_adv_model->getebmcdata($periodfromdate,$periodtodate,$att_spell,$holget,$att_dept);
+					 if ($holget==6 ) {
+						$fileContainer = "aVlltxt.txt";
+						$filePointer = fopen($fileContainer,"w+");
+						$logMsg='';
+						foreach ($mccodes as $record) {
+							$logMsg.=$record->prods."\n";; 
+						  
+						}	
+
+						fputs($filePointer,$logMsg);
+						fclose($filePointer);
+						$txt1=$fileContainer;
+						$files = array($txt1);
+						$zipname = 'winding.zip';
+ 
+					 }
+					 if ($holget==2 ) {
+			
+						$fileContainer = "Hands.txt";
+						$filePointer = fopen($fileContainer,"w+");
+					   $totamt=0;
+					   $othrs=0;
+					   $ln1=$company_name."\n";
+					   $ln2="Daily Hands Complement Date.".$periodfrmdate."  \n";;
+					   $logMsg='';
+					   $line = str_repeat('-', 136)."\n";;
+					   $ln3=' OC Code | Description               |              Shift                    |           OT                          |                '."\n";;
+					   $ln4='         |                           |    A    |     B   |     C   |   Total |    A    |     B   |     C   |   Total |     Remarks    '."\n";;
+					   $pg=1;
+					   $ahnd=$bhnd=$chnd=$thnd=$oahnd=$obhnd=$ochnd=$othnd=0;	
+						$nlb=' |';
+					 	 $logMsg .= $ln1;
+						 $logMsg .= $ln2;
+						 $logMsg .= chr(15).$line;
+						 $logMsg .= $ln3;
+						 $logMsg .= $ln4;
+						 $logMsg .= $line;
+					   $lnn=5;
+						$dp='';
+						$nnn=0;
+					   foreach ($mccodes as $record) {
+						   if ($lnn>58) {
+							   $logMsg .= Chr(12)."\n";
+							   $pg++;
+							   $logMsg .= $ln1;
+							   $logMsg .= $ln2;
+							   $logMsg .= $ln3;
+							   $logMsg .= $ln4;
+							   $logMsg .= $line;
+									 $lnn=5;
+						   }	
+						   if ($dp<>$record->dept_code) {
+								if ($nnn>0) {
+						
+									/*
+									$gt='Total';
+									$bln='';
+									$logMsg .= $line;
+									$logMsg.= 
+									str_repeat(' ', 8- strlen($bln)).$bln.$nlb.
+									substr($gt,0,26).str_repeat(' ', 26- strlen(substr($gt,0,26))).$nlb.	
+									str_repeat('  ', 6- strlen(number_format( $ahnd,2))).(number_format($ahnd,2)).$nlb.
+									str_repeat('  ', 6- strlen(number_format( $bhnd,2))).(number_format($bhnd,2)).$nlb.
+									str_repeat('  ', 6- strlen(number_format( $chnd,2))).(number_format($chnd,2)).$nlb.
+									str_repeat('  ', 6- strlen(number_format( $thnd,2))).(number_format($thnd,2)).$nlb.
+									 str_repeat('  ', 5- strlen(number_format( $oahnd,2))).(number_format($oahnd,2)).$nlb.
+									str_repeat('  ', 6- strlen(number_format( $obhnd,2))).(number_format($obhnd,2)).$nlb.
+									str_repeat('  ', 5- strlen(number_format( $ochnd,2))).(number_format($ochnd,2)).$nlb.
+									str_repeat('  ', 6- strlen(number_format( $othnd,2))).(number_format($othnd,2)).$nlb.
+									   "\n";
+									   $logMsg .= $line;
+								*/	
+								$logMsg .= $line;
+								$ahnd=$bhnd=$chnd=$thnd=$oahnd=$obhnd=$ochnd=$othnd=0;	
+ 											 $lnn++;
+								}
+								$nnn++;
+								$dp=$record->dept_code;
+						   }													//			$logMsg.= $record->emp_code.",".$record->incamt.",".$periodfromdate.",".$periodtodate.",".$payschemeName."\r\n";
+						   if (strlen($record->HOCCU_CODE)==0) {
+								$logMsg .= $line;
+						   }	
+						   $logMsg.= 
+						   $record->HOCCU_CODE.str_repeat(' ', 8- strlen($record->HOCCU_CODE)).$nlb.
+						   substr($record->OCCU_DESC,0,26).str_repeat(' ', 26- strlen(substr($record->OCCU_DESC,0,26))).$nlb.	
+						   str_repeat(' ', 8- strlen(number_format( $record->AHND,2))).substr((number_format($record->AHND,2)),0,8).$nlb.  
+						   str_repeat(' ', 8- strlen(number_format( $record->BHND,2))).substr((number_format($record->BHND,2)),0,8).$nlb.  
+						   str_repeat(' ', 8- strlen(number_format( $record->CHND,2))).substr((number_format($record->CHND,2)),0,8).$nlb.  
+						   str_repeat(' ', 8- strlen(number_format( $record->STOTAL,2))).substr((number_format($record->STOTAL,2)),0,8).$nlb.  
+						   str_repeat(' ', 8- strlen(number_format( $record->OAHND,2))).substr((number_format($record->OAHND,2)),0,8).$nlb.  
+						   str_repeat(' ', 8- strlen(number_format( $record->OBHND,2))).substr((number_format($record->OBHND,2)),0,8).$nlb.  
+						   str_repeat(' ', 8- strlen(number_format( $record->OCHND,2))).substr((number_format($record->OCHND,2)),0,8).$nlb.  
+						   str_repeat(' ', 8- strlen(number_format( $record->OTOTAL,2))).substr((number_format($record->OTOTAL,2)),0,8).$nlb.  
+						   "\n";
+
+/*
+						   str_repeat('  ', 6- strlen(number_format( $record->BHND,2))).(number_format($record->BHND,2)).$nlb.
+						   str_repeat('  ', 6- strlen(number_format( $record->CHND,2))).(number_format($record->CHND,2)).$nlb.
+						   str_repeat('  ', 6- strlen(number_format( $record->STOTAL,2))).(number_format($record->STOTAL,2)).$nlb.
+ 						   str_repeat('  ', 5- strlen(number_format( $record->OAHND,2))).(number_format($record->OAHND,2)).$nlb.
+						   str_repeat('  ', 6- strlen(number_format( $record->OBHND,2))).(number_format($record->OBHND,2)).$nlb.
+						   str_repeat('  ', 5- strlen(number_format( $record->OCHND,2))).(number_format($record->OCHND,2)).$nlb.
+						   str_repeat('  ', 6- strlen(number_format( $record->OTOTAL,2))).(number_format($record->OTOTAL,2)).$nlb.
+							  "\n";
+*/
+							  //	$logMsg .= ' '."\n";
+							 //  $logMsg .= ' '."\n";
+							//	$logMsg .= $line."\n";
+			 				   
+							   $lnn=$lnn+1;
+						   }
+/*
+						   $gt='Grand Total';
+						   $bln='';
+						   $logMsg .= $line;
+						   $logMsg.= 
+						   str_repeat(' ', 8- strlen($bln)).$bln.$nlb.
+						   substr($gt,0,26).str_repeat(' ', 26- strlen(substr($gt,0,26))).$nlb.	
+						   str_repeat('  ', 6- strlen(number_format( $ahnd,2))).(number_format($ahnd,2)).$nlb.
+						   str_repeat('  ', 6- strlen(number_format( $bhnd,2))).(number_format($bhnd,2)).$nlb.
+						   str_repeat('  ', 6- strlen(number_format( $chnd,2))).(number_format($chnd,2)).$nlb.
+						   str_repeat('  ', 6- strlen(number_format( $thnd,2))).(number_format($thnd,2)).$nlb.
+							str_repeat('  ', 5- strlen(number_format( $oahnd,2))).(number_format($oahnd,2)).$nlb.
+						   str_repeat('  ', 6- strlen(number_format( $obhnd,2))).(number_format($obhnd,2)).$nlb.
+						   str_repeat('  ', 5- strlen(number_format( $ochnd,2))).(number_format($ochnd,2)).$nlb.
+						   str_repeat('  ', 6- strlen(number_format( $othnd,2))).(number_format($othnd,2)).$nlb.
+							  "\n";
+*/
+							  $logMsg .= $line;
+							  $ahnd=$bhnd=$chnd=$thnd=$oahnd=$obhnd=$ochnd=$othnd=0;	
+									 $lnn++;
+
+ 						   $logMsg .= Chr(12)."\n";
+						   
+
+						   fputs($filePointer,$logMsg);
+					   fclose($filePointer);
+					   $txt1=$fileContainer;
+					   $files = array($txt1);
+					   $zipname = 'handcomp.zip';
+				  
+					   }
+
+					 if ($holget==3 || $holget==5) {
+						$att_spell=substr($att_spell,0,1);
+
+     					 $fileContainer = "mroll.txt";
+						 $filePointer = fopen($fileContainer,"w+");
+						$totamt=0;
+						$othrs=0;
+						$line = str_repeat('-', 136)."\n";;
+						$ln1=$company_name."\n";
+		//				"Attendance Sheet " + Trim(CMBDEPT.Text) + " for The Period From " + Format(DTPicker1.Value, "dd/MM/yyyy") + " To " + Format(DTPicker2.Value, "dd/MM/yyyy") + " Shift " + Combo1.Text + Space(15) + "Page No :" + str(PGNO)
+						$ebsrl=0;
+						$lnb=' |';
+						$ln2="Attendance Sheet for Dept ".$deptdesc." for the period From ".$periodfrmdate." To ".$periodtdate.' Shift '.$att_spell."    Dept Code ".$dept_code."    Page No  "  ;
+						$ln3='       | EB No   | Name            |Sft| Working |  NSH  |TP |  HOLI |  BASIC   | S T L  | S T L    | Advance| Adj    | Adj'."\n";;
+						$ln4='       |         |                 |   |  Hours  |       |   |  Days | Rate/Hr  |  Days  | Advance  |   Ded  | (+)    | (-)'."\n";;
+						$logMsg='';
+						  $pg=1;
+						 $gothrs=$grwhrs=$gnwhrs=$gfhrs=0;
+						 
+						  $lnn=1;
+						  $logMsg .= $ln1;
+						  $logMsg .= $ln2.$pg."\n";;
+						  $logMsg .= $line;
+						 $logMsg .= $ln3;
+						  $logMsg .= $ln4;
+						  $logMsg .= $line;
+							 $lnn=6;
+				  foreach ($mccodes as $record) {
+
+							if ($lnn>58) {
+									$logMsg .=$gothrs.str_repeat(' ', 6- strlen($gothrs)).$lnb.
+									substr($bln,0,8).str_repeat(' ', 8 - strlen(substr($bln,0,8))).$lnb.
+									substr($bln,0,16).str_repeat(' ', 16 - strlen(substr($bln,0,16))).$lnb.
+									str_repeat(' ', 2 - strlen($bln)).$bln.$lnb.
+									str_repeat(' ', 8 - strlen($grwhrs)).$grwhrs.$lnb.
+									str_repeat(' ', 6 - strlen($gnwhrs)).$gnwhrs.$lnb.
+									str_repeat(' ', 2 -strlen($bln)).$bln.$lnb.
+									str_repeat(' ', 6 - strlen($gfhrs)).$gfhrs.$lnb.'          |        |          |        |        |    '.
+									 "\n";
+									$logMsg .= $line."\n";
+									$logMsg .= Chr(12)."\n";
+									$logMsg .= $ln1;
+									$logMsg .= $ln2.$pg."\n";;
+									$logMsg .= $line;
+ 								    $logMsg .= $ln3;
+									$logMsg .= $ln4;
+									$logMsg .= $line;
+									$lnn=6;
+									$gothrs=$grwhrs=$gnwhrs=$gfhrs=0;
+								$pg++;	
+							}														
+							if ($ebsrl<>$record->ebsrl) {
+								if ($ebsrl>0) {
+									$logMsg .=$gothrs.str_repeat(' ', 6- strlen($gothrs)).$lnb.
+									substr($bln,0,8).str_repeat(' ', 8 - strlen(substr($bln,0,8))).$lnb.
+									substr($bln,0,16).str_repeat(' ', 16 - strlen(substr($bln,0,16))).$lnb.
+									str_repeat(' ', 2 - strlen($bln)).$bln.$lnb.
+									str_repeat(' ', 8 - strlen($grwhrs)).$grwhrs.$lnb.
+									str_repeat(' ', 6 - strlen($gnwhrs)).$gnwhrs.$lnb.
+									str_repeat(' ', 2 -strlen($bln)).$bln.$lnb.
+									str_repeat(' ', 6 - strlen($gfhrs)).$gfhrs.$lnb.'          |        |          |        |        |    '.
+									 "\n";
+									$logMsg .= $line."\n";
+									$logMsg .= Chr(12)."\n";
+									$logMsg .= $ln1;
+									$logMsg .= $ln2.$pg."\n";;
+									$logMsg .= $line;
+ 								    $logMsg .= $ln3;
+									$logMsg .= $ln4;
+									$logMsg .= $line;
+									$lnn=6;
+									$gothrs=$grwhrs=$gnwhrs=$gfhrs=0;									}
+									$ebsrl=$record->ebsrl;
+									$pg=1;
+							}	
+
+							$bln='';
+							$rwhrs=number_format($record->rwhrs,2);
+							$nwhrs=number_format($record->nwhrs,2);
+							$owhrs=number_format($record->owhrs,2);
+							$fhrs=number_format($record->fhrs,0);
+							$gothrs=$gothrs+$record->owhrs;
+							$grwhrs=$grwhrs+$record->rwhrs;
+							$gnwhrs=$gnwhrs+$record->nwhrs;
+							$gfhrs=$gfhrs+$record->fhrs;
+							if ($rwhrs<=0) {$rwhrs='';}
+							if ($nwhrs<=0) {$nwhrs='';}
+							if ($owhrs<=0) {$owhrs='';}
+							if ($fhrs<=0) {$fhrs='';}
+
+							$logMsg .=$owhrs.str_repeat(' ', 6- strlen($owhrs)).$lnb.' '.
+							substr($record->eb_no,0,7).str_repeat(' ', 7 - strlen(substr($record->eb_no,0,7))).$lnb.
+							substr($record->WRK_NAME,0,16).str_repeat(' ', 16 - strlen(substr($record->WRK_NAME,0,16))).$lnb.
+							str_repeat(' ', 2 - strlen($record->shift)).$record->shift.$lnb.
+							str_repeat(' ', 8 - strlen($rwhrs)).$rwhrs.$lnb.
+							str_repeat(' ', 6 - strlen($nwhrs)).$nwhrs.$lnb.
+							str_repeat(' ', 2 -strlen($record->t_p)).$record->t_p.$lnb.
+							str_repeat(' ', 6 - strlen($fhrs)).$fhrs.$lnb.'          |        |          |        |        |    '.
+ 							"\n";
+							 $logMsg .=$bln.str_repeat(' ', 6- strlen($bln)).$lnb.
+							 substr($bln,0,8).str_repeat(' ', 8 - strlen(substr($bln,0,8))).$lnb.' '.
+							 substr($record->occu_code,0,15).str_repeat(' ', 15 - strlen(substr($record->occu_code,0,15))).$lnb.
+							 '   |         |       |   |       |          |        |          |        |        |'.
+							"\n";
+								 $logMsg .= $line;
+//								$totamt=$totamt+$record->incamt;
+//								$tothrs=$tothrs+$record->incdays;
+								$lnn=$lnn+3;
+							}
+							$bln='';
+//							$gt="Grand Total";
+							$empc=" ";
+							$grwhrs=number_format($grwhrs,2);
+							$gnwhrs=number_format($gnwhrs,2);
+							$gowhrs=number_format($gowhrs,2);
+							$gfhrs=number_format($gfhrs,0);
+
+							$logMsg .=$gothrs.str_repeat(' ', 6- strlen($gothrs)).$lnb.
+							substr($bln,0,8).str_repeat(' ', 8 - strlen(substr($bln,0,8))).$lnb.
+							substr($bln,0,16).str_repeat(' ', 16 - strlen(substr($bln,0,16))).$lnb.
+							str_repeat(' ', 2 - strlen($bln)).$bln.$lnb.
+							str_repeat(' ', 8 - strlen($grwhrs)).$grwhrs.$lnb.
+							str_repeat(' ', 6 - strlen($gnwhrs)).$gnwhrs.$lnb.
+							str_repeat(' ', 2 -strlen($bln)).$bln.$lnb.
+							str_repeat(' ', 6 - strlen($gfhrs)).$gfhrs.$lnb.'          |        |          |        |        |    '.
+ 							"\n";
+							$logMsg .= $line."\n";
+							$logMsg .= Chr(12)."\n";
+				
+ 							  
+				
+						fputs($filePointer,$logMsg);
+						fclose($filePointer);
+						$txt1=$fileContainer;
+						$files = array($txt1);
+						$zipname = 'mroll.zip';
+				   
+						}		
+				
+						if ($holget==4 ) {
+							$att_spell=substr($att_spell,0,1);
+	
+							  $fileContainer = "mroll.txt";
+							 $filePointer = fopen($fileContainer,"w+");
+							$totamt=0;
+							$othrs=0;
+							$line = str_repeat('-', 136)."\n";;
+							$ln1=$company_name."\n";
+			//				"Attendance Sheet " + Trim(CMBDEPT.Text) + " for The Period From " + Format(DTPicker1.Value, "dd/MM/yyyy") + " To " + Format(DTPicker2.Value, "dd/MM/yyyy") + " Shift " + Combo1.Text + Space(15) + "Page No :" + str(PGNO)
+							$ebsrl=0;
+							$lnb=' |';
+							$ln2="Attendance Sheet for Dept ".$deptdesc." for the period From ".$periodfrmdate." To ".$periodtdate.' Shift '.$att_spell."    Dept Code ".$dept_code."    Page No  "  ;
+							$ln3='       | EB No   | Name            |Line  No | Working |  NSH  |TP |  HOLI |  BASIC   | S T L  | S T L    | Advance| Adj    | Adj'."\n";;
+							$ln4='       |         |                 | Mc Nos  |  Hours  |       |   |  Days | Rate/Hr  |  Days  | Advance  |   Ded  | (+)    | (-)'."\n";;
+							$logMsg='';
+							  $pg=1;
+							 $gothrs=$grwhrs=$gnwhrs=$gfhrs=0;
+							 
+							  $lnn=1;
+							  $logMsg .= $ln1;
+							  $logMsg .= $ln2.$pg."\n";;
+							  $logMsg .= $line;
+							 $logMsg .= $ln3;
+							  $logMsg .= $ln4;
+							  $logMsg .= $line;
+								 $lnn=6;
+					  foreach ($mccodes as $record) {
+	
+								if ($lnn>58) {
+										$logMsg .=$gothrs.str_repeat(' ', 6- strlen($gothrs)).$lnb.
+										substr($bln,0,8).str_repeat(' ', 8 - strlen(substr($bln,0,8))).$lnb.
+										substr($bln,0,16).str_repeat(' ', 16 - strlen(substr($bln,0,16))).$lnb.
+										str_repeat(' ', 8 - strlen($bln)).$bln.$lnb.
+										str_repeat(' ', 8 - strlen($grwhrs)).$grwhrs.$lnb.
+										str_repeat(' ', 6 - strlen($gnwhrs)).$gnwhrs.$lnb.
+										str_repeat(' ', 2 -strlen($bln)).$bln.$lnb.
+										str_repeat(' ', 6 - strlen($gfhrs)).$gfhrs.$lnb.'          |        |          |        |        |    '.
+										 "\n";
+										$logMsg .= $line."\n";
+										$logMsg .= Chr(12)."\n";
+										$logMsg .= $ln1;
+										$logMsg .= $ln2.$pg."\n";;
+										$logMsg .= $line;
+										 $logMsg .= $ln3;
+										$logMsg .= $ln4;
+										$logMsg .= $line;
+										$lnn=6;
+										$gothrs=$grwhrs=$gnwhrs=$gfhrs=0;
+									$pg++;	
+								}														
+								if ($ebsrl<>$record->ebsrl) {
+									if ($ebsrl>0) {
+										$logMsg .=$gothrs.str_repeat(' ', 6- strlen($gothrs)).$lnb.
+										substr($bln,0,8).str_repeat(' ', 8 - strlen(substr($bln,0,8))).$lnb.
+										substr($bln,0,16).str_repeat(' ', 16 - strlen(substr($bln,0,16))).$lnb.
+										str_repeat(' ', 8 - strlen($bln)).$bln.$lnb.
+										str_repeat(' ', 8 - strlen($grwhrs)).$grwhrs.$lnb.
+										str_repeat(' ', 6 - strlen($gnwhrs)).$gnwhrs.$lnb.
+										str_repeat(' ', 2 -strlen($bln)).$bln.$lnb.
+										str_repeat(' ', 6 - strlen($gfhrs)).$gfhrs.$lnb.'          |        |          |        |        |    '.
+										 "\n";
+										$logMsg .= $line."\n";
+										$logMsg .= Chr(12)."\n";
+										$logMsg .= $ln1;
+										$logMsg .= $ln2.$pg."\n";;
+										$logMsg .= $line;
+										 $logMsg .= $ln3;
+										$logMsg .= $ln4;
+										$logMsg .= $line;
+										$lnn=6;
+										$gothrs=$grwhrs=$gnwhrs=$gfhrs=0;									}
+										$ebsrl=$record->ebsrl;
+										$pg=1;
+								}	
+	
+								$bln='';
+								$rwhrs=number_format($record->rwhrs,2);
+								$nwhrs=number_format($record->nwhrs,2);
+								$owhrs=number_format($record->owhrs,2);
+								$fhrs=number_format($record->fhrs,0);
+								$gothrs=$gothrs+$record->owhrs;
+								$grwhrs=$grwhrs+$record->rwhrs;
+								$gnwhrs=$gnwhrs+$record->nwhrs;
+								$gfhrs=$gfhrs+$record->fhrs;
+								if ($rwhrs<=0) {$rwhrs='';}
+								if ($nwhrs<=0) {$nwhrs='';}
+								if ($owhrs<=0) {$owhrs='';}
+								if ($fhrs<=0) {$fhrs='';}
+	
+								$logMsg .=$owhrs.str_repeat(' ', 6- strlen($owhrs)).$lnb.' '.
+								substr($record->eb_no,0,7).str_repeat(' ', 7 - strlen(substr($record->eb_no,0,7))).$lnb.
+								substr($record->WRK_NAME,0,16).str_repeat(' ', 16 - strlen(substr($record->WRK_NAME,0,16))).$lnb.
+								'  '.substr($record->mcnos,0,6).str_repeat(' ', 6 - strlen(substr($record->mcnos,0,6))).$lnb.
+								str_repeat(' ', 8 - strlen($rwhrs)).$rwhrs.$lnb.
+								str_repeat(' ', 6 - strlen($nwhrs)).$nwhrs.$lnb.
+								str_repeat(' ', 2 -strlen($record->t_p)).$record->t_p.$lnb.
+								str_repeat(' ', 6 - strlen($fhrs)).$fhrs.$lnb.'          |        |          |        |        |    '.
+								 "\n";
+								 $logMsg .=$bln.str_repeat(' ', 6- strlen($bln)).$lnb.
+								 substr($bln,0,8).str_repeat(' ', 8 - strlen(substr($bln,0,8))).$lnb.' '.
+								 substr($record->occu_code,0,15).str_repeat(' ', 15 - strlen(substr($record->occu_code,0,15))).$lnb.
+								 '         |         |       |   |       |          |        |          |        |        |'.
+								"\n";
+									 $logMsg .= $line;
+	//								$totamt=$totamt+$record->incamt;
+	//								$tothrs=$tothrs+$record->incdays;
+									$lnn=$lnn+3;
+								}
+								$bln='';
+	//							$gt="Grand Total";
+								$empc=" ";
+								$grwhrs=number_format($grwhrs,2);
+								$gnwhrs=number_format($gnwhrs,2);
+								$gowhrs=number_format($gowhrs,2);
+								$gfhrs=number_format($gfhrs,0);
+	
+								$logMsg .=$gothrs.str_repeat(' ', 6- strlen($gothrs)).$lnb.
+								substr($bln,0,8).str_repeat(' ', 8 - strlen(substr($bln,0,8))).$lnb.
+								substr($bln,0,16).str_repeat(' ', 16 - strlen(substr($bln,0,16))).$lnb.
+								str_repeat(' ', 8 - strlen($bln)).$bln.$lnb.
+								str_repeat(' ', 8 - strlen($grwhrs)).$grwhrs.$lnb.
+								str_repeat(' ', 6 - strlen($gnwhrs)).$gnwhrs.$lnb.
+								str_repeat(' ', 2 -strlen($bln)).$bln.$lnb.
+								str_repeat(' ', 6 - strlen($gfhrs)).$gfhrs.$lnb.'          |        |          |        |        |    '.
+								 "\n";
+								$logMsg .= $line."\n";
+								$logMsg .= Chr(12)."\n";
+					
+								   
+					
+							fputs($filePointer,$logMsg);
+							fclose($filePointer);
+							$txt1=$fileContainer;
+							$files = array($txt1);
+							$zipname = 'mroll.zip';
+					   
+							}		
+		  
+		
+						$zip = new ZipArchive;
+						$zip->open($zipname, ZipArchive::CREATE);
+						foreach ($files as $file) {
+			  			$zip->addFile($file);
+						}
+						$zip->close();
+			
+			header('Content-Type: application/zip');
+			header('Content-disposition: attachment; filename='.$zipname);
+			header('Content-Length: ' . filesize($zipname));
+			readfile($zipname);
+					unlink($fileContainer);
+					 unlink($zipname);
+			
+			
+			
+				}
+
+
+
+			public function loadAnotherPage() {
+				$company = $this->session->userdata('companyId');
+
+				$this->load->model('Varaha_model');
+			//	$company = $this->input->get('companyId');
+			//	$company=2;
+				$this->data['companyId'] = $company;
+				
+		//		echo 'this is ' . $company;
+			
+				// Corrected model reference from $this->varaha_model to $this->Varaha_model
+				$this->data['payschemes'] = $this->Varaha_model->getAllPayschemes($this->data['companyId']);
+				$this->data['branchs'] = $this->Varaha_model->getAllBranchs($this->data['companyId']);
+				
+				$this->page_construct('other_data_entry/payslip_parameters');
+			}
+
+			public function getpayschemeparadata() {
+				$this->load->model('Loan_adv_model');
+			 //   $selectedDepartment = $this->input->post('date');
+			 $att_branch =  $this->input->post('att_branch');
+			 $att_payschm =  $this->input->post('att_payschm');
+		 
+		$mccodes = $this->Loan_adv_model->getpayschemeparadata($att_branch,$att_payschm);
+			$data = [];
+					foreach ($mccodes as $record) {
+						
+						$data[] = [
+							$id=$record->paraid,
+							$bid=$record->company_id,
+							$brid=$record->branch_id,
+							$payschmid=$record->payscheme_id,
+							$payschmnm=$record->payshmname,
+							$compnid=$record->COMPONENT_ID,
+							$compnm=$record->NAME,
+							$desc_print=$record->desc_print,
+							$payslip_order=$record->payslip_order,
+							$payslip_print=$record->payslip_print,
+							$total_print=$record->total_print,
+							$pps=$record->payslip_print,
+						//	$tps=$record->total_print
+ 
+						];
+					}
+ 					echo json_encode(['data' => $data]);
+			}
+			
+			public function updatepayschemeparadata() {
+				$recordid = $this->input->post('recordId');
+				$checkbox1Value = $this->input->post('checkbox1Value');
+				$rec_time =  date('Y-m-d H:i:s');
+				$checkbox2Value = $this->input->post('checkbox2Value');
+				$comp = $this->session->userdata('companyId');
+ 				
+				$stat=3;
+				$active=1;
+				$userid=$this->session->userdata('userid');
+				  
+				 $data = array(
+					'payslip_print' => $checkbox1Value,
+					'total_print' => $checkbox2Value
+ 					
+		
+				);
+		
+				$this->Loan_adv_model->updatepayschemeparadata($recordid, $data);
+			//	$this->Loan_adv_model->getLoanadvData($selectedDepartment);
+//			updateLoanAdvanceData
+		
+			$response = array(
+				'success' => true,
+				'savedata'=> 'saved'
+			);
+			
+				echo json_encode($response);
+			
+			}
+		
+
+
+
+
+		}
