@@ -2474,8 +2474,8 @@ FROM (
 ON mst.emp_code = j.Ticket_NO
 ) g where emp_code is null
     ";
-echo $sql;
-    $query = $this->db->query($sqla);
+//echo $sql;
+    $query = $this->db->query($sql);
     $result = $query->result_array();
     $ebmissing = "";
       
