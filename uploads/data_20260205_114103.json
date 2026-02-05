@@ -1,0 +1,1012 @@
+[
+    {
+        "S.no": "1",
+        "Ticket _NO": "650005",
+        "Worker Name": "AVANAPU RAMU",
+        "Dept Name": "BATCHING A",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14",
+        "AMOUNT": "849"
+    },
+    {
+        "S.no": "2",
+        "Ticket _NO": "650007",
+        "Worker Name": "YEDLA RAMANA",
+        "Dept Name": "BATCHING A",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "3",
+        "Ticket _NO": "650013",
+        "Worker Name": "GEDALA RAMBABU",
+        "Dept Name": "BATCHING A",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "4",
+        "Ticket _NO": "650018",
+        "Worker Name": "POLUBOTHU MOHAN",
+        "Dept Name": "BATCHING A",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "18",
+        "AMOUNT": "1091"
+    },
+    {
+        "S.no": "5",
+        "Ticket _NO": "650046",
+        "Worker Name": "GORLI RAMANA",
+        "Dept Name": "BATCHING A",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "6",
+        "Ticket _NO": "650049",
+        "Worker Name": "KORADA SANKARARAO",
+        "Dept Name": "BATCHING A",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "7",
+        "Ticket _NO": "650056",
+        "Worker Name": "JAMMU SANYASI RAO",
+        "Dept Name": "BATCHING A",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "12.81",
+        "AMOUNT": "776"
+    },
+    {
+        "S.no": "8",
+        "Ticket _NO": "650061",
+        "Worker Name": "KARUNKONDA KRISHNA",
+        "Dept Name": "BATCHING A",
+        "DA RATE": "39.09015",
+        "FA": "91.88",
+        "45658": "19",
+        "AMOUNT": "1746"
+    },
+    {
+        "S.no": "9",
+        "Ticket _NO": "650019",
+        "Worker Name": "NADEPENA APPA RAO",
+        "Dept Name": "BATCHING B",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14",
+        "AMOUNT": "849"
+    },
+    {
+        "S.no": "10",
+        "Ticket _NO": "650026",
+        "Worker Name": "TADDI NARASINGARAO",
+        "Dept Name": "BATCHING B",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14",
+        "AMOUNT": "849"
+    },
+    {
+        "S.no": "11",
+        "Ticket _NO": "650027",
+        "Worker Name": "GORLI ASIRINAIDU",
+        "Dept Name": "BATCHING B",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "10",
+        "AMOUNT": "606"
+    },
+    {
+        "S.no": "12",
+        "Ticket _NO": "650029",
+        "Worker Name": "SARIPALLI DHARMA RAO",
+        "Dept Name": "BATCHING B",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "17",
+        "AMOUNT": "1030"
+    },
+    {
+        "S.no": "13",
+        "Ticket _NO": "650030",
+        "Worker Name": "GORLI RAMANA",
+        "Dept Name": "BATCHING B",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "14",
+        "Ticket _NO": "650032",
+        "Worker Name": "MADDILA PRASAD",
+        "Dept Name": "BATCHING C",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "18",
+        "AMOUNT": "1091"
+    },
+    {
+        "S.no": "15",
+        "Ticket _NO": "650036",
+        "Worker Name": "PATHIVADA APPLANAIDU",
+        "Dept Name": "BATCHING C",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "12",
+        "AMOUNT": "727"
+    },
+    {
+        "S.no": "16",
+        "Ticket _NO": "650043",
+        "Worker Name": "BANTUPALLI SANKARA RAO",
+        "Dept Name": "BATCHING C",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "17",
+        "Ticket _NO": "650050",
+        "Worker Name": "TOMPALA YELLAYYA",
+        "Dept Name": "BATCHING C",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "18",
+        "AMOUNT": "1091"
+    },
+    {
+        "S.no": "18",
+        "Ticket _NO": "750019",
+        "Worker Name": "AVALA SURIBABU",
+        "Dept Name": "BATCHING C",
+        "DA RATE": "23.55943",
+        "FA": "192.15",
+        "45658": "14",
+        "AMOUNT": "2690"
+    },
+    {
+        "S.no": "19",
+        "Ticket _NO": "790001",
+        "Worker Name": "KOLA APPA RAO",
+        "Dept Name": "BEAMING A",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "10",
+        "AMOUNT": "1562"
+    },
+    {
+        "S.no": "20",
+        "Ticket _NO": "840001",
+        "Worker Name": "PALLI APPALA NAIDU",
+        "Dept Name": "ELECTRICAL",
+        "DA RATE": "26.09165",
+        "FA": "170.86",
+        "45658": "25",
+        "AMOUNT": "4272"
+    },
+    {
+        "S.no": "21",
+        "Ticket _NO": "890002",
+        "Worker Name": "JAMMU SANYASI RAO",
+        "Dept Name": "FACT.MECH.WIND",
+        "DA RATE": "26.09173",
+        "FA": "170.86",
+        "45658": "17",
+        "AMOUNT": "2905"
+    },
+    {
+        "S.no": "22",
+        "Ticket _NO": "771002",
+        "Worker Name": "KANAKALA THATA RAO",
+        "Dept Name": "FACT.MECH.WVG",
+        "DA RATE": "32.09793",
+        "FA": "146.67",
+        "45658": "16",
+        "AMOUNT": "2347"
+    },
+    {
+        "S.no": "23",
+        "Ticket _NO": "900013",
+        "Worker Name": "MARANA VEERACHARI",
+        "Dept Name": "FACT.MECH.WVG",
+        "DA RATE": "26.09173",
+        "FA": "170.86",
+        "45658": "16",
+        "AMOUNT": "2734"
+    },
+    {
+        "S.no": "24",
+        "Ticket _NO": "900001",
+        "Worker Name": "MAMIDI SRINIVASA RAO",
+        "Dept Name": "FACT.MECH.WVG",
+        "DA RATE": "23.78663",
+        "FA": "190.23",
+        "45658": "15",
+        "AMOUNT": "2853"
+    },
+    {
+        "S.no": "25",
+        "Ticket _NO": "900024",
+        "Worker Name": "MARANA KOTESWARA RAO",
+        "Dept Name": "FACT.MECH.WVG",
+        "DA RATE": "23.55943",
+        "FA": "192.15",
+        "45658": "16",
+        "AMOUNT": "3074"
+    },
+    {
+        "S.no": "26",
+        "Ticket _NO": "710021",
+        "Worker Name": "SESHAPU SURYANARAYANA",
+        "Dept Name": "FNG MAIN A",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "16",
+        "AMOUNT": "2498"
+    },
+    {
+        "S.no": "27",
+        "Ticket _NO": "710009",
+        "Worker Name": "BAIREDDI SURESH",
+        "Dept Name": "FNG MAIN A",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "12",
+        "AMOUNT": "1874"
+    },
+    {
+        "S.no": "28",
+        "Ticket _NO": "710013",
+        "Worker Name": "TUMMU RAMA RAO",
+        "Dept Name": "FNG MAIN A",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "17",
+        "AMOUNT": "2655"
+    },
+    {
+        "S.no": "29",
+        "Ticket _NO": "710031",
+        "Worker Name": "BODDANA RAMU NAIDU",
+        "Dept Name": "FNG MAIN A",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "15.5",
+        "AMOUNT": "2420"
+    },
+    {
+        "S.no": "30",
+        "Ticket _NO": "710007",
+        "Worker Name": "PATHIVADA GOVINDA",
+        "Dept Name": "FNG MAIN A",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "13",
+        "AMOUNT": "2030"
+    },
+    {
+        "S.no": "31",
+        "Ticket _NO": "710064",
+        "Worker Name": "JAGGINA MAHESH",
+        "Dept Name": "FNG MAIN A",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "15",
+        "AMOUNT": "2342"
+    },
+    {
+        "S.no": "32",
+        "Ticket _NO": "710065",
+        "Worker Name": "MADDILA NAGA RAJU",
+        "Dept Name": "FNG MAIN A",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "15",
+        "AMOUNT": "2342"
+    },
+    {
+        "S.no": "33",
+        "Ticket _NO": "710036",
+        "Worker Name": "SARIPALLI JAGADEESWARA RAO",
+        "Dept Name": "FNG MAIN B",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "13",
+        "AMOUNT": "2030"
+    },
+    {
+        "S.no": "34",
+        "Ticket _NO": "710039",
+        "Worker Name": "YERUKUMAJJI GANAPATHI RAO",
+        "Dept Name": "FNG MAIN B",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "17",
+        "AMOUNT": "2655"
+    },
+    {
+        "S.no": "35",
+        "Ticket _NO": "710029",
+        "Worker Name": "PATHIVADA ANANDA RAO",
+        "Dept Name": "FNG MAIN B",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "10",
+        "AMOUNT": "1562"
+    },
+    {
+        "S.no": "36",
+        "Ticket _NO": "621001",
+        "Worker Name": "PATHIVADA LAXMANA RAO",
+        "Dept Name": "HEMMING A",
+        "DA RATE": "33.44165",
+        "FA": "139.39",
+        "45658": "17",
+        "AMOUNT": "2370"
+    },
+    {
+        "S.no": "37",
+        "Ticket _NO": "860001",
+        "Worker Name": "KANAKALA CHANDRA SEKHAR",
+        "Dept Name": "MECH.BATCHING",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "19",
+        "AMOUNT": "2967"
+    },
+    {
+        "S.no": "38",
+        "Ticket _NO": "670008",
+        "Worker Name": "CIDAGALA PYDIRAM",
+        "Dept Name": "S WIND A",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "18",
+        "AMOUNT": "1091"
+    },
+    {
+        "S.no": "39",
+        "Ticket _NO": "670015",
+        "Worker Name": "TADITURI SREENU",
+        "Dept Name": "S WIND B",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "40",
+        "Ticket _NO": "670016",
+        "Worker Name": "NALLI GOPALAKRISHNA",
+        "Dept Name": "S WIND B",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "18",
+        "AMOUNT": "1091"
+    },
+    {
+        "S.no": "41",
+        "Ticket _NO": "670021",
+        "Worker Name": "KALYNAM RAMASWAMY",
+        "Dept Name": "S WIND B",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14",
+        "AMOUNT": "849"
+    },
+    {
+        "S.no": "42",
+        "Ticket _NO": "670048",
+        "Worker Name": "TIPPANAGIRI SANKARARAO",
+        "Dept Name": "S WIND B",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "43",
+        "Ticket _NO": "660002",
+        "Worker Name": "PATHIVADA SATYANARAYANA",
+        "Dept Name": "SPG MAIN A",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "13",
+        "AMOUNT": "788"
+    },
+    {
+        "S.no": "44",
+        "Ticket _NO": "660029",
+        "Worker Name": "PATHIVADA SRINIVASARAO",
+        "Dept Name": "SPG MAIN B",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "12",
+        "AMOUNT": "727"
+    },
+    {
+        "S.no": "45",
+        "Ticket _NO": "660026",
+        "Worker Name": "MOIDA RAVIPRASAD RAO",
+        "Dept Name": "SPG MAIN C",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "46",
+        "Ticket _NO": "660041",
+        "Worker Name": "KALYNAM RAMUNAIDU",
+        "Dept Name": "SPG MAIN C",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14",
+        "AMOUNT": "849"
+    },
+    {
+        "S.no": "47",
+        "Ticket _NO": "660064",
+        "Worker Name": "EPPILI RAMAPPADU",
+        "Dept Name": "SPG MAIN C",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "48",
+        "Ticket _NO": "660082",
+        "Worker Name": "BOLE SANKARA RAO",
+        "Dept Name": "SPG MAIN C",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "13",
+        "AMOUNT": "788"
+    },
+    {
+        "S.no": "49",
+        "Ticket _NO": "660087",
+        "Worker Name": "RELLI SEETHAM NAIDU",
+        "Dept Name": "SPG MAIN C",
+        "DA RATE": "40.33005",
+        "FA": "81.46",
+        "45658": "17",
+        "AMOUNT": "1385"
+    },
+    {
+        "S.no": "50",
+        "Ticket _NO": "660088",
+        "Worker Name": "CHINAPPAYYAGARI APPARAO",
+        "Dept Name": "SPG MAIN C",
+        "DA RATE": "39.09015",
+        "FA": "91.88",
+        "45658": "14.5",
+        "AMOUNT": "1332"
+    },
+    {
+        "S.no": "51",
+        "Ticket _NO": "660089",
+        "Worker Name": "KAYNAPU RAMASWAMY",
+        "Dept Name": "SPG MAIN C",
+        "DA RATE": "39.09015",
+        "FA": "91.88",
+        "45658": "14",
+        "AMOUNT": "1286"
+    },
+    {
+        "S.no": "52",
+        "Ticket _NO": "760113",
+        "Worker Name": "VASANTHA NAGARAJU",
+        "Dept Name": "SPG MAIN C",
+        "DA RATE": "27.84413",
+        "FA": "156.15",
+        "45658": "14",
+        "AMOUNT": "2186"
+    },
+    {
+        "S.no": "53",
+        "Ticket _NO": "680005",
+        "Worker Name": "SUNKARA APPALANAIDU",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "54",
+        "Ticket _NO": "680007",
+        "Worker Name": "BOLE SURYARAO",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "55",
+        "Ticket _NO": "680020",
+        "Worker Name": "PINNITY PAPU NAIDU",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "13",
+        "AMOUNT": "788"
+    },
+    {
+        "S.no": "56",
+        "Ticket _NO": "680021",
+        "Worker Name": "AVANAPU MUTYALA NAIDU",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "57",
+        "Ticket _NO": "680022",
+        "Worker Name": "SAMUDRAPU APPARAO",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "58",
+        "Ticket _NO": "680024",
+        "Worker Name": "NALLI SATYANARAYANA",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14",
+        "AMOUNT": "849"
+    },
+    {
+        "S.no": "59",
+        "Ticket _NO": "680025",
+        "Worker Name": "POLUBOTHU APPALANAIDU",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "60",
+        "Ticket _NO": "680026",
+        "Worker Name": "REDDY SANYASINAIDU",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "11",
+        "AMOUNT": "667"
+    },
+    {
+        "S.no": "61",
+        "Ticket _NO": "680040",
+        "Worker Name": "NADUPURU RAJARAO",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "62",
+        "Ticket _NO": "680043",
+        "Worker Name": "BONI RAMANA",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "13",
+        "AMOUNT": "788"
+    },
+    {
+        "S.no": "63",
+        "Ticket _NO": "680044",
+        "Worker Name": "KANAKALA SAIRAM",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "13",
+        "AMOUNT": "788"
+    },
+    {
+        "S.no": "64",
+        "Ticket _NO": "680047",
+        "Worker Name": "KONDRU RAMAKRISHNA",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "65",
+        "Ticket _NO": "680059",
+        "Worker Name": "BALI NARAYANARAO",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "12",
+        "AMOUNT": "727"
+    },
+    {
+        "S.no": "66",
+        "Ticket _NO": "680108",
+        "Worker Name": "LENKA PARASURAM",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14.5",
+        "AMOUNT": "879"
+    },
+    {
+        "S.no": "67",
+        "Ticket _NO": "680119",
+        "Worker Name": "VOLLA LAKSHMANARAO",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14.5",
+        "AMOUNT": "879"
+    },
+    {
+        "S.no": "68",
+        "Ticket _NO": "680178",
+        "Worker Name": "MAJJI SHANKARA RAO",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "69",
+        "Ticket _NO": "680180",
+        "Worker Name": "LENKA SATYANARAYANA",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14",
+        "AMOUNT": "849"
+    },
+    {
+        "S.no": "70",
+        "Ticket _NO": "680212",
+        "Worker Name": "ALETY RAMU",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "30.63555",
+        "FA": "120",
+        "45658": "14",
+        "AMOUNT": "1680"
+    },
+    {
+        "S.no": "71",
+        "Ticket _NO": "680215",
+        "Worker Name": "TUMMU MURALI",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "29.43553",
+        "FA": "142.78",
+        "45658": "16",
+        "AMOUNT": "2284"
+    },
+    {
+        "S.no": "72",
+        "Ticket _NO": "780075",
+        "Worker Name": "KALLA TRINADH",
+        "Dept Name": "WEAVING A 1",
+        "DA RATE": "21.74463",
+        "FA": "207.39",
+        "45658": "11",
+        "AMOUNT": "2281"
+    },
+    {
+        "S.no": "73",
+        "Ticket _NO": "680063",
+        "Worker Name": "KOYYAPU SATYARAO",
+        "Dept Name": "WEAVING B 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "74",
+        "Ticket _NO": "680064",
+        "Worker Name": "MADDILA NARAYANARAO",
+        "Dept Name": "WEAVING B 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "75",
+        "Ticket _NO": "680082",
+        "Worker Name": "KANKALA SRINU",
+        "Dept Name": "WEAVING B 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "76",
+        "Ticket _NO": "680085",
+        "Worker Name": "BODDANA RAMBABU",
+        "Dept Name": "WEAVING B 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "77",
+        "Ticket _NO": "680088",
+        "Worker Name": "PALLA SURIBABU",
+        "Dept Name": "WEAVING B 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "78",
+        "Ticket _NO": "680090",
+        "Worker Name": "TULUGU SRINIVASA RAO",
+        "Dept Name": "WEAVING B 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14",
+        "AMOUNT": "849"
+    },
+    {
+        "S.no": "79",
+        "Ticket _NO": "680095",
+        "Worker Name": "MAHANTHY SREERAMULU",
+        "Dept Name": "WEAVING B 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "80",
+        "Ticket _NO": "680098",
+        "Worker Name": "HARI SEKHAR",
+        "Dept Name": "WEAVING B 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "81",
+        "Ticket _NO": "680109",
+        "Worker Name": "PATRO NAGESWARA RAO",
+        "Dept Name": "WEAVING B 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "12",
+        "AMOUNT": "727"
+    },
+    {
+        "S.no": "82",
+        "Ticket _NO": "680111",
+        "Worker Name": "CHALAMALA GURUNAIDU",
+        "Dept Name": "WEAVING B 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "83",
+        "Ticket _NO": "680118",
+        "Worker Name": "PINJARLA BHASKARA RAO",
+        "Dept Name": "WEAVING B 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "12",
+        "AMOUNT": "727"
+    },
+    {
+        "S.no": "84",
+        "Ticket _NO": "680164",
+        "Worker Name": "SAMUDRAPU MURALIKRISHNA",
+        "Dept Name": "WEAVING B 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "11",
+        "AMOUNT": "667"
+    },
+    {
+        "S.no": "85",
+        "Ticket _NO": "680211",
+        "Worker Name": "SUNKARA APPA RAO",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "39.09015",
+        "FA": "91.88",
+        "45658": "10",
+        "AMOUNT": "919"
+    },
+    {
+        "S.no": "86",
+        "Ticket _NO": "680029",
+        "Worker Name": "NADIPENA SEETHAMNAIDU",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14.5",
+        "AMOUNT": "879"
+    },
+    {
+        "S.no": "87",
+        "Ticket _NO": "680035",
+        "Worker Name": "SARIPALLI PUDAPPADU",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14",
+        "AMOUNT": "849"
+    },
+    {
+        "S.no": "88",
+        "Ticket _NO": "680045",
+        "Worker Name": "RESETTY SANKARARAO",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "13",
+        "AMOUNT": "788"
+    },
+    {
+        "S.no": "89",
+        "Ticket _NO": "680122",
+        "Worker Name": "ROGOLU VENKATARAMANA",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14",
+        "AMOUNT": "849"
+    },
+    {
+        "S.no": "90",
+        "Ticket _NO": "680125",
+        "Worker Name": "MAHANTI ADINARAYANA",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "91",
+        "Ticket _NO": "680133",
+        "Worker Name": "SEELA  APPARAO",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "15",
+        "AMOUNT": "909"
+    },
+    {
+        "S.no": "92",
+        "Ticket _NO": "680138",
+        "Worker Name": "KANAKALA PAPARAO",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14.5",
+        "AMOUNT": "879"
+    },
+    {
+        "S.no": "93",
+        "Ticket _NO": "680139",
+        "Worker Name": "KANAKALA NARAYANARAO",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "94",
+        "Ticket _NO": "680149",
+        "Worker Name": "SUNKARA SRINU",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "17",
+        "AMOUNT": "1030"
+    },
+    {
+        "S.no": "95",
+        "Ticket _NO": "680152",
+        "Worker Name": "KALLA SATYANARAYANA",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "96",
+        "Ticket _NO": "680162",
+        "Worker Name": "BURA TRINADH",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "17",
+        "AMOUNT": "1030"
+    },
+    {
+        "S.no": "97",
+        "Ticket _NO": "680166",
+        "Worker Name": "KILLAMPALLI SURIBABU",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "14",
+        "AMOUNT": "849"
+    },
+    {
+        "S.no": "98",
+        "Ticket _NO": "680173",
+        "Worker Name": "BONTU SRINIVASA RAO",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "10",
+        "AMOUNT": "606"
+    },
+    {
+        "S.no": "99",
+        "Ticket _NO": "680174",
+        "Worker Name": "ALTI SRINIVASA RAO",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "12",
+        "AMOUNT": "727"
+    },
+    {
+        "S.no": "100",
+        "Ticket _NO": "680179",
+        "Worker Name": "PALLA SANAKA RAO",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "42.80125",
+        "FA": "60.61",
+        "45658": "16",
+        "AMOUNT": "970"
+    },
+    {
+        "S.no": "101",
+        "Ticket _NO": "680216",
+        "Worker Name": "ALTHI LAXMANA RAO",
+        "Dept Name": "WEAVING C 1",
+        "DA RATE": "29.43553",
+        "FA": "142.78",
+        "45658": "11",
+        "AMOUNT": "1571"
+    }
+]

@@ -2412,7 +2412,8 @@ public function njmwrkfauploadjs() {
                     if ($colName === '') continue;
                     $row[$colName] = isset($rows[$i][$colKey]) ? trim((string)$rows[$i][$colKey]) : null;
                 }
-                if (!empty(array_filter($row, fn($v) => $v !== null && $v !== ''))) {
+                // Exclude rows with empty TICKET_NO or where all values are null/empty
+                if (!empty(array_filter($row, fn($v) => $v !== null && $v !== '')) && !empty($row['TICKET_NO'] ?? '')) {
                     $data[] = $row;
                 }
             }
@@ -2656,8 +2657,8 @@ for ($i = 2; $i <= count($rows); $i++) {
         $row[$colName] = ($cellValue === '') ? 0 : $cellValue;
     }
 
-    // Optional: Only keep rows where at least one value is non-zero
-    if (!empty(array_filter($row, fn($v) => $v !== 0 && $v !== ''))) {
+    // Exclude rows with empty EB_NO and where all values are zero/empty
+    if (!empty(array_filter($row, fn($v) => $v !== 0 && $v !== '')) && !empty($row['EB_NO'] ?? '')) {
         $data[] = $row;
     }
 }
