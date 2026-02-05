@@ -1071,7 +1071,27 @@ public function njmwagesprocessdata($periodfromdate,$periodtodate,$att_payschm) 
         AND tpep.STATUS = 1 ";
 //    echo $sql;
         $this->db->query($sql);
-    
+
+        
+//advance data
+$updfor='ADV';
+ $sql="insert into EMPMILL12.tbl_njm_wages_data_collection 
+    (eb_id,date_from,date_to,installment_advance,
+    is_active,update_for,payscheme_id ) 
+    select  tca.eb_id, '$periodfromdate'  df,'$periodtodate' dt,installment_amount,
+      1 act,'ADV',$att_payschm  payscm  from EMPMILL12.tbl_company_advance tca 
+	  left join (select eb_no,eb_id,sum(working_hours-idle_hours) whrs from daily_attendance da
+	  where company_id=1 and da.attendance_date  between '$periodfromdate' and '$periodtodate'
+	  and da.is_active=1 group by eb_no,eb_id) da on da.eb_id=tca.eb_id
+	  left join vowsls.tbl_pay_employee_payscheme tpep on tpep.EMPLOYEEID =tca.eb_id and tpep.PAY_SCHEME_ID =$att_payschm and tpep.STATUS =1
+	  where tca.advance_date ='2026-01-05'
+	  and tca.advance_amount >0
+	  and da.eb_id is not null and tpep.PAY_SCHEME_ID is not null";
+        $this->db->query($sql);
+
+
+
+
  //leave data
  $updfor='LEAVE';
  $sql="insert into EMPMILL12.tbl_njm_wages_data_collection 
