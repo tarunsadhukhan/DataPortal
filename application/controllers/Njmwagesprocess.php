@@ -2436,7 +2436,7 @@ file_put_contents($fullPath, json_encode($data, JSON_PRETTY_PRINT));
 if (is_file($full_path)) { @unlink($full_path); }
 $jsonData = file_get_contents($fullPath);
 
-echo $jsonData;
+//echo $jsonData;
 $this->db->query("SET @json := ?", [$jsonData]);
 
     // Step 3: Run your query using JSON_TABLE
