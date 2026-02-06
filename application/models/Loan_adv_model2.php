@@ -196,7 +196,7 @@ class Loan_adv_model2 extends CI_Model {
 
 
 
-      echo $sql;   
+//      echo $sql;   
     
     $query = $this->db->query($sql);
     //    $query = $this->db->get($sql);

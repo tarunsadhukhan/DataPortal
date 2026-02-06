@@ -1076,7 +1076,7 @@ public function njmwagesprocessdata($periodfromdate,$periodtodate,$att_payschm) 
 //advance data
 $updfor='ADV';
  $sql="insert into EMPMILL12.tbl_njm_wages_data_collection 
-    (eb_id,date_from,date_to,installment_advance,
+    (eb_id,date_from,date_to,advance,
     is_active,update_for,payscheme_id ) 
     select  tca.eb_id, '$periodfromdate'  df,'$periodtodate' dt,installment_amount,
       1 act,'ADV',$att_payschm  payscm  from EMPMILL12.tbl_company_advance tca 
@@ -1986,8 +1986,8 @@ $branch_id = 4; // Assuming branch_id is 1 for this example, replace as needed
         ";
 
  
-  //echo 'final';
-//echo $sqlp;
+  //echo 'final';/
+ // echo $sqlp;
 //		return $sqlp;
         $query = $this->db->query($sqlp);
     //    $query = $this->db->get($sql);
@@ -2409,7 +2409,7 @@ public function nbdlwgsbrksummary($att_payschm,$periodfromdate,$periodtodate) {
     0 gwf,
     max(case when component_id=343 then amount else 0 end) 'rent',
     max(case when component_id=345 then amount else 0 end) landrent,
-    max(case when component_id=166 then amount else 0 end) 'advance',
+    max(case when component_id=166  then amount else 0 end)+max(case when component_id=292  then amount else 0 end) 'advance',
     max(case when component_id=354 then amount else 0 end) 'rsd',
     max(case when component_id=291 then amount else 0 end) 'canteen',
     0 othded,
@@ -2461,7 +2461,7 @@ public function mainwgsbrksummary($att_payschm,$periodfromdate,$periodtodate) {
     0 gwf,
     max(case when component_id=343 then amount else 0 end) 'rent',
     max(case when component_id=345 then amount else 0 end) landrent,
-    max(case when component_id=166 then amount else 0 end) 'advance',
+    max(case when component_id=166 then amount else 0 end)+ max(case when component_id=292 then amount else 0 end) 'advance',
     max(case when component_id=354 then amount else 0 end) 'rsd',
     max(case when component_id=291 then amount else 0 end) 'canteen',
     0 othded,
@@ -2512,7 +2512,7 @@ public function rtdwgsbrksummary($att_payschm,$periodfromdate,$periodtodate) {
     0 gwf,
     max(case when component_id=343 then amount else 0 end) 'rent',
     max(case when component_id=345 then amount else 0 end) landrent,
-    max(case when component_id=166 then amount else 0 end) 'advance',
+    max(case when component_id=166 then amount else 0 end)+ max(case when component_id=292 then amount else 0 end) 'advance',
     max(case when component_id=354 then amount else 0 end) 'rsd',
     max(case when component_id=291 then amount else 0 end) 'canteen',
     0 othded,

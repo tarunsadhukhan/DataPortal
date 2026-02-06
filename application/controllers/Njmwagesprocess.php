@@ -241,7 +241,7 @@ public function njmwagespayslip1641($mccodes,$periodfromdate,$periodtodate,$att_
         
                 $logMsg.='   '.'SLD   :'.str_repeat(' ', 4 - strlen($SLD)).number_format($SLD,2).'    '.'ELD  :'.str_repeat(' ', 8 - strlen($C_eldays_)).$C_eldays_.'   '.'LODAY:'.str_repeat(' ', 5 - strlen($LODAY)).number_format($LODAY,2).'   '.'OTTHR:'.str_repeat(' ', 8 - strlen($C_extrahrstime_)).$C_extrahrstime_.'   '.'OTPHR:'.str_repeat(' ', 8 - strlen($C_extrahourspiece_)).$C_extrahourspiece_.'   '.'ESID :'.str_repeat(' ', 8 - strlen($C_esi_days_)).$C_esi_days_.'            '.''.str_repeat('', 35 - strlen($emp_name)).$emp_name."\n";
                 
-                $logMsg.='  '.' TWAGE :'.str_repeat(' ', 8 - strlen($C_timewages_)).$C_timewages_.'   '.'DJ.A:'.str_repeat(' ', 8 - strlen($C_mveminus_)).$C_sundayadv_.'   '.'LOWI :'.str_repeat(' ', 8 - strlen($C_loffwagesincamt_)).$C_loffwagesincamt_.'  '.'ILT&PW:'.str_repeat(' ', 5 - strlen($ILT)).number_format($ILT,2).'   '.'S.ADV:'.str_repeat(' ', 5 - strlen($PADV)).number_format($PADV,2).'   '.'RSD  :'.str_repeat(' ', 8 - strlen($C_rsdamt_)).$C_rsdamt_.'            '.'CODE: '.str_repeat('', 65 - strlen($eb_no)).$eb_no."\n";
+                $logMsg.='  '.' TWAGE :'.str_repeat(' ', 8 - strlen($C_timewages_)).$C_timewages_.'   '.'DJ.A:'.str_repeat(' ', 9 - strlen($C_mveminus_)).$C_mveminus_.'   '.'LOWI :'.str_repeat(' ', 8 - strlen($C_loffwagesincamt_)).$C_loffwagesincamt_.'  '.'ILT&PW:'.str_repeat(' ', 5 - strlen($ILT)).number_format($ILT,2).'   '.'S.ADV:'.str_repeat(' ', 8 - strlen($C_sundayadv_)).$C_sundayadv_.'   '.'RSD  :'.str_repeat(' ', 8 - strlen($C_rsdamt_)).$C_rsdamt_.'            '.'CODE: '.str_repeat('', 65 - strlen($eb_no)).$eb_no."\n";
                 
                 $logMsg.='  '.' P.WAGE:'.str_repeat(' ', 8 - strlen($C_pwage_)).$C_pwage_.'  '.' DA   :'.str_repeat(' ', 8 - strlen($C_DAAMOUNT_)).$C_DAAMOUNT_.'  '.' LODG :'.str_repeat(' ', 8 - strlen($C_loffdagenincamt_)).$C_loffdagenincamt_.' '.' INCENT:'.str_repeat(' ', 8 - strlen($C_pwagesinc_)).$C_pwagesinc_.'  '.' CDN  :'.str_repeat(' ', 5 - strlen($CDN)).number_format($CDN,2).'  '.' GDED :'.str_repeat(' ', 8 - strlen($C_TOTAL_DEDUCTION_)).$C_TOTAL_DEDUCTION_.'            '.'TKT:'.str_repeat('', 25 - strlen($eb_no)).$eb_no."\n";
                 
@@ -262,7 +262,7 @@ public function njmwagespayslip1641($mccodes,$periodfromdate,$periodtodate,$att_
         
                 $logMsg.='   '.'SLD   :'.str_repeat(' ', 4 - strlen($SLD)).number_format($SLD,2).'    '.'ELD  :'.str_repeat(' ', 8 - strlen($C_eldays_)).$C_eldays_.'   '.'LODAY:'.str_repeat(' ', 5 - strlen($LODAY)).number_format($LODAY,2).'   '.'OTTHR:'.str_repeat(' ', 8 - strlen($C_extrahrstime_)).$C_extrahrstime_.'   '.'OTPHR:'.str_repeat(' ', 8 - strlen($C_extrahourspiece_)).$C_extrahourspiece_.'   '.'ESID :'.str_repeat(' ', 8 - strlen($C_esi_days_)).$C_esi_days_.'            '.''.str_repeat('', 35 - strlen($emp_name)).$emp_name."\n";
                 
-                $logMsg.='  '.' TWAGE :'.str_repeat(' ', 8 - strlen($C_timewages_)).$C_timewages_.'   '.'ADJ.A:'.str_repeat(' ', 8 - strlen($C_mveminus_)).$C_sundayadv_.'   '.'LOWI :'.str_repeat(' ', 8 - strlen($C_loffwagesincamt_)).$C_loffwagesincamt_.'  '.'ILT&PW:'.str_repeat(' ', 5 - strlen($ILT)).number_format($ILT,2).'   '.'S.ADV:'.str_repeat(' ', 5 - strlen($PADV)).number_format($PADV,2).'   '.'RSD  :'.str_repeat(' ', 8 - strlen($C_rsdamt_)).$C_rsdamt_.'            '.'CODE: '.str_repeat('', 65 - strlen($eb_no)).$eb_no."\n";
+                $logMsg.='  '.' TWAGE :'.str_repeat(' ', 8 - strlen($C_timewages_)).$C_timewages_.'   '.'ADJ.A:'.str_repeat(' ', 8 - strlen($C_mveminus_)).$C_mveminus_.'   '.'LOWI :'.str_repeat(' ', 8 - strlen($C_loffwagesincamt_)).$C_loffwagesincamt_.'  '.'ILT&PW:'.str_repeat(' ', 5 - strlen($ILT)).number_format($ILT,2).'   '.'S.ADV:'.str_repeat(' ', 8 - strlen($C_sundayadv_)).number_format($C_sundayadv_,2).'   '.'RSD  :'.str_repeat(' ', 8 - strlen($C_rsdamt_)).$C_rsdamt_.'            '.'CODE: '.str_repeat('', 65 - strlen($eb_no)).$eb_no."\n";
                 
                 $logMsg.='  '.' P.WAGE:'.str_repeat(' ', 8 - strlen($C_pwage_)).$C_pwage_.'  '.' DA   :'.str_repeat(' ', 8 - strlen($C_DAAMOUNT_)).$C_DAAMOUNT_.'  '.' LODG :'.str_repeat(' ', 8 - strlen($C_loffdagenincamt_)).$C_loffdagenincamt_.' '.' INCENT:'.str_repeat(' ', 8 - strlen($C_pwagesinc_)).$C_pwagesinc_.'  '.' CDN  :'.str_repeat(' ', 5 - strlen($CDN)).number_format($CDN,2).'  '.' GDED :'.str_repeat(' ', 8 - strlen($C_TOTAL_DEDUCTION_)).$C_TOTAL_DEDUCTION_.'            '.'TKT:'.str_repeat('', 25 - strlen($eb_no)).$eb_no."\n";
                 
@@ -284,7 +284,7 @@ public function njmwagespayslip1641($mccodes,$periodfromdate,$periodtodate,$att_
         
                 $logMsg.='   '.'SLD   :'.str_repeat(' ', 4 - strlen($SLD)).number_format($SLD,2).'    '.'ELD  :'.str_repeat(' ', 8 - strlen($C_eldays_)).$C_eldays_.'   '.'LODAY:'.str_repeat(' ', 5 - strlen($LODAY)).number_format($LODAY,2).'   '.'OTTHR:'.str_repeat(' ', 8 - strlen($C_extrahrstime_)).$C_extrahrstime_.'   '.'OTPHR:'.str_repeat(' ', 8 - strlen($C_extrahourspiece_)).$C_extrahourspiece_.'   '.'ESID :'.str_repeat(' ', 8 - strlen($C_esi_days_)).$C_esi_days_.'            '.''.str_repeat('', 35 - strlen($emp_name)).$emp_name."\n";
                 
-                $logMsg.='  '.' TWAGE :'.str_repeat(' ', 8 - strlen($C_timewages_)).$C_timewages_.'   '.'ADJ.A:'.str_repeat(' ', 8 - strlen($C_mveminus_)).$C_sundayadv_.'   '.'LOWI :'.str_repeat(' ', 8 - strlen($C_loffwagesincamt_)).$C_loffwagesincamt_.'  '.'ILT&PW:'.str_repeat(' ', 5 - strlen($ILT)).number_format($ILT,2).'   '.'S.ADV:'.str_repeat(' ', 5 - strlen($PADV)).number_format($PADV,2).'   '.'RSD  :'.str_repeat(' ', 8 - strlen($C_rsdamt_)).$C_rsdamt_.'            '.'CODE: '.str_repeat('', 65 - strlen($eb_no)).$eb_no."\n";
+                $logMsg.='  '.' TWAGE :'.str_repeat(' ', 8 - strlen($C_timewages_)).$C_timewages_.'   '.'ADJ.A:'.str_repeat(' ', 8 - strlen($C_mveminus_)).$C_mveminus_.'   '.'LOWI :'.str_repeat(' ', 8 - strlen($C_loffwagesincamt_)).$C_loffwagesincamt_.'  '.'ILT&PW:'.str_repeat(' ', 5 - strlen($ILT)).number_format($ILT,2).'   '.'S.ADV:'.str_repeat(' ', 8 - strlen($C_sundayadv_)).$C_sundayadv_.'   '.'RSD  :'.str_repeat(' ', 8 - strlen($C_rsdamt_)).$C_rsdamt_.'            '.'CODE: '.str_repeat('', 65 - strlen($eb_no)).$eb_no."\n";
                 
                 $logMsg.='  '.' P.WAGE:'.str_repeat(' ', 8 - strlen($C_pwage_)).$C_pwage_.'  '.' DA   :'.str_repeat(' ', 8 - strlen($C_DAAMOUNT_)).$C_DAAMOUNT_.'  '.' LODG :'.str_repeat(' ', 8 - strlen($C_loffdagenincamt_)).$C_loffdagenincamt_.' '.' INCENT:'.str_repeat(' ', 8 - strlen($C_pwagesinc_)).$C_pwagesinc_.'  '.' CDN  :'.str_repeat(' ', 5 - strlen($CDN)).number_format($CDN,2).'  '.' GDED :'.str_repeat(' ', 8 - strlen($C_TOTAL_DEDUCTION_)).$C_TOTAL_DEDUCTION_.'            '.'TKT:'.str_repeat('', 25 - strlen($eb_no)).$eb_no."\n";
                 
@@ -473,6 +473,7 @@ public function njmwagespayslip1641($mccodes,$periodfromdate,$periodtodate,$att_
         IF ($record->CODE== 'C_timewages_') {
             $C_timewages_= $record->AMOUNT;
         }
+        
         IF ($record->CODE== 'C_sundayadv_') {
             $C_sundayadv_= $record->AMOUNT;
         }
@@ -842,6 +843,7 @@ public function njmwagespayslip1641($mccodes,$periodfromdate,$periodtodate,$att_
         $C_esi_days_= $record->C_esi_days_;
         $C_timewages_= $record->C_timewages_;
         $C_sundayadv_= $record->C_sundayadv_;
+        
         $C_loffwagesincamt_= $record->C_loffwagesincamt_;
         $C_rsdamt_= $record->C_rsdamt_;
         $C_pwage_= $record->C_pwage_;
@@ -905,7 +907,7 @@ public function njmwagespayslip1641($mccodes,$periodfromdate,$periodtodate,$att_
 	 
 		$logMsg.='   '.'SLD   :'.str_repeat(' ', 4 - strlen($SLD)).number_format($SLD,2).'    '.'ELD  :'.str_repeat(' ', 8 - strlen($C_eldays_)).$C_eldays_.'   '.'LODAY:'.str_repeat(' ', 5 - strlen($LODAY)).number_format($LODAY,2).'   '.'OTTHR:'.str_repeat(' ', 8 - strlen($C_extrahrstime_)).$C_extrahrstime_.'   '.'OTPHR:'.str_repeat(' ', 8 - strlen($C_extrahourspiece_)).$C_extrahourspiece_.'   '.'ESID :'.str_repeat(' ', 8 - strlen($C_esi_days_)).$C_esi_days_.'            '.''.str_repeat('', 35 - strlen($emp_name)).$emp_name."\n";
 		 
-		$logMsg.='  '.' TWAGE :'.str_repeat(' ', 8 - strlen($C_timewages_)).$C_timewages_.'   '.'DJ.A:'.str_repeat(' ', 8 - strlen($C_sundayadv_)).$C_sundayadv_.'   '.'LOWI :'.str_repeat(' ', 8 - strlen($C_loffwagesincamt_)).$C_loffwagesincamt_.'  '.'ILT&PW:'.str_repeat(' ', 5 - strlen($ILT)).number_format($ILT,2).'   '.'S.ADV:'.str_repeat(' ', 5 - strlen($PADV)).number_format($PADV,2).'   '.'RSD  :'.str_repeat(' ', 8 - strlen($C_rsdamt_)).$C_rsdamt_.'            '.'CODE: '.str_repeat('', 65 - strlen($eb_no)).$eb_no."\n";
+		$logMsg.='  '.' TWAGE :'.str_repeat(' ', 8 - strlen($C_timewages_)).$C_timewages_.'   '.'DJ.A:'.str_repeat(' ', 8 - strlen($C_sundayadv_)).$C_sundayadv_.'   '.'LOWI :'.str_repeat(' ', 8 - strlen($C_loffwagesincamt_)).$C_loffwagesincamt_.'  '.'ILT&PW:'.str_repeat(' ', 5 - strlen($ILT)).number_format($ILT,2).'   '.'S.ADV:'.str_repeat(' ', 8 - strlen($C_sundayadv_)).$C_sundayadv_.'   '.'RSD  :'.str_repeat(' ', 8 - strlen($C_rsdamt_)).$C_rsdamt_.'            '.'CODE: '.str_repeat('', 65 - strlen($eb_no)).$eb_no."\n";
 		 
 		$logMsg.='  '.' P.WAGE:'.str_repeat(' ', 8 - strlen($C_pwage_)).$C_pwage_.'  '.' DA   :'.str_repeat(' ', 8 - strlen($C_DAAMOUNT_)).$C_DAAMOUNT_.'  '.' LODG :'.str_repeat(' ', 8 - strlen($C_loffdagenincamt_)).$C_loffdagenincamt_.' '.' INCENT:'.str_repeat(' ', 8 - strlen($C_pwagesinc_)).$C_pwagesinc_.'  '.' CDN  :'.str_repeat(' ', 5 - strlen($CDN)).number_format($CDN,2).'  '.' GDED :'.str_repeat(' ', 8 - strlen($C_TOTAL_DEDUCTION_)).$C_TOTAL_DEDUCTION_.'            '.'TKT:'.str_repeat('', 25 - strlen($eb_no)).$eb_no."\n";
 		 
@@ -2413,7 +2415,7 @@ public function njmwrkfauploadjs() {
                     $row[$colName] = isset($rows[$i][$colKey]) ? trim((string)$rows[$i][$colKey]) : null;
                 }
                 // Exclude rows with empty TICKET_NO or where all values are null/empty
-                if (!empty(array_filter($row, fn($v) => $v !== null && $v !== '')) && !empty($row['TICKET_NO'] ?? '')) {
+                if  (!empty($row['TICKET_NO'] ?? '')) {
                     $data[] = $row;
                 }
             }
@@ -2437,6 +2439,7 @@ file_put_contents($fullPath, json_encode($data, JSON_PRETTY_PRINT));
 if (is_file($full_path)) { @unlink($full_path); }
 $jsonData = file_get_contents($fullPath);
 
+
 //echo $jsonData;
 $this->db->query("SET @json := ?", [$jsonData]);
 
@@ -2444,7 +2447,7 @@ $this->db->query("SET @json := ?", [$jsonData]);
     $sql = "
 select TICKET_NO,EMPLOYEEID eb_id,AMOUNT FROM (
 select  
-Ticket_NO,
+TICKET_NO,
 emp_code,
   eb_id AS EMPLOYEEID,
   169 AS PAYSCHEME_ID,
@@ -2468,11 +2471,11 @@ FROM (
  RIGHT JOIN JSON_TABLE(
   @json,
   '$[*]' COLUMNS (
-     Ticket_NO VARCHAR(20) PATH '$.Ticket_NO',
+     TICKET_NO VARCHAR(20) PATH '$.TICKET_NO',
      AMOUNT INT PATH '$.AMOUNT'
    )
 ) AS j
-ON mst.emp_code = j.Ticket_NO
+ON mst.emp_code = j.TICKET_NO
 ) g where emp_code is null
     ";
 //echo $sql;
@@ -2483,7 +2486,7 @@ ON mst.emp_code = j.Ticket_NO
     if ($query->num_rows() > 0) {
                 foreach ($result as $row) {
     
-                    $ebno = $row['Ticket_NO'];
+                    $ebno = $row['TICKET_NO'];
                 //    ECHO "Processing Employee Code: $ebno<br>";
                     $ebmissing .= "Employee not found for code $ebno<br>";
                 }
@@ -2497,7 +2500,7 @@ select eb_id,'$periodfromdate' date_from,'$periodtodate' date_to,1 is_active,'FA
 (
 select TICKET_NO,EMPLOYEEID eb_id,AMOUNT FROM (
 select  
-Ticket_NO,
+TICKET_NO,
 emp_code,
   eb_id AS EMPLOYEEID,
   169 AS PAYSCHEME_ID,
@@ -2521,11 +2524,11 @@ FROM (
  RIGHT JOIN JSON_TABLE(
   @json,
   '$[*]' COLUMNS (
-     Ticket_NO VARCHAR(20) PATH '$.Ticket_NO',
+     TICKET_NO VARCHAR(20) PATH '$.TICKET_NO',
      AMOUNT INT PATH '$.AMOUNT'
    )
 ) AS j
-ON mst.emp_code = j.Ticket_NO
+ON mst.emp_code = j.TICKET_NO
 ) g ) k";
                     
                     $query = $this->db->query($sql);
