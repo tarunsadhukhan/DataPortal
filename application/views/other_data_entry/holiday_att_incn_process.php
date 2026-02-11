@@ -1,18 +1,14 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loan and Advance Form</title>
+    <link rel="stylesheet" href="<?= base_url('public/dist-assets/css/select2.min.css'); ?>">
+    <link rel="stylesheet" href="<?= base_url('public/dist-assets/css/select2-bootstrap.min.css'); ?>">
     <style>
         table {
             display: none;
         }
         .form-group {
-            display: block;
-            clear: both;
-            margin-bottom: 70px;
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
         }
         #holidayrecordTable thead th {
             background-color: #0f4d92  ; /* Background color for the header */
@@ -141,7 +137,7 @@
 </style>    
 
 
-<script src="<?php echo base_url()?>public/admin/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="<?= base_url('public/dist-assets/js/plugins/bootstrap.bundle.min.js'); ?>"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
@@ -150,7 +146,6 @@
 <!-- SweetAlert2 CSS & JS -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="<?= base_url('assets/js/stlupload.js'); ?>"></script>
-<body>
   
             <div class="reporthead"><?='Holiday/Attendance Incentive Data'?></div>
 
@@ -241,12 +236,17 @@
 				<label for="purchaseDetailsPurchaseDate">NJM Wages Data<span class="text-center"></span></label>
                 <button name="submit" id="njmwagesdata"  type="submit" class="form-control btn btn-danger">Process</button>
             </div>
+            <div class="col-12 col-sm-2">
+				<label for="purchaseDetailsPurchaseDate">EJM Wages Data<span class="text-center"></span></label>
+                <button name="submit" id="ejmwagesdata"  type="submit" class="form-control btn btn-danger">Process</button>
+            </div>
 
 <?php
                $company_id = $this->session->userdata('company_id');
                $company_name = $this->session->userdata('company_name');
                ?>
               <?php $this->load->view('modals/ejm_stl_modal'); ?>
+              <?php $this->load->view('modals/ejm_wages_modal'); ?>
 
               <input type="hidden" class="input" value="<?php echo $company_id; ?>" id="companyId" />
               <input type="hidden" class="input" id="ebid" />
@@ -470,6 +470,214 @@ function hideSpinnerCounter() {
 
     });
 
+    $('#ejm_payschm').change(function() {
+        $('#payschm').val($('#ejm_payschm').val()).trigger('change');
+    });
+
+    $(document).on('change', '#ejm_getmenu', function() {
+        if ($(this).val() == 1) {
+            tareffopenModal();
+        }
+    });
+
+    function checkTareffExisting() {
+        var deptId = $('#tareff_dept_id').val();
+        var targetType = $('#tareff_target_type').val();
+        var effCodeId = $('#tareff_eff_code').val();
+        var qualCode = $('#tareff_qual_code').val().trim();
+        var dateFrom = $('#ejmfromdt').val();
+        var dateTo = $('#ejmtodt').val();
+
+        if (!deptId || deptId == '0' || !targetType || !dateFrom || !dateTo) {
+            $('#tareff_target_id').val('');
+            $('#tareff_target_save').show();
+            $('#tareff_target_update').hide();
+            return;
+        }
+
+        // For Efficiency: need eff_code to check
+        if (targetType == 'EFF' && (!effCodeId || effCodeId == '0')) {
+            $('#tareff_target_id').val('');
+            $('#tareff_target_save').show();
+            $('#tareff_target_update').hide();
+            return;
+        }
+
+        // For Production: need qual_code to check
+        if (targetType == 'PROD' && !qualCode) {
+            $('#tareff_target_id').val('');
+            $('#tareff_target_save').show();
+            $('#tareff_target_update').hide();
+            return;
+        }
+
+        $.ajax({
+            url: "<?php echo base_url('Ejmprocessdata/get_fne_target_entry'); ?>",
+            type: "POST",
+            data: {
+                dept_id: deptId,
+                target_type: targetType.toString().substr(0,1), // get 'E' or 'P'
+                eff_code: effCodeId,
+                qual_code: qualCode,
+                date_from: dateFrom,
+                date_to: dateTo
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response.exists) {
+                    $('#tareff_target_id').val(response.all_trn_eff_id);
+                    if (response.target_eff !== null && response.target_eff !== undefined) {
+                        $('#tareff_target_eff').val(response.target_eff);
+                    }
+                    $('#tareff_target_save').hide();
+                    $('#tareff_target_update').show();
+                } else {
+                    $('#tareff_target_id').val('');
+                    $('#tareff_target_eff').val('');
+                    $('#tareff_target_save').show();
+                    $('#tareff_target_update').hide();
+                }
+            }
+        });
+    }
+
+    $('#tareff_dept_id, #tareff_target_type, #tareff_eff_code, #ejmfromdt, #ejmtodt').on('change', function() {
+        checkTareffExisting();
+    });
+
+    // Toggle Eff Code / Qual Code based on Target Type selection
+    $('#tareff_target_type').on('change', function() {
+        var targetType = $(this).val();
+        if (targetType === 'EFF') {
+            // Efficiency selected: enable Eff Code, disable Qual Code
+            $('#tareff_eff_code').prop('disabled', false);
+            $('#tareff_qual_code').prop('readonly', true).val('');
+        } else if (targetType === 'PROD') {
+            // Production selected: disable Eff Code, enable Qual Code
+            $('#tareff_eff_code').prop('disabled', true).val('0');
+            $('#tareff_qual_code').prop('readonly', false);
+        } else {
+            // No selection: enable both
+            $('#tareff_eff_code').prop('disabled', false);
+            $('#tareff_qual_code').prop('readonly', false);
+        }
+    });
+
+    // Set initial state on load
+    $('#tareff_target_type').trigger('change');
+
+    $('#tareff_qual_code').on('blur change', function() {
+        checkTareffExisting();
+    });
+
+    $('#tareff_target_save').click(function(event) {
+        event.preventDefault();
+        submitTareffEntry();
+    });
+
+    $('#tareff_target_update').click(function(event) {
+        event.preventDefault();
+        submitTareffEntry();
+    });
+
+    // Clone last fortnight data into current fortnight
+    $('#tareff_clone').click(function(event) {
+        event.preventDefault();
+        var dateFrom = $('#ejmfromdt').val();
+        var dateTo = $('#ejmtodt').val();
+
+        if (!dateFrom || !dateTo) {
+            alert('Please select From and To dates for the current fortnight');
+            return;
+        }
+
+        if (!confirm('This will copy all target entries from the last fortnight into the current fortnight (' + dateFrom + ' to ' + dateTo + '). Continue?')) {
+            return;
+        }
+
+        $.ajax({
+            url: "<?php echo base_url('Ejmprocessdata/clone_last_fortnight_targets'); ?>",
+            type: "POST",
+            data: {
+                date_from: dateFrom,
+                date_to: dateTo
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                } else {
+                    alert(response.message || 'Clone failed');
+                }
+            },
+            error: function() {
+                alert('Error occurred while cloning data');
+            }
+        });
+    });
+
+    function submitTareffEntry() {
+        var deptId = $('#tareff_dept_id').val();
+        var targetType = $('#tareff_target_type').val();
+        var effCodeId = $('#tareff_eff_code').val();
+        var qualCode = $('#tareff_qual_code').val().trim();
+        var targetEff = $('#tareff_target_eff').val().trim();
+        var dateFrom = $('#ejmfromdt').val();
+        var dateTo = $('#ejmtodt').val();
+        var recordId = $('#tareff_target_id').val();
+
+        if (!deptId || deptId == '0') {
+            alert('Please Select Department');
+            return;
+        }
+
+        if (!dateFrom || !dateTo) {
+            alert('Please Select From and To Date');
+            return;
+        }
+
+        if (targetType == 'EFF' && (!effCodeId || effCodeId == '0')) {
+            alert('Please Select Eff Code');
+            return;
+        }
+
+        if (targetType == 'PROD' && !qualCode) {
+            alert('Please Enter Qual Code');
+            return;
+        }
+
+        if (!targetEff) {
+            alert('Please Enter Target Eff');
+            return;
+        }
+
+        $.ajax({
+            url: "<?php echo base_url('Ejmprocessdata/save_fne_target_entry'); ?>",
+            type: "POST",
+            data: {
+                all_trn_eff_id: recordId,
+                dept_id: deptId,
+                target_type: targetType,
+                eff_mast_code_id: effCodeId,
+                qual_code: qualCode,
+                target_eff: targetEff,
+                date_from: dateFrom,
+                date_to: dateTo
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    $('#tareff_target_id').val(response.all_trn_eff_id || recordId);
+                    $('#tareff_target_save').hide();
+                    $('#tareff_target_update').show();
+                } else {
+                    alert(response.message || 'Save failed');
+                }
+            }
+        });
+    }
+
     $('#hol_get').click(function() {
         hol_get = $('#hol_get').val();
 //        alert(hol_get);
@@ -570,6 +778,10 @@ function closeModal() {
 //    alert('close');
         document.getElementById('myModal').style.display = 'none';
     }
+    function ejmcloseModal() {
+//    alert('close');
+        document.getElementById('ejmModal').style.display = 'none';
+    }
     function stlcloseModal() {
 //    alert('close');
         document.getElementById('stlModal').style.display = 'none';
@@ -618,6 +830,33 @@ function closeModal() {
 function openModal() {
 //    alert('open');
             document.getElementById('myModal').style.display = 'block';
+}
+
+function ejmopenModal() {
+//    alert('open');
+            document.getElementById('ejmModal').style.display = 'block';
+}
+
+function tareffopenModal() {
+//    alert('open');
+        document.getElementById('tareffModal').style.display = 'block';
+}
+
+function tareffcloseModal() {
+//    alert('close');
+    document.getElementById('tareffModal').style.display = 'none';
+}
+
+function syncEjmToNjm() {
+    $('#njmcntfromdt').val($('#ejmfromdt').val());
+    $('#njmcnttodt').val($('#ejmtodt').val());
+    $('#cadded').val($('#ejmcadded').val());
+    $('#vardded').val($('#ejmvardded').val());
+    $('#gwfded').val($('#ejmgwfded').val());
+    $('#att_dept').val($('#ejm_att_dept').val());
+    $('#payschm').val($('#ejm_payschm').val()).trigger('change');
+    $('#getmenu').val($('#ejm_getmenu').val());
+    $('#getchecklist').val($('#ejm_getchecklist').val());
 }
 
 function stlopenModal() {
@@ -944,6 +1183,10 @@ function oattprdopenModal() {
 //                alert('closeb');
                 document.getElementById('myModal').style.display = 'none';
         });
+        $("#ejm_wagesclose").click(function(event){
+    //                alert('closeb');
+            document.getElementById('ejmModal').style.display = 'none';
+        });
         $("#stlclose").click(function(event){
 //                alert('closeb');
                 document.getElementById('stlModal').style.display = 'none';
@@ -973,6 +1216,11 @@ function oattprdopenModal() {
         $("#oattprdclose").click(function(event){
               //  alert('closeb');
                 document.getElementById('oattprdModal').style.display = 'none';
+        });
+
+        $("#tareffclose").click(function(event){
+              //  alert('closeb');
+            document.getElementById('tareffModal').style.display = 'none';
         });
 
 
@@ -1585,6 +1833,11 @@ function initDataTablecntpayregister() {
 
       }); 
 
+            $("#ejmwagesdata").click(function(event){
+                ejmopenModal();
+
+            }); 
+
       $("#njmcntwagesdisplay").click(function(event){
 //        openModal();
             closeModal();
@@ -1812,6 +2065,25 @@ function cntwagespayslipprint() {
     $('#njmcnttodt').val(periodtodate);
 });
 
+$("#ejmfromdt").on("change", function () {
+    var periodfromdate = $('#ejmfromdt').val(); // format: YYYY-MM-DD
+    if (!periodfromdate) return;
+
+    // Split date
+    var parts = periodfromdate.split("-");
+    var year = parseInt(parts[0], 10);
+    var month = parseInt(parts[1], 10);
+
+    // Get last day of the month
+    var lastDay = new Date(year, month, 0).getDate(); // month is 1-based here
+
+    // Build periodtodate in YYYY-MM-DD format
+    var periodtodate = year + '-' + String(month).padStart(2, '0') + '-' + lastDay;
+
+    // Set value
+    $('#ejmtodt').val(periodtodate);
+});
+
       $("#njmwrkvardupdate").click(function(event){
           event.preventDefault(); 
           var periodfromdate= $('#njmcntfromdt').val();
@@ -1855,6 +2127,12 @@ function cntwagespayslipprint() {
       });
  //     refreshDataTable();
     });
+
+      $("#ejmwrkvardupdate").click(function(event){
+          event.preventDefault();
+          syncEjmToNjm();
+          $("#njmwrkvardupdate").trigger('click');
+      });
 
 
 
@@ -2044,6 +2322,53 @@ $("#wrkfaexlfileupload").change(function(event){
 
 });
 
+$("#ejm_wrkfaexlfileupload").change(function(event){
+    event.preventDefault();
+    alert('File Selected');
+    var formData = new FormData();
+    formData.append('periodfromdate', $('#ejmfromdt').val());
+    formData.append('periodtodate', $('#ejmtodt').val());
+    formData.append('fileupload', $('#ejm_wrkfaexlfileupload')[0].files[0]);
+
+
+    formData.append('att_payschm', $('#att_payschm').val());
+    var att_payschm =  $('#att_payschm').val();
+
+              if (att_payschm == 0) {
+              alert('Please Select Pay Scheme');
+              $('#ejm_wrkfaexlfileupload').val('');
+
+              return;
+          }  
+                 showSpinnerCounter();
+
+    $.ajax({
+        url: "<?php echo base_url('Njmwagesprocess/njmwrkfauploadjs'); ?>",
+        type: "POST",
+        data: formData,
+        processData: false,  // Prevent jQuery from automatically transforming the data into a query string
+        contentType: false,  // Ensure the request is sent as multipart/form-data
+        dataType: "json",
+        success: function(response) {
+            if (response.success) {
+                var savedata = (response.savedata);
+                var ebmissing = (response.ebmissing);
+//                alert(savedata);
+
+                alert(ebmissing);
+                alert('Record Updated Successfully');
+                hideSpinnerCounter();
+              $('#ejm_wrkfaexlfileupload').val('');
+              $('#record_id').val(0);
+            } else {
+                alert('No Data');
+            }
+        }
+    });
+
+
+});
+
  
 
 $("#cntexlfileuploads").change(function(event){
@@ -2081,6 +2406,50 @@ $("#cntexlfileuploads").change(function(event){
                 
                 alert('Record Updated Successfully');
                 $('#cntexlfileuploads').val('');
+                hideSpinnerCounter();
+                $('#record_id').val(0);
+            } else {
+                alert('No Data');
+            }
+        }
+    });
+});
+
+$("#ejm_cntexlfileuploads").change(function(event){
+    event.preventDefault();
+    alert('File Selected----');
+    var formData = new FormData();
+    formData.append('periodfromdate', $('#ejmfromdt').val());
+    formData.append('periodtodate', $('#ejmtodt').val());
+    formData.append('fileupload', $('#ejm_cntexlfileuploads')[0].files[0]);
+    alert(formData.get('fileupload'));
+    formData.append('att_payschm', $('#att_payschm').val());
+    var att_payschm =  $('#att_payschm').val();
+
+              if (att_payschm == 0) {
+              alert('Please Select Pay Scheme');
+              $('#ejm_cntexlfileuploads').val('');
+
+              return;
+          }  
+                 showSpinnerCounter();
+    $.ajax({
+        url: "<?php echo base_url('Njmwagesprocess/cntexlupload'); ?>",
+        type: "POST",
+        data: formData,
+        processData: false,  // Prevent jQuery from automatically transforming the data into a query string
+        contentType: false,  // Ensure the request is sent as multipart/form-data
+        dataType: "json",
+        success: function(response) {
+            alert(response);
+            if (response.success) {
+                var savedata = (response.savedata);
+                var ebmissing = (response.ebmissing);
+//                alert(savedata);
+                alert(ebmissing);
+                
+                alert('Record Updated Successfully');
+                $('#ejm_cntexlfileuploads').val('');
                 hideSpinnerCounter();
                 $('#record_id').val(0);
             } else {
@@ -2226,6 +2595,45 @@ $("#wrklinehoursupload").change(function(event){
     });
 });
 
+$("#ejm_wrklinehoursupload").change(function(event){
+    event.preventDefault();
+    alert('File Selected');
+    var formData = new FormData();
+    formData.append('periodfromdate', $('#ejmfromdt').val());
+    formData.append('periodtodate', $('#ejmtodt').val());
+    formData.append('fileupload', $('#ejm_wrklinehoursupload')[0].files[0]);
+    alert(formData.get('fileupload'));
+    formData.append('att_payschm', $('#att_payschm').val());
+    var att_payschm =  $('#att_payschm').val();
+
+    showSpinnerCounter();
+    $.ajax({
+        url: "<?php echo base_url('Njmwagesprocess/wrklinehoursupload'); ?>",
+        type: "POST",
+        data: formData,
+        processData: false,  // Prevent jQuery from automatically transforming the data into a query string
+        contentType: false,  // Ensure the request is sent as multipart/form-data
+        dataType: "json",
+        success: function(response) {
+//            alert(response);
+            if (response.success) {
+                var savedata = (response.savedata);
+                var ebmissing = (response.ebmissing);
+                alert('No of rows updated: ' + savedata);
+                alert('Missing rows: ' + ebmissing);
+                alert('Record Updated Successfully');
+                $('#ejm_wrklinehoursupload').val('');
+                hideSpinnerCounter();
+                $('#record_id').val(0);
+            } else {
+                alert('No Data/date mismatch');
+                $('#ejm_wrklinehoursupload').val('');
+                hideSpinnerCounter();
+            }
+        }
+    });
+});
+
 
 
 
@@ -2316,6 +2724,46 @@ $("#wrkothexlfileupload").change(function(event){
                 alert(ebmissing);
                 alert('Record Updated Successfully');
                 $('#wrkothexlfileupload').val('');
+                hideSpinnerCounter();
+                $('#record_id').val(0);
+            } else {
+                alert('No Data');
+            }
+        }
+    });
+});
+
+$("#ejm_wrkothexlfileupload").change(function(event){
+    event.preventDefault();
+
+    var formData = new FormData();
+    formData.append('periodfromdate', $('#ejmfromdt').val());
+    formData.append('periodtodate', $('#ejmtodt').val());
+    formData.append('fileupload', $('#ejm_wrkothexlfileupload')[0].files[0]);
+
+    formData.append('att_payschm', $('#att_payschm').val());
+    var att_payschm =  $('#att_payschm').val();
+          if (att_payschm == 0) {
+              alert('Please Select Pay Scheme');
+              return;
+          }  
+   showSpinnerCounter();
+    
+  $.ajax({
+        url: "<?php echo base_url('Njmwagesprocess/njmwrkothadjsuploadjs'); ?>",
+        type: "POST",
+        data: formData,
+        processData: false,  // Prevent jQuery from automatically transforming the data into a query string
+        contentType: false,  // Ensure the request is sent as multipart/form-data
+        dataType: "json",
+        success: function(response) {
+            if (response.success) {
+                var savedata = (response.savedata);
+                var ebmissing = (response.ebmissing);
+//                alert(savedata);
+                alert(ebmissing);
+                alert('Record Updated Successfully');
+                $('#ejm_wrkothexlfileupload').val('');
                 hideSpinnerCounter();
                 $('#record_id').val(0);
             } else {
@@ -2539,6 +2987,16 @@ return false;
   
 
                 });
+
+    $("#ejm_menuclick").click(function(event){
+               event.preventDefault();
+               syncEjmToNjm();
+               if ($('#ejm_getmenu').val() == 1) {
+                   tareffopenModal();
+                   return;
+               }
+               $("#njmmenuclick").trigger('click');
+    });
 
 
 function njmcntwagesprocessdata() {

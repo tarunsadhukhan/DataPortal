@@ -397,6 +397,106 @@ class Varaha_model extends CI_Model
 		}
 		return false;
 	}
+
+	public function getAllEffMaster(){
+		$this->db->order_by('eff_mast_name','ASC');
+		$q = $this->db->get('tbl_eff_master');
+		if($q->num_rows() > 0){
+			foreach($q->result() as $row){
+				$data[] = $row;
+			}
+			return $data;
+		}
+		return false;
+	}
+
+	public function validateEjmWageQCode($deptId, $wageQCode){
+		$this->db->where('dept_id', $deptId);
+		$this->db->where('wage_q_code', $wageQCode);
+		$q = $this->db->get('ejm_wage_qcode_link');
+		return $q->num_rows() > 0;
+	}
+
+	public function getFneTargetEntry($deptId, $targetType, $effCodeId, $qualCode, $dateFrom, $dateTo){
+		$this->db->where('dept_id', $deptId);
+		$this->db->where('target_type', $targetType);
+		$this->db->where('date_from', $dateFrom);
+		$this->db->where('date_to', $dateTo);
+		if ($targetType === 'E') {
+			$this->db->where('eff_mast_code_id', $effCodeId);
+		} else {
+			$this->db->where('qual_code', $qualCode);
+		}
+		$q = $this->db->get('tbl_all_trn_eff');
+		return $q->num_rows() > 0 ? $q->row() : false;
+	}
+
+	public function saveFneTargetEntry($data, $recordId = null){
+		if ($recordId) {
+			$this->db->where('all_trn_eff_id', $recordId);
+			return $this->db->update('tbl_all_trn_eff', $data);
+		}
+
+		return $this->db->insert('tbl_all_trn_eff', $data);
+	}
+
+	public function cloneLastFortnightTargets($newDateFrom, $newDateTo){
+		// Calculate last fortnight: 15 days before the new date_from
+		$prevDateTo = date('Y-m-d', strtotime($newDateFrom . ' -1 day'));
+		$prevDateFrom = date('Y-m-d', strtotime($prevDateTo . ' -14 days'));
+
+		// Fetch all records from the last fortnight
+		$this->db->where('date_from', $prevDateFrom);
+		$this->db->where('date_to', $prevDateTo);
+		$q = $this->db->get('tbl_all_trn_eff');
+
+		if ($q->num_rows() == 0) {
+			return array('success' => false, 'message' => 'No data found for last fortnight (' . $prevDateFrom . ' to ' . $prevDateTo . ')');
+		}
+
+		$clonedCount = 0;
+		$skippedCount = 0;
+
+		foreach ($q->result() as $row) {
+			// Check if record already exists for new date range
+			$this->db->where('dept_id', $row->dept_id);
+			$this->db->where('target_type', $row->target_type);
+			$this->db->where('date_from', $newDateFrom);
+			$this->db->where('date_to', $newDateTo);
+			if (!empty($row->eff_mast_code_id)) {
+				$this->db->where('eff_mast_code_id', $row->eff_mast_code_id);
+			}
+			if (!empty($row->qual_code)) {
+				$this->db->where('qual_code', $row->qual_code);
+			}
+			$exists = $this->db->get('tbl_all_trn_eff');
+
+			if ($exists->num_rows() > 0) {
+				$skippedCount++;
+				continue;
+			}
+
+			// Insert cloned record with new dates
+			$newData = array(
+				'dept_id' => $row->dept_id,
+				'target_type' => $row->target_type,
+				'eff_mast_code_id' => $row->eff_mast_code_id,
+				'qual_code' => $row->qual_code,
+				'target_eff' => $row->target_eff,
+				'date_from' => $newDateFrom,
+				'date_to' => $newDateTo
+			);
+			$this->db->insert('tbl_all_trn_eff', $newData);
+			$clonedCount++;
+		}
+
+		$msg = $clonedCount . ' record(s) cloned successfully from ' . $prevDateFrom . ' to ' . $prevDateTo;
+		if ($skippedCount > 0) {
+			$msg .= '. ' . $skippedCount . ' record(s) skipped (already exist).';
+		}
+
+		return array('success' => true, 'message' => $msg, 'cloned' => $clonedCount, 'skipped' => $skippedCount);
+	}
 	public function getAllMasterDepartments($companyId){
 		$this->db->where('company_id',$companyId);
 		$q = $this->db->get('master_department');
@@ -408,6 +508,8 @@ class Varaha_model extends CI_Model
 		}
 		return false;
 	}
+
+
 	public function getAllMccodes($companyId){
 		$this->db->where('company_id',$companyId);
 		$q = $this->db->get('EMPMILL12.mechine_code_master');
@@ -419,7 +521,25 @@ class Varaha_model extends CI_Model
 		}
 		return false;
 	}
-/*/*
+
+
+	public function getAlleffM($companyId){
+	//	$this->db->where('company_id',$companyId);
+		$q = $this->db->get('EMPMILL12.tbl_eff_master');
+	//	$this->varaha->print_arrays($this->db->last_query());
+	log_message('error', $this->db->last_query());
+
+		if($q->num_rows() > 0){
+			foreach($q->result() as $row){
+				$data[] = $row;
+			}
+	 		return $data;
+		}
+		return false;
+	}
+
+
+	/*/*
 	public function getAllMccodes($companyId){
 		$this->db->where('company_id',$companyId);
 		$q = $this->db->get('EMPMILL12.MC_CODE_MASTER');

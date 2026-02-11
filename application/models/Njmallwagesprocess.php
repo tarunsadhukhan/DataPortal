@@ -1074,12 +1074,12 @@ public function njmwagesprocessdata($periodfromdate,$periodtodate,$att_payschm) 
 
         
 //advance data
-$updfor='ADV';
+$updfor='IADV';
  $sql="insert into EMPMILL12.tbl_njm_wages_data_collection 
     (eb_id,date_from,date_to,advance,
-    is_active,update_for,payscheme_id ) 
+    is_active,update_for,payscheme_id,advance_date ) 
     select  tca.eb_id, '$periodfromdate'  df,'$periodtodate' dt,installment_amount,
-      1 act,'ADV',$att_payschm  payscm  from EMPMILL12.tbl_company_advance tca 
+      1 act,'$updfor',$att_payschm  payscm,'2026-01-05'  from EMPMILL12.tbl_company_advance tca 
 	  left join (select eb_no,eb_id,sum(working_hours-idle_hours) whrs from daily_attendance da
 	  where company_id=1 and da.attendance_date  between '$periodfromdate' and '$periodtodate'
 	  and da.is_active=1 group by eb_no,eb_id) da on da.eb_id=tca.eb_id
@@ -1087,7 +1087,31 @@ $updfor='ADV';
 	  where tca.advance_date ='2026-01-05'
 	  and tca.advance_amount >0
 	  and da.eb_id is not null and tpep.PAY_SCHEME_ID is not null";
-        $this->db->query($sql);
+
+     $sql=" insert into EMPMILL12.tbl_njm_wages_data_collection 
+    (eb_id,date_from,date_to,advance,
+    is_active,update_for,payscheme_id,advance_date ) 
+     select  tca.eb_id, '$periodfromdate'  df,'$periodtodate' dt,installment_amount,
+      1 act,'$updfor',$att_payschm  payscm,advance_date advdate from (
+	  select tca.eb_id, tca.advance_amount,tca.advance_date,tca.company_id,tca.installment_amount,ifnull(dedadv.advded ,0 ) advded,
+	  tca.advance_amount-ifnull(dedadv.advded ,0 ) balamt from EMPMILL12.tbl_company_advance tca 
+	  left join (	  
+	  select eb_id,advance_date,sum(advance) advded from  EMPMILL12.tbl_njm_wages_data_collection tnwdc 
+	  where update_for='$updfor' and tnwdc.date_from <'$periodfromdate' AND tnwdc.is_active=1 
+	  and tnwdc.payscheme_id=$att_payschm group by eb_id,advance_date
+	  ) dedadv on dedadv.advance_date =tca.advance_date and tca.eb_id =dedadv.eb_id 
+	  where tca.advance_amount-ifnull(dedadv.advded ,0 )>0
+	  ) tca
+	  left join (select eb_no,eb_id,sum(working_hours-idle_hours) whrs from daily_attendance da
+	  where company_id=1 and da.attendance_date  between '$periodfromdate' and '$periodtodate'
+	  and da.is_active=1 group by eb_no,eb_id) da on da.eb_id=tca.eb_id
+	  left join vowsls.tbl_pay_employee_payscheme tpep on tpep.EMPLOYEEID =tca.eb_id 
+      and tpep.PAY_SCHEME_ID =$att_payschm and tpep.STATUS =1
+	  where advance_amount >0
+	  and da.eb_id is not null and tpep.PAY_SCHEME_ID is not null";
+//ECHO $sql;	  
+
+      $this->db->query($sql);
 
 
 
@@ -2451,7 +2475,7 @@ public function mainwgsbrksummary($att_payschm,$periodfromdate,$periodtodate) {
     
     
     $sql="   select * from (
-   select theod.emp_code ticket_no,
+    select theod.emp_code ticket_no,
     CONCAT(thepd.first_name, ' ', thepd.middle_name, ' ', thepd.last_name) AS emp_name,
     max(case when component_id=349 then amount else 0 end) 'Grossearn',
     0 'othern',
@@ -2472,17 +2496,17 @@ public function mainwgsbrksummary($att_payschm,$periodfromdate,$periodtodate) {
     max(case when component_id=18 then round(amount/10*11,0) else 0 end) emppf,
     max(case when component_id=19 then round(amount/.75*3.25,0) else 0 end) 'empesi',thebd.bank_acc_no,ifsc_code 
     ,tpep.PAYSCHEME_ID ,theod.department_id
-from tbl_pay_employee_payroll tpep
-left join tbl_pay_period tpp on tpep.PAYPERIOD_ID =tpp.ID and tpp.IS_ACTIVE =1 and tpp.STATUS not in (4)
-left join tbl_hrms_ed_personal_details thepd on tpep.EMPLOYEEID =thepd.eb_id
-left join tbl_hrms_ed_official_details theod on tpep.EMPLOYEEID =theod.eb_id and theod.is_active =1
-left join tbl_hrms_ed_bank_details thebd on thebd.eb_id =tpep.EMPLOYEEID and thebd.is_active =1
-where tpep.STATUS =1 and tpep.PAYSCHEME_ID in (164) and tpp.FROM_DATE ='$periodfromdate'
-and tpp.TO_DATE ='$periodtodate'  
-group by emp_code,
-CONCAT(thepd.first_name, ' ', thepd.middle_name, ' ', thepd.last_name),tpep.PAYSCHEME_ID,
-ifsc_code,thebd.bank_acc_no  ,theod.department_id
-) g where netpay>0
+    from tbl_pay_employee_payroll tpep
+    left join tbl_pay_period tpp on tpep.PAYPERIOD_ID =tpp.ID and tpp.IS_ACTIVE =1 and tpp.STATUS not in (4)
+    left join tbl_hrms_ed_personal_details thepd on tpep.EMPLOYEEID =thepd.eb_id
+    left join tbl_hrms_ed_official_details theod on tpep.EMPLOYEEID =theod.eb_id and theod.is_active =1
+    left join tbl_hrms_ed_bank_details thebd on thebd.eb_id =tpep.EMPLOYEEID and thebd.is_active =1
+    where tpep.STATUS =1 and tpep.PAYSCHEME_ID in (164) and tpp.FROM_DATE ='$periodfromdate'
+    and tpp.TO_DATE ='$periodtodate'  
+    group by emp_code,
+    CONCAT(thepd.first_name, ' ', thepd.middle_name, ' ', thepd.last_name),tpep.PAYSCHEME_ID,
+    ifsc_code,thebd.bank_acc_no  ,theod.department_id
+    ) g where netpay>0
 
 ";
     $query = $this->db->query($sql);

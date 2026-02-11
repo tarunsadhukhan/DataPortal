@@ -1194,7 +1194,32 @@ WHERE ttlf.link_for = 'G'
 
     }
 
+	public function getFneTargetEntry($deptId, $targetType, $effCodeId, $qualCode, $dateFrom, $dateTo){
+		$this->db->where('dept_id', $deptId);
+		$this->db->where('target_type', $targetType);
+		$this->db->where('date_from', $dateFrom);
+		$this->db->where('date_to', $dateTo);
+   //     echo $targetType;
+		if ($targetType === 'E') {
+			$this->db->where('eff_code', $effCodeId);
+		} elseif ($targetType === 'P') {
+			$this->db->where('qual_code', $qualCode);
+		}
+		$q = $this->db->get('EMPMILL12.tbl_all_trn_eff');
+    //    echo $this->db->last_query();
 
+ //   echo $this->db->last_query();
+    return $q->num_rows() > 0 ? $q->row() : false;
+	}
+
+	public function saveFneTargetEntry($data, $recordId = null){
+		if ($recordId) {
+			$this->db->where('all_trn_eff_id', $recordId);
+			return $this->db->update('EMPMILL12.tbl_all_trn_eff', $data);
+		}
+
+		return $this->db->insert('EMPMILL12.tbl_all_trn_eff', $data);
+	}
 
 
 }    

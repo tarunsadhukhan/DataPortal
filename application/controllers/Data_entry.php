@@ -37,6 +37,45 @@ class Data_entry extends MY_Controller {
 		ini_set('max_execution_time', 6000); //300 seconds = 5 minutes
     }
 
+	public function validate_ejm_wage_qcode() {
+		$deptId = $this->input->post('dept_id');
+		$wageQCode = $this->input->post('wage_q_code');
+
+		$this->load->model('Varaha_model');
+		$isValid = $this->Varaha_model->validateEjmWageQCode($deptId, $wageQCode);
+
+		$response = array(
+			'valid' => $isValid,
+			'message' => $isValid ? 'Valid qual code' : 'Invalid qual code for selected department'
+		);
+
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode($response));
+	}
+
+	public function get_fne_target_entry() {
+		$deptId = $this->input->post('dept_id');
+		$targetType = $this->input->post('target_type');
+		$effCodeId = $this->input->post('eff_mast_code_id');
+		$qualCode = $this->input->post('qual_code');
+		$dateFrom = $this->input->post('date_from');
+		$dateTo = $this->input->post('date_to');
+
+		$this->load->model('Varaha_model');
+		$row = $this->Varaha_model->getFneTargetEntry($deptId, $targetType, $effCodeId, $qualCode, $dateFrom, $dateTo);
+
+		$response = array(
+			'exists' => $row ? true : false,
+			'all_trn_eff_id' => $row ? $row->all_trn_eff_id : null,
+			'target_eff' => $row ? $row->target_eff : null
+		);
+
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode($response));
+	}
+
 
 public function workingdaydetailsexcel($perms = null) {
     // Load PhpSpreadsheet classes
@@ -982,6 +1021,7 @@ echo json_encode(array('success' => true, 'savedata' => $savedata, 'excelUrl' =>
 			$this->data['departments']=$this->varaha_model->getAllDepartments($this->data['companyId']);
 			$this->data['masterdepartments']=$this->varaha_model->getAllMasterDepartments($this->data['companyId']);
 			$this->data['payschemes']=$this->varaha_model->getAllPayschemes($this->data['companyId']);
+			$this->data['getAlleffM']=$this->varaha_model->getAlleffM($this->data['companyId']);
 			$this->data['att_dept']="";
 			$this->data['designations']= $this->varaha_model->getAllDesignations($this->data['companyId']);
 			$this->data['att_desig']="";
@@ -2530,7 +2570,7 @@ if ($holget==5) {
 				$compponentid=$row->COMPONENT_ID;
 				echo $compponentid.'==='.$lnformula."<br>";
 				if ($lnformula>0) {
-					$this->Loan_adv_model->getattwagesins($periodfromdate,$periodtodate,$att_payschm,$holget,$lnformula,$compponentid);
+//					$this->Loan_adv_model->getattwagesins($periodfromdate,$periodtodate,$att_payschm,$holget,$lnformula,$compponentid);
 				}	
 			}
  

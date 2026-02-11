@@ -2560,6 +2560,91 @@ echo json_encode(array('success' => true, 'savedata' => $savedata, 'excelUrl' =>
 
 	}
 
+public function clone_last_fortnight_targets() {
+		$dateFrom = $this->input->post('date_from');
+		$dateTo = $this->input->post('date_to');
+
+		if (!$dateFrom || !$dateTo) {
+			$this->output
+				->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => 'Missing date range')));
+			return;
+		}
+
+		$this->load->model('Varaha_model');
+		$result = $this->Varaha_model->cloneLastFortnightTargets($dateFrom, $dateTo);
+
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode($result));
+	}
+
+public function get_fne_target_entry() {
+		$deptId = $this->input->post('dept_id');
+		$targetType = $this->input->post('target_type');
+		$effCodeId = $this->input->post('eff_code');
+		$qualCode = $this->input->post('qual_code');
+		$dateFrom = $this->input->post('date_from');
+		$dateTo = $this->input->post('date_to');
+
+		$this->load->model('Ejmallprocessdata');
+		$row = $this->Ejmallprocessdata->getFneTargetEntry($deptId, $targetType, $effCodeId, $qualCode, $dateFrom, $dateTo);
+
+		$response = array(
+			'exists' => $row ? true : false,
+			'all_trn_eff_id' => $row ? $row->all_trn_eff_id : null,
+			'target_eff' => $row ? $row->target_eff : null
+		);
+
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode($response));
+	}
+
+public function save_fne_target_entry() {
+		$recordId = $this->input->post('all_trn_eff_id');
+		$deptId = $this->input->post('dept_id');
+		$targetType = $this->input->post('target_type');
+		$effCodeId = $this->input->post('eff_mast_code_id');
+		$qualCode = $this->input->post('qual_code');
+		$targetEff = $this->input->post('target_eff');
+		$dateFrom = $this->input->post('date_from');
+		$dateTo = $this->input->post('date_to');
+
+		if (!$deptId || !$targetType || !$dateFrom || !$dateTo || $targetEff === null || $targetEff === '') {
+			$this->output
+				->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => 'Missing required fields')));
+			return;
+		}
+
+		$data = array(
+			'dept_id' => $deptId,
+			'target_type' => $targetType,
+			'eff_code' => $targetType === 'EFF' ? $effCodeId : null,
+			'qual_code' => $targetType === 'PROD' ? $qualCode : null,
+			'target_eff' => $targetEff,
+			'date_from' => $dateFrom,
+			'date_to' => $dateTo
+		);
+
+		$this->load->model('Ejmallprocessdata');
+		$saved = $this->Ejmallprocessdata->saveFneTargetEntry($data, $recordId ? $recordId : null);
+
+		$response = array(
+			'success' => $saved ? true : false,
+			'message' => $saved ? 'Saved successfully' : 'Save failed'
+		);
+
+		if ($saved && !$recordId) {
+			$response['all_trn_eff_id'] = $this->db->insert_id();
+		}
+
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode($response));
+	}
+
 
 
 
