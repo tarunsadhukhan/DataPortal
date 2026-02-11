@@ -2645,6 +2645,25 @@ public function save_fne_target_entry() {
 			->set_output(json_encode($response));
 	}
 
+public function get_all_fne_targets() {
+		$dateFrom = $this->input->post('date_from');
+		$dateTo = $this->input->post('date_to');
+
+		if (!$dateFrom || !$dateTo) {
+			$this->output
+				->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => 'Missing date range')));
+			return;
+		}
+
+		$this->load->model('Ejmallprocessdata');
+		$rows = $this->Ejmallprocessdata->getAllFneTargets($dateFrom, $dateTo);
+
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode(array('success' => true, 'data' => $rows)));
+	}
+
 
 
 

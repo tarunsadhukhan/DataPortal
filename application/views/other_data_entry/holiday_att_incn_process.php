@@ -671,6 +671,7 @@ function hideSpinnerCounter() {
                     $('#tareff_target_id').val(response.all_trn_eff_id || recordId);
                     $('#tareff_target_save').hide();
                     $('#tareff_target_update').show();
+                    loadTareffTargetTable();
                 } else {
                     alert(response.message || 'Save failed');
                 }
@@ -840,7 +841,94 @@ function ejmopenModal() {
 function tareffopenModal() {
 //    alert('open');
         document.getElementById('tareffModal').style.display = 'block';
+        var dateFrom = $('#ejmfromdt').val();
+        var dateTo = $('#ejmtodt').val();
+        $('#tareff_date_display').text('From: ' + dateFrom + '  To: ' + dateTo);
+        loadTareffTargetTable();
 }
+
+function loadTareffTargetTable() {
+    var dateFrom = $('#ejmfromdt').val();
+    var dateTo = $('#ejmtodt').val();
+    if (!dateFrom || !dateTo) {
+        $('#tareff_target_tbody').html('<tr><td colspan="5" class="text-center">Please select From and To dates</td></tr>');
+        return;
+    }
+
+    // Destroy existing DataTable if initialized
+    if ($.fn.DataTable.isDataTable('#tarrecordTable')) {
+        $('#tarrecordTable').DataTable().destroy();
+    }
+    $('#tareff_target_tbody').html('<tr><td colspan="5" class="text-center">Loading...</td></tr>');
+
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/get_all_fne_targets'); ?>",
+        type: "POST",
+        data: { date_from: dateFrom, date_to: dateTo },
+        dataType: "json",
+        success: function(response) {
+            // Destroy again before reinit
+            if ($.fn.DataTable.isDataTable('#tarrecordTable')) {
+                $('#tarrecordTable').DataTable().destroy();
+            }
+            $('#tareff_target_tbody').empty();
+
+            if (response.success && response.data && response.data.length > 0) {
+                var html = '';
+                $.each(response.data, function(i, row) {
+                    html += '<tr>';
+                    html += '<td>' + (row.dept_desc || row.dept_id) + '</td>';
+                    html += '<td>' + (row.eff_mast_name || row.eff_code || '-') + '</td>';
+                    html += '<td>' + (row.qual_code || '-') + '</td>';
+                    html += '<td>' + (row.target_eff || '') + '</td>';
+                    html += '<td><button class="btn btn-sm btn-info tareff-edit-btn" '
+                         + 'data-id="' + row.all_trn_eff_id + '" '
+                         + 'data-dept="' + row.dept_id + '" '
+                         + 'data-type="' + row.target_type + '" '
+                         + 'data-eff="' + (row.eff_code || '') + '" '
+                         + 'data-qual="' + (row.qual_code || '') + '" '
+                         + 'data-target="' + (row.target_eff || '') + '" '
+                         + '>Edit</button></td>';
+                    html += '</tr>';
+                });
+                $('#tareff_target_tbody').html(html);
+            }
+
+            // Initialize DataTable with search, scroll
+            $('#tarrecordTable').DataTable({
+                searching: true,
+                paging: true,
+                pageLength: 10,
+                scrollX: true,
+                scrollY: '300px',
+                scrollCollapse: true,
+                ordering: true,
+                info: true,
+                autoWidth: false,
+                language: {
+                    emptyTable: 'No records found'
+                }
+            });
+        },
+        error: function() {
+            $('#tareff_target_tbody').html('<tr><td colspan="5" class="text-center text-danger">Error loading data</td></tr>');
+        }
+    });
+}
+
+$(document).on('click', '.tareff-edit-btn', function() {
+    var btn = $(this);
+    $('#tareff_dept_id').val(btn.data('dept')).trigger('change');
+    var ttype = btn.data('type');
+    if (ttype === 'E') $('#tareff_target_type').val('EFF').trigger('change');
+    else if (ttype === 'P') $('#tareff_target_type').val('PROD').trigger('change');
+    $('#tareff_eff_code').val(btn.data('eff')).trigger('change');
+    $('#tareff_qual_code').val(btn.data('qual'));
+    $('#tareff_target_eff').val(btn.data('target'));
+    $('#tareff_target_id').val(btn.data('id'));
+    $('#tareff_target_save').hide();
+    $('#tareff_target_update').show();
+});
 
 function tareffcloseModal() {
 //    alert('close');

@@ -1221,5 +1221,17 @@ WHERE ttlf.link_for = 'G'
 		return $this->db->insert('EMPMILL12.tbl_all_trn_eff', $data);
 	}
 
+	public function getAllFneTargets($dateFrom, $dateTo){
+		$this->db->select('t.all_trn_eff_id, t.dept_id, d.dept_desc, t.target_type, t.eff_code, e.eff_mast_name, t.qual_code, t.target_eff, t.date_from, t.date_to');
+		$this->db->from('EMPMILL12.tbl_all_trn_eff t');
+		$this->db->join('department_master d', 'd.dept_id = t.dept_id', 'left');
+		$this->db->join('EMPMILL12.tbl_eff_master e', 'e.eff_code = t.eff_code', 'left');
+		$this->db->where('t.date_from', $dateFrom);
+		$this->db->where('t.date_to', $dateTo);
+		$this->db->order_by('t.dept_id, t.target_type, t.eff_code');
+		$q = $this->db->get();
+		return $q->result();
+	}
+
 
 }    

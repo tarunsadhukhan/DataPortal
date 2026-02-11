@@ -1,4 +1,34 @@
-        <div id="ejmModal" class="modal">
+
+    <style>
+        table {
+            display: none;
+        }
+         #tarrecordTable, #tarrecordTable_wrapper table {
+            display: table !important;
+            width: 100% !important;
+        }
+         #tarrecordTable_wrapper {
+            display: block !important;
+        }
+         #tarrecordTable_wrapper * {
+            visibility: visible;
+        }
+         #tarrecordTable thead th {
+            background-color: #0f4d92  ; /* Background color for the header */
+            color: #f8f8ff  ; /* Font color for the header */
+            font-size: 11px; /* Font size for the header */
+            white-space: nowrap;
+            height: 10px; 
+            padding: 4px 6px;
+        }
+         #tarrecordTable tbody td {
+            font-size: 10px;
+            white-space: nowrap;
+            padding: 3px 5px;
+        }
+     </style>   
+
+<div id="ejmModal" class="modal">
             <div class="modal-content">
       
             <div class="modal-header">
@@ -185,6 +215,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title modal-title-center" id="tareffModalLabel">FNE Target Entry</h4>
+                    <span id="tareff_date_display" style="font-size:14px; font-weight:bold; color:#0f4d92; margin-left:15px;"></span>
                     <button type="button" id="tareffclosebtn" onclick="tareffcloseModal()" class="close btn btn-primary" data-dismiss="modal" aria-label="Close">
                     </button>
                 </div>
@@ -271,25 +302,37 @@
 
                     <div class="form-group">
                         <div class="col-12 col-sm-4">
-                            <label for="tareff_target_save">Save</label>
+                            <label for="tareff_target_save">Save / Update</label>
                             <button name="submit" id="tareff_target_save" type="submit" class="form-control btn btn-primary">Save</button>
-                        </div>
-                        <div class="col-12 col-sm-4">
-                            <label for="tareff_target_update">Update</label>
                             <button name="submit" id="tareff_target_update" type="submit" class="form-control btn btn-primary" style="display:none;">Update</button>
                         </div>
                         <div class="col-12 col-sm-4">
                             <label for="tareff_clone">Clone Last FNE</label>
                             <button name="submit" id="tareff_clone" type="button" class="form-control btn btn-warning">Clone</button>
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <div class="col-12 col-sm-12">
+                        <div class="col-12 col-sm-4">
                             <label for="tareffclose">Close</label>
                             <button name="submit" id="tareffclose" type="submit" class="form-control btn btn-danger">Close</button>
                         </div>
                     </div>
+
+   <table id="tarrecordTable" class="display">
+        <thead>
+            <tr>
+                <th>Department</th>
+                <th>Eff Code</th>
+                <th>Qual Code</th>
+                <th>Target Eff</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="tareff_target_tbody">
+        </tbody>
+    </table>
+            
+
+
+
                 </div>
             </div>
         </div>
