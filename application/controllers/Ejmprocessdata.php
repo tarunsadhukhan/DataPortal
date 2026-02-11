@@ -2664,8 +2664,70 @@ public function get_all_fne_targets() {
 			->set_output(json_encode(array('success' => true, 'data' => $rows)));
 	}
 
+	// ========== Wages & Production Quality Link CRUD ==========
 
+	public function get_prod_wages_links() {
+		$this->load->model('Ejmallprocessdata');
+		$rows = $this->Ejmallprocessdata->getProdWagesLinks();
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode(array('success' => true, 'data' => $rows)));
+	}
 
+	public function save_prod_wages_link() {
+		$data = array(
+			'prod_code'  => $this->input->post('prod_code'),
+			'wages_code' => $this->input->post('wages_code'),
+			'dept_id'    => $this->input->post('dept_id'),
+			'code_type'  => $this->input->post('code_type')
+		);
+
+		if (!$data['prod_code'] || !$data['wages_code'] || !$data['dept_id']) {
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => 'Missing required fields')));
+			return;
+		}
+
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->saveProdWagesLink($data);
+
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => $result)));
+	}
+
+	public function update_prod_wages_link() {
+		$old_where = array(
+			'prod_code' => $this->input->post('old_prod_code'),
+			'dept_id'   => $this->input->post('old_dept_id'),
+			'code_type' => $this->input->post('old_code_type')
+		);
+		$data = array(
+			'prod_code'  => $this->input->post('prod_code'),
+			'wages_code' => $this->input->post('wages_code'),
+			'dept_id'    => $this->input->post('dept_id'),
+			'code_type'  => $this->input->post('code_type')
+		);
+
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->updateProdWagesLink($old_where, $data);
+
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => $result)));
+	}
+
+	public function delete_prod_wages_link() {
+		$where = array(
+			'prod_code' => $this->input->post('prod_code'),
+			'dept_id'   => $this->input->post('dept_id'),
+			'code_type' => $this->input->post('code_type')
+		);
+
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->deleteProdWagesLink($where);
+
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => $result)));
+	}
 
 
 }

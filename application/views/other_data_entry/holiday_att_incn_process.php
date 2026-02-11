@@ -478,6 +478,9 @@ function hideSpinnerCounter() {
         if ($(this).val() == 1) {
             tareffopenModal();
         }
+        if ($(this).val() == 2) {
+            prodWagesModal();
+        }
     });
 
     function checkTareffExisting() {
@@ -847,6 +850,17 @@ function tareffopenModal() {
         loadTareffTargetTable();
 }
 
+function prodWagesModal() {
+//    alert('open');
+        document.getElementById('prodWagesModal').style.display = 'block';
+        var dateFrom = $('#ejmfromdt').val();
+        var dateTo = $('#ejmtodt').val();
+        $('#tareff_date_display').text('From: ' + dateFrom + '  To: ' + dateTo);
+         loadProdWagesTable();
+}
+
+
+
 function loadTareffTargetTable() {
     var dateFrom = $('#ejmfromdt').val();
     var dateTo = $('#ejmtodt').val();
@@ -934,6 +948,192 @@ function tareffcloseModal() {
 //    alert('close');
     document.getElementById('tareffModal').style.display = 'none';
 }
+
+// ========== Wages & Production Quality Link Modal ==========
+function prodWagesOpenModal() {
+    document.getElementById('prodWagesModal').style.display = 'block';
+    loadProdWagesTable();
+}
+
+function prodWagesCloseModal() {
+    document.getElementById('prodWagesModal').style.display = 'none';
+}
+
+$(document).on('click', '#pw_close_btn, #prodWagesCloseBtnX', function() {
+    prodWagesCloseModal();
+});
+
+function prodWagesClearForm() {
+    $('#pw_dept_id').val('0').trigger('change');
+    $('#pw_prod_code').val('');
+    $('#pw_wages_code').val('');
+    $('#pw_code_type').val('');
+    $('#pw_edit_id').val('');
+    $('#pw_save_btn').show();
+    $('#pw_update_btn').hide();
+}
+
+function loadProdWagesTable() {
+    if ($.fn.DataTable.isDataTable('#prodWagesTable')) {
+        $('#prodWagesTable').DataTable().destroy();
+    }
+    $('#pw_tbody').html('<tr><td colspan="5" class="text-center">Loading...</td></tr>');
+
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/get_prod_wages_links'); ?>",
+        type: "POST",
+        dataType: "json",
+        success: function(response) {
+            if ($.fn.DataTable.isDataTable('#prodWagesTable')) {
+                $('#prodWagesTable').DataTable().destroy();
+            }
+            $('#pw_tbody').empty();
+
+            if (response.success && response.data && response.data.length > 0) {
+                var html = '';
+                $.each(response.data, function(i, row) {
+                    html += '<tr>';
+                    html += '<td>' + (row.dept_desc || row.dept_id) + '</td>';
+                    html += '<td>' + row.prod_code + '</td>';
+                    html += '<td>' + row.wages_code + '</td>';
+                    html += '<td>' + (row.code_type || '') + '</td>';
+                    html += '<td>'
+                         + '<button class="btn btn-sm btn-info pw-edit-btn" '
+                         + 'data-prod="' + row.prod_code + '" '
+                         + 'data-wages="' + row.wages_code + '" '
+                         + 'data-dept="' + row.dept_id + '" '
+                         + 'data-type="' + (row.code_type || '') + '" '
+                         + '>Edit</button> '
+                         + '<button class="btn btn-sm btn-danger pw-delete-btn" '
+                         + 'data-prod="' + row.prod_code + '" '
+                         + 'data-dept="' + row.dept_id + '" '
+                         + 'data-type="' + (row.code_type || '') + '" '
+                         + '>Del</button>'
+                         + '</td>';
+                    html += '</tr>';
+                });
+                $('#pw_tbody').html(html);
+            }
+
+            $('#prodWagesTable').DataTable({
+                searching: true,
+                paging: true,
+                pageLength: 10,
+                scrollX: true,
+                scrollY: '300px',
+                scrollCollapse: true,
+                ordering: true,
+                info: true,
+                autoWidth: false,
+                language: { emptyTable: 'No records found' }
+            });
+        },
+        error: function() {
+            $('#pw_tbody').html('<tr><td colspan="5" class="text-center text-danger">Error loading data</td></tr>');
+        }
+    });
+}
+
+// Save
+$(document).on('click', '#pw_save_btn', function() {
+    var dept = $('#pw_dept_id').val();
+    var prod = $('#pw_prod_code').val();
+    var wages = $('#pw_wages_code').val();
+    var ctype = $('#pw_code_type').val();
+    if (!dept || dept == '0' || !prod || !wages) {
+        alert('Please fill Department, Prod Code and Wages Code');
+        return;
+    }
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/save_prod_wages_link'); ?>",
+        type: "POST",
+        data: { dept_id: dept, prod_code: prod, wages_code: wages, code_type: ctype },
+        dataType: "json",
+        success: function(response) {
+            if (response.success) {
+                alert('Saved successfully');
+                prodWagesClearForm();
+                loadProdWagesTable();
+            } else {
+                alert(response.message || 'Error saving');
+            }
+        },
+        error: function() { alert('Error saving data'); }
+    });
+});
+
+// Edit button click
+$(document).on('click', '.pw-edit-btn', function() {
+    var btn = $(this);
+    $('#pw_dept_id').val(btn.data('dept')).trigger('change');
+    $('#pw_prod_code').val(btn.data('prod'));
+    $('#pw_wages_code').val(btn.data('wages'));
+    $('#pw_code_type').val(btn.data('type'));
+    $('#pw_edit_id').val(btn.data('prod') + '|' + btn.data('dept') + '|' + btn.data('type'));
+    $('#pw_save_btn').hide();
+    $('#pw_update_btn').show();
+});
+
+// Update
+$(document).on('click', '#pw_update_btn', function() {
+    var editId = $('#pw_edit_id').val();
+    if (!editId) { alert('No record selected for update'); return; }
+    var parts = editId.split('|');
+    var dept = $('#pw_dept_id').val();
+    var prod = $('#pw_prod_code').val();
+    var wages = $('#pw_wages_code').val();
+    var ctype = $('#pw_code_type').val();
+    if (!dept || dept == '0' || !prod || !wages) {
+        alert('Please fill Department, Prod Code and Wages Code');
+        return;
+    }
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/update_prod_wages_link'); ?>",
+        type: "POST",
+        data: {
+            old_prod_code: parts[0], old_dept_id: parts[1], old_code_type: parts[2],
+            dept_id: dept, prod_code: prod, wages_code: wages, code_type: ctype
+        },
+        dataType: "json",
+        success: function(response) {
+            if (response.success) {
+                alert('Updated successfully');
+                prodWagesClearForm();
+                loadProdWagesTable();
+            } else {
+                alert(response.message || 'Error updating');
+            }
+        },
+        error: function() { alert('Error updating data'); }
+    });
+});
+
+// Delete
+$(document).on('click', '.pw-delete-btn', function() {
+    if (!confirm('Are you sure you want to delete this record?')) return;
+    var btn = $(this);
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/delete_prod_wages_link'); ?>",
+        type: "POST",
+        data: { prod_code: btn.data('prod'), dept_id: btn.data('dept'), code_type: btn.data('type') },
+        dataType: "json",
+        success: function(response) {
+            if (response.success) {
+                alert('Deleted successfully');
+                loadProdWagesTable();
+            } else {
+                alert(response.message || 'Error deleting');
+            }
+        },
+        error: function() { alert('Error deleting data'); }
+    });
+});
+
+// Clear
+$(document).on('click', '#pw_clear_btn', function() {
+    prodWagesClearForm();
+});
+// ========== End Wages & Production Quality Link Modal ==========
 
 function syncEjmToNjm() {
     $('#njmcntfromdt').val($('#ejmfromdt').val());
@@ -3081,6 +3281,10 @@ return false;
                syncEjmToNjm();
                if ($('#ejm_getmenu').val() == 1) {
                    tareffopenModal();
+                   return;
+               }
+               if ($('#ejm_getmenu').val() == 2) {
+                   prodWagesOpenModal();
                    return;
                }
                $("#njmmenuclick").trigger('click');

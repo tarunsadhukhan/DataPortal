@@ -26,6 +26,29 @@
             white-space: nowrap;
             padding: 3px 5px;
         }
+         #prodWagesTable, #prodWagesTable_wrapper table {
+            display: table !important;
+            width: 100% !important;
+        }
+         #prodWagesTable_wrapper {
+            display: block !important;
+        }
+         #prodWagesTable_wrapper * {
+            visibility: visible;
+        }
+         #prodWagesTable thead th {
+            background-color: #0f4d92;
+            color: #f8f8ff;
+            font-size: 11px;
+            white-space: nowrap;
+            height: 10px;
+            padding: 4px 6px;
+        }
+         #prodWagesTable tbody td {
+            font-size: 10px;
+            white-space: nowrap;
+            padding: 3px 5px;
+        }
      </style>   
 
 <div id="ejmModal" class="modal">
@@ -51,25 +74,7 @@
             </div>
         </div>
 
-        <div class="form-group">
-           <div class="col-sm-3">
-            <label for="email">Cad Ded</label>
-            <input class="form-control form-control-rounded" id="ejmcadded" value="0" name="ejmcadded" type="text">   
-        </div>
-        <div class="col-sm-3">
-            <label for="email">Vard Ded</label>
-            <input class="form-control form-control-rounded" id="ejmvardded" value="0" name="ejmvardded" type="text">   
-        </div>
-        <div class="col-sm-3">
-            <label for="email">GWF Ded</label>
-            <input class="form-control form-control-rounded" id="ejmgwfded" value="0" name="ejmgwfded" type="text">   
-        </div>
-            <div class="col-12 col-sm-3">
-            <label for="purchaseDetailsPurchaseDate">Cad/Vard/GWF<span class="text-center"></span></label>
-            <button name="submit" id="ejmwrkvardupdate"  type="submit" class="form-control btn btn-primary">Update</button>
-        </div>
-        </div>
-
+ 
         <div class="form-group">
 
         <div class="col-12 col-sm-12">
@@ -111,7 +116,8 @@
 
 
     </div>
-        <div class="form-group">
+ 
+    <div class="form-group">
 
  
 
@@ -136,9 +142,9 @@
                <label for="email">Process/Report/Print For</label>
               <?php
                     $holget[0] = 'Select Report';
+                    $holget[2] = 'Wages & Production Quality Link';
                     $holget[1] = 'FNE Target Entry ';
-                    $holget[2] = 'Contractor Wages PayRoll Posting';
-                    $holget[3] = 'Contractor Wages Excel for PayRoll';
+                    $holget[3] = 'Attendance Preparation & Updation';
                     $holget[4] = 'Contractor Wages Pay Register';
                     $holget[5] = 'Main Wages Process ';
                     $holget[6] = 'Main Wages PayRoll Posting    ';
@@ -338,5 +344,79 @@
         </div>
 
 
+
+        <div id="prodWagesModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title modal-title-center" id="prodWagesModalLabel">Wages & Production Quality Link</h4>
+                    <button type="button" id="prodWagesCloseBtnX" class="close btn btn-primary" data-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="col-12 col-sm-12">
+                            <label for="pw_dept_id">Department</label>
+                            <?php
+                                if (!isset($departments)) {
+                                    $this->data['companyId'] = $company;
+                                    $departments = $this->varaha_model->getAllDepartments($this->data['companyId']);
+                                }
+                                $pw_dept_options = ['0' => 'Select'];
+                                foreach ($departments as $dept) {
+                                    $pw_dept_options[$dept->dept_id] = $dept->dept_desc;
+                                }
+                                echo form_dropdown('pw_dept_id', $pw_dept_options, '0', 'id="pw_dept_id" class="myselect form-control form-control-rounded" data-placeholder="Select Department" style="width:100%;"');
+                            ?>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-12 col-sm-4">
+                            <label for="pw_prod_code">Production Q Code</label>
+                            <input class="form-control form-control-rounded" id="pw_prod_code" name="pw_prod_code" type="text" maxlength="8">
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <label for="pw_wages_code">Wages Q Code</label>
+                            <input class="form-control form-control-rounded" id="pw_wages_code" name="pw_wages_code" type="number">
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <label for="pw_code_type">Code Type</label>
+                            <input class="form-control form-control-rounded" id="pw_code_type" name="pw_code_type" type="text" maxlength="10">
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="pw_edit_id" value="">
+
+                    <div class="form-group">
+                        <div class="col-12 col-sm-4">
+                            <label>Save / Update</label>
+                            <button id="pw_save_btn" type="button" class="form-control btn btn-primary">Save</button>
+                            <button id="pw_update_btn" type="button" class="form-control btn btn-primary" style="display:none;">Update</button>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <label>Clear</label>
+                            <button id="pw_clear_btn" type="button" class="form-control btn btn-warning">Clear</button>
+                        </div>
+                        <div class="col-12 col-sm-4">
+                            <label>Close</label>
+                            <button id="pw_close_btn" type="button" class="form-control btn btn-danger">Close</button>
+                        </div>
+                    </div>
+
+                    <table id="prodWagesTable" class="display">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Prod Code</th>
+                                <th>Wages Code</th>
+                                <th>Code Type</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pw_tbody">
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
 
 

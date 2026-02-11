@@ -1233,5 +1233,35 @@ WHERE ttlf.link_for = 'G'
 		return $q->result();
 	}
 
+	// ========== Wages & Production Quality Link ==========
+
+	public function getProdWagesLinks() {
+		$this->db->select('p.prod_code, p.wages_code, p.dept_id, d.dept_desc, p.code_type');
+		$this->db->from('EMPMILL12.tbl_prod_wages_code_link p');
+		$this->db->join('department_master d', 'd.dept_id = p.dept_id', 'left');
+		$this->db->order_by('p.dept_id, p.prod_code');
+		$q = $this->db->get();
+     //   ECHO $this->db->last_query();
+		return $q->result();
+	}
+
+	public function saveProdWagesLink($data) {
+		return $this->db->insert('EMPMILL12.tbl_prod_wages_code_link', $data);
+	}
+
+	public function updateProdWagesLink($old_where, $data) {
+		$this->db->where('prod_code', $old_where['prod_code']);
+		$this->db->where('dept_id', $old_where['dept_id']);
+		$this->db->where('code_type', $old_where['code_type']);
+		return $this->db->update('EMPMILL12.tbl_prod_wages_code_link', $data);
+	}
+
+	public function deleteProdWagesLink($where) {
+		$this->db->where('prod_code', $where['prod_code']);
+		$this->db->where('dept_id', $where['dept_id']);
+		$this->db->where('code_type', $where['code_type']);
+		return $this->db->delete('EMPMILL12.tbl_prod_wages_code_link');
+	}
+
 
 }    
