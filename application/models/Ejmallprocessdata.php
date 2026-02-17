@@ -1233,6 +1233,11 @@ WHERE ttlf.link_for = 'G'
 		return $q->result();
 	}
 
+	public function deleteFneTarget($id) {
+		$this->db->where('all_trn_eff_id', $id);
+        return $this->db->delete('EMPMILL12.tbl_all_trn_eff');
+	}
+
 	// ========== Wages & Production Quality Link ==========
 
 	public function getProdWagesLinks() {
@@ -1261,6 +1266,191 @@ WHERE ttlf.link_for = 'G'
 		$this->db->where('dept_id', $where['dept_id']);
 		$this->db->where('code_type', $where['code_type']);
 		return $this->db->delete('EMPMILL12.tbl_prod_wages_code_link');
+	}
+
+	// ========== Attendance Preparation & Updation ==========
+
+	public function getAttPrepData($dateFrom, $dateTo, $paySchm) {
+		$this->db->select("a.att_summary_id,d.dept_id, a.dept_code, d.dept_desc, a.occu_code, a.shift, wm.eb_no, CONCAT(wm.worker_name, ' ', IFNULL(wm.middle_name,''), ' ', IFNULL(wm.last_name,'')) AS emp_name, a.working_hours, a.ot_hours, a.ns_hours, tps.NAME as pay_scheme_id, a.is_active", FALSE);
+		$this->db->from('EMPMILL12.tbl_ejm_wages_att_summary a');
+		$this->db->join('department_master d', 'd.dept_code = a.dept_code and d.company_id=2', 'left');
+        $this->db->join('vowsls.tbl_pay_scheme tps ', 'tps.ID = a.pay_scheme_id ', 'left');
+        $this->db->join('vowsls.worker_master wm ', 'wm.eb_id = a.eb_id ', 'left');
+        if ($dateFrom) $this->db->where('a.date_from', $dateFrom);
+		if ($dateTo) $this->db->where('a.date_to', $dateTo);
+        $this->db->where('a.is_active', 1);
+		if ($paySchm && !empty($paySchm)) {
+			if (is_array($paySchm)) {
+				$this->db->where_in('a.pay_scheme_id', $paySchm);
+			} else {
+				$this->db->where('a.pay_scheme_id', $paySchm);
+			}
+		}
+		$this->db->order_by('a.dept_code, a.occu_code');
+		$q = $this->db->get();
+		return $q->result();
+	}
+
+	public function saveAttPrep($data) {
+		return $this->db->insert('EMPMILL12.tbl_ejm_wages_att_summary', $data);
+	}
+
+	public function updateAttPrep($id, $data) {
+		$this->db->where('att_summary_id', $id);
+		return $this->db->update('EMPMILL12.tbl_ejm_wages_att_summary', $data);
+	}
+
+	public function deleteAttPrep($id) {
+		$this->db->where('att_summary_id', $id);
+		return $this->db->delete('EMPMILL12.tbl_ejm_wages_att_summary');
+	}
+
+	public function processAttPrep($dateFrom, $dateTo, $paySchm, $deptCode) {
+		// Get attendance data to process using custom query
+
+
+
+        $sql="update  EMPMILL12.tbl_ejm_wages_att_summary set is_active=0
+        where date_from='$dateFrom' and date_to='$dateTo' and pay_scheme_id='$paySchm'
+        and  update_from='ATT'  ";
+        $this->db->query($sql);
+
+
+
+		$sql = "insert into  EMPMILL12.tbl_ejm_wages_att_summary (date_from,date_to,eb_id,dept_code,occu_code,shift,t_p,mc_nos,working_hours,ot_hours,ns_hours,pay_scheme_id,update_from)         
+                SELECT 
+                '$dateFrom' df,'$dateTo' dt,eb_id,dept_code,occu_code,shift,t_p,'' mcnos, case when attendance_type='R' then sum(whrs) else 0 end whrs,
+                case when attendance_type='O' then sum(whrs) else 0 end othrs,
+                sum(nwhrs) nhrs,$paySchm payschm,'ATT' update_from
+                from (            
+                SELECT 
+                da.eb_id,
+                da.eb_no,
+                da.attendance_date,
+                shift,
+                da.attendance_type,
+                OCCU_CODE,
+                dept_code,
+                t_p,(da.working_hours) wkhrs,
+                case when shift='C' and  attendance_type='R' then (working_hours) 
+                when shift='C' and (working_hours)=7.5 and attendance_type='O' then working_hours
+                        when shift='C' and (working_hours)<>7.5 and attendance_type='O' then (working_hours) 
+                        when shift<>'C'  then (working_hours) 
+                        else 0 end whrs, 
+                        case when shift='C' and (working_hours)=7.5 and attendance_type='R' then 0.5 
+                        else 0 end nwhrs ,dept_id
+                    FROM (        
+                    SELECT 
+                da.eb_id,
+                da.eb_no,
+                da.attendance_date,
+                substr(da.spell,1,1) AS shift,
+                da.attendance_type,
+                case when length(om.OCCU_CODE)>2 then 55 else om.occu_code end occu_code,
+                dm.dept_code,
+                om.TIME_PIECE AS t_p,sum(da.working_hours -da.idle_hours) working_hours,da.worked_department_id dept_id
+            FROM vowsls.daily_attendance da  
+            LEFT JOIN EMPMILL12.OCCUPATION_MASTER om 
+                ON om.vow_occu_id = da.worked_designation_id 
+            LEFT JOIN vowsls.department_master dm 
+                ON da.worked_department_id = dm.dept_id 
+            WHERE da.attendance_date BETWEEN '$dateFrom' AND '$dateTo'
+            AND da.company_id = 2   
+            GROUP BY 
+                da.eb_id,
+                da.eb_no,
+                da.attendance_date,
+                shift,
+                da.attendance_type,
+                OCCU_CODE,
+                dept_code,
+                TIME_PIECE ,worked_department_id
+            ) da 
+            ) da 
+            left join vowsls.tbl_pay_employee_payscheme tpep on tpep.EMPLOYEEID =da.eb_id and tpep.PAY_SCHEME_ID =$paySchm and tpep.STATUS =1
+            where 
+             tpep.PAY_SCHEME_ID is not null
+            GROUP BY 
+                da.eb_id,
+                da.eb_no,
+                shift,
+                da.attendance_type,
+                OCCU_CODE,
+                dept_code,
+                t_p ,dept_id
+            ";
+//		da.dept_code not in ('08','07') and
+//                order by eb_no
+        
+            $query = $this->db->query($sql);
+		if ($query === false) {
+			return array('success' => false, 'message' => 'Error executing query: ' . $this->db->error()['message']);
+		}
+ 
+        $count = $this->db->affected_rows();
+		if ($count == 0) {
+			return array('success' => false, 'message' => 'No attendance data found to process');
+		}
+
+		return array('success' => true, 'count' => $count, 'message' => $count . ' records processed');
+	}
+
+
+	// ========== Advance & Other Entries ==========
+
+	public function getEmpNameByEb($ebNo) {
+		$this->db->select("CONCAT(thepd.first_name, ' ', IFNULL(thepd.middle_name,''), ' ', IFNULL(thepd.last_name,'')) as emp_name");
+		$this->db->from('tbl_hrms_ed_personal_details thepd');
+		$this->db->join('tbl_hrms_ed_official_details theod', 'theod.eb_id = thepd.eb_id AND theod.is_active = 1', 'left');
+		$this->db->where('theod.emp_code', $ebNo);
+		$q = $this->db->get();
+		if ($q->num_rows() > 0) {
+			return $q->row()->emp_name;
+		}
+		return '';
+	}
+
+	public function getAdvOthData($dateFrom, $dateTo) {
+		$this->db->select("a.id, a.eb_no, CONCAT(thepd.first_name, ' ', IFNULL(thepd.middle_name,''), ' ', IFNULL(thepd.last_name,'')) as emp_name, a.stl_days, a.puja_advance, a.ot_advance, a.installment_advance, a.stl_advance, a.co_loan, a.misc_earn, a.misc_ded, a.misc_ot_earn, a.misc_ot_ded", FALSE);
+		$this->db->from('EMPMILL12.tbl_ejm_wages_data_collection a');
+		$this->db->join('tbl_hrms_ed_official_details theod', 'theod.emp_code = a.eb_no AND theod.is_active = 1', 'left');
+		$this->db->join('tbl_hrms_ed_personal_details thepd', 'thepd.eb_id = theod.eb_id', 'left');
+		if ($dateFrom) $this->db->where('a.date_from', $dateFrom);
+		if ($dateTo) $this->db->where('a.date_to', $dateTo);
+		$this->db->where('a.is_active', 1);
+		$this->db->order_by('a.eb_no');
+		$q = $this->db->get();
+		return $q->result();
+	}
+
+	public function saveAdvOth($data) {
+		return $this->db->insert('EMPMILL12.tbl_ejm_wages_data_collection', $data);
+	}
+
+	public function updateAdvOth($id, $data) {
+		$this->db->where('id', $id);
+		return $this->db->update('EMPMILL12.tbl_ejm_wages_data_collection', $data);
+	}
+
+	public function deleteAdvOth($id) {
+		$this->db->where('id', $id);
+		return $this->db->delete('EMPMILL12.tbl_ejm_wages_data_collection');
+	}
+
+	public function processInstallmentAdv($dateFrom, $dateTo) {
+		$this->db->where('date_from', $dateFrom);
+		$this->db->where('date_to', $dateTo);
+		$this->db->where('is_active', 1);
+		$this->db->where('installment_advance >', 0);
+		$q = $this->db->get('EMPMILL12.tbl_ejm_wages_data_collection');
+		$rows = $q->result();
+
+		if (empty($rows)) {
+			return array('success' => false, 'message' => 'No installment records found to process');
+		}
+
+		$count = count($rows);
+		return array('success' => true, 'count' => $count, 'message' => $count . ' installment records processed');
 	}
 
 

@@ -2664,6 +2664,19 @@ public function get_all_fne_targets() {
 			->set_output(json_encode(array('success' => true, 'data' => $rows)));
 	}
 
+	public function delete_fne_target() {
+		$id = $this->input->post('id');
+		if (!$id) {
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => 'Missing ID')));
+			return;
+		}
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->deleteFneTarget($id);
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => $result)));
+	}
+
 	// ========== Wages & Production Quality Link CRUD ==========
 
 	public function get_prod_wages_links() {
@@ -2727,6 +2740,235 @@ public function get_all_fne_targets() {
 
 		$this->output->set_content_type('application/json')
 			->set_output(json_encode(array('success' => $result)));
+	}
+
+
+	// ========== Attendance Preparation & Updation CRUD ==========
+
+	public function get_att_prep_data() {
+		$dateFrom = $this->input->post('date_from');
+		$dateTo = $this->input->post('date_to');
+		$paySchm = $this->input->post('pay_scheme_id');
+
+		$this->load->model('Ejmallprocessdata');
+		$rows = $this->Ejmallprocessdata->getAttPrepData($dateFrom, $dateTo, $paySchm);
+
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => true, 'data' => $rows)));
+	}
+
+	public function save_att_prep() {
+        $sql="select dept_code from vowsls.department_master 
+        where dept_id='".$this->input->post('dept_code')."' and company_id=".$this->session->userdata('companyId')    ;
+            $dept=$this->db->query($sql);
+           
+            $dept_result = $dept->row();
+            if (!$dept_result) {
+                $this->output->set_content_type('application/json')
+                    ->set_output(json_encode(array('success' => false, 'message' => 'Invalid department selected')));
+                return;
+            }
+            $dpcd = $dept_result->dept_code;
+            
+        $sql="select eb_id from vowsls.worker_master 
+        where eb_no='".$this->input->post('eb_no')."' and company_id=".$this->session->userdata('companyId')    ;
+            $ebid=$this->db->query($sql);
+           
+            $eb_result = $ebid->row();
+            if (!$eb_result) {
+                $this->output->set_content_type('application/json')
+                    ->set_output(json_encode(array('success' => false, 'message' => 'Invalid employee number entered')));
+                return;
+            }
+            $eb_id = $eb_result->eb_id; 
+
+
+
+		$data = array(
+			'date_from'      => $this->input->post('date_from'),
+			'date_to'        => $this->input->post('date_to'),
+			'dept_code'      => $dpcd,
+			'occu_code'      => $this->input->post('occu_code'),
+			'shift'          => $this->input->post('shift'),
+			'working_hours'  => $this->input->post('working_hours'),
+			'ot_hours'       => $this->input->post('ot_hours'),
+			'ns_hours'       => $this->input->post('ns_hours'),
+			'pay_scheme_id'  => is_array($this->input->post('pay_scheme_id')) ? implode(',', $this->input->post('pay_scheme_id')) : $this->input->post('pay_scheme_id'),
+            'eb_id'          => $eb_id,
+            'update_from'    => 'M'
+            );
+
+		if (!$data['dept_code'] || !$data['date_from'] || !$data['date_to']) {
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => 'Missing required fields')));
+			return;
+		}
+
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->saveAttPrep($data);
+
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => $result)));
+	}
+
+	public function update_att_prep() {
+
+
+        $sql="select dept_code from vowsls.department_master 
+        where dept_id='".$this->input->post('dept_code')."' and company_id=".$this->session->userdata('companyId')    ;
+            $dept=$this->db->query($sql);
+
+            $dpcd=$dept->row()->dept_code;
+
+//            echo "dept code ".$dpcd;
+//            echo $this->db->last_query();
+		$id = $this->input->post('att_summary_id');
+		$data = array(
+			'dept_code'      => $dpcd,
+			'occu_code'      => $this->input->post('occu_code'),
+			'shift'          => $this->input->post('shift'),
+			'working_hours'  => $this->input->post('working_hours'),
+			'ot_hours'       => $this->input->post('ot_hours'),
+			'ns_hours'       => $this->input->post('ns_hours'),
+		);
+
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->updateAttPrep($id, $data);
+
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => $result)));
+	}
+
+	public function delete_att_prep() {
+		$id = $this->input->post('att_summary_id');
+
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->deleteAttPrep($id);
+
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => $result)));
+	}
+
+	public function process_att_prep() {
+		$dateFrom = $this->input->post('date_from');
+		$dateTo = $this->input->post('date_to');
+		$paySchm = $this->input->post('pay_scheme_id');
+		$deptCode = $this->input->post('dept_code');
+
+		if (!$dateFrom || !$dateTo) {
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => 'Missing date range')));
+			return;
+		}
+
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->processAttPrep($dateFrom, $dateTo, $paySchm, $deptCode);
+
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode($result));
+	}
+
+
+	// ========== Advance & Other Entries CRUD ==========
+
+	public function get_emp_name_by_eb() {
+		$ebNo = $this->input->post('eb_no');
+		$this->load->model('Ejmallprocessdata');
+		$name = $this->Ejmallprocessdata->getEmpNameByEb($ebNo);
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => !empty($name), 'name' => $name)));
+	}
+
+	public function get_adv_oth_data() {
+		$dateFrom = $this->input->post('date_from');
+		$dateTo = $this->input->post('date_to');
+		try {
+			$this->load->model('Ejmallprocessdata');
+			$rows = $this->Ejmallprocessdata->getAdvOthData($dateFrom, $dateTo);
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array('success' => true, 'data' => $rows)));
+		} catch (Exception $e) {
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => $e->getMessage(), 'data' => array())));
+		}
+	}
+
+	public function save_adv_oth() {
+		$data = array(
+			'date_from'            => $this->input->post('date_from'),
+			'date_to'              => $this->input->post('date_to'),
+			'eb_no'                => $this->input->post('eb_no'),
+			'stl_days'             => $this->input->post('stl_days') ? $this->input->post('stl_days') : 0,
+			'puja_advance'         => $this->input->post('puja_advance') ? $this->input->post('puja_advance') : 0,
+			'ot_advance'           => $this->input->post('ot_advance') ? $this->input->post('ot_advance') : 0,
+			'installment_advance'  => $this->input->post('installment_advance') ? $this->input->post('installment_advance') : 0,
+			'stl_advance'          => $this->input->post('stl_advance') ? $this->input->post('stl_advance') : 0,
+			'co_loan'              => $this->input->post('co_loan') ? $this->input->post('co_loan') : 0,
+			'misc_earn'            => $this->input->post('misc_earn') ? $this->input->post('misc_earn') : 0,
+			'misc_ded'             => $this->input->post('misc_ded') ? $this->input->post('misc_ded') : 0,
+			'misc_ot_earn'         => $this->input->post('misc_ot_earn') ? $this->input->post('misc_ot_earn') : 0,
+			'misc_ot_ded'          => $this->input->post('misc_ot_ded') ? $this->input->post('misc_ot_ded') : 0,
+			'is_active'            => 1
+		);
+
+		if (!$data['eb_no'] || !$data['date_from'] || !$data['date_to']) {
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => 'Missing required fields')));
+			return;
+		}
+
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->saveAdvOth($data);
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => $result)));
+	}
+
+	public function update_adv_oth() {
+		$id = $this->input->post('id');
+		$data = array(
+			'date_from'            => $this->input->post('date_from'),
+			'date_to'              => $this->input->post('date_to'),
+			'eb_no'                => $this->input->post('eb_no'),
+			'stl_days'             => $this->input->post('stl_days') ?: 0,
+			'puja_advance'         => $this->input->post('puja_advance') ?: 0,
+			'ot_advance'           => $this->input->post('ot_advance') ?: 0,
+			'installment_advance'  => $this->input->post('installment_advance') ?: 0,
+			'stl_advance'          => $this->input->post('stl_advance') ?: 0,
+			'co_loan'              => $this->input->post('co_loan') ?: 0,
+			'misc_earn'            => $this->input->post('misc_earn') ?: 0,
+			'misc_ded'             => $this->input->post('misc_ded') ?: 0,
+			'misc_ot_earn'         => $this->input->post('misc_ot_earn') ?: 0,
+			'misc_ot_ded'          => $this->input->post('misc_ot_ded') ?: 0
+		);
+
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->updateAdvOth($id, $data);
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => $result)));
+	}
+
+	public function delete_adv_oth() {
+		$id = $this->input->post('id');
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->deleteAdvOth($id);
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => $result)));
+	}
+
+	public function process_installment_adv() {
+		$dateFrom = $this->input->post('date_from');
+		$dateTo = $this->input->post('date_to');
+
+		if (!$dateFrom || !$dateTo) {
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => 'Missing date range')));
+			return;
+		}
+
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->processInstallmentAdv($dateFrom, $dateTo);
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode($result));
 	}
 
 
