@@ -2649,6 +2649,8 @@ public function get_all_fne_targets() {
 		$dateFrom = $this->input->post('date_from');
 		$dateTo = $this->input->post('date_to');
 
+        echo "Date From: $dateFrom, Date To: $dateTo"; // Debugging line
+
 		if (!$dateFrom || !$dateTo) {
 			$this->output
 				->set_content_type('application/json')
@@ -2862,7 +2864,16 @@ public function get_all_fne_targets() {
 		}
 
 		$this->load->model('Ejmallprocessdata');
+
+		$result = $this->Ejmallprocessdata->processAttPrepclear($dateFrom, $dateTo, $paySchm, $deptCode);
+
 		$result = $this->Ejmallprocessdata->processAttPrep($dateFrom, $dateTo, $paySchm, $deptCode);
+		$result = $this->Ejmallprocessdata->processAttPrepbmg($dateFrom, $dateTo, $paySchm, $deptCode);
+		$result = $this->Ejmallprocessdata->processAttPrepwvg($dateFrom, $dateTo, $paySchm, $deptCode);
+		$result = $this->Ejmallprocessdata->processAttPreppress($dateFrom, $dateTo, $paySchm, $deptCode);
+
+
+
 
 		$this->output->set_content_type('application/json')
 			->set_output(json_encode($result));

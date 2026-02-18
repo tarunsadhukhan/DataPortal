@@ -165,8 +165,6 @@ class Hrms_attendance_register_model extends CI_Model
 	}
 
 	public function directReport($pers){
-
-	
 	$sql = "SELECT distinct eb_no from daily_attendance where company_id = ".$companyId." AND attendance_type IN ('R', 'O', 'C') AND attendance_source in ('A', 'M') AND is_active = 1 AND attendance_date >= '".date('Y-m-d',strtotime($from_date))."' AND attendance_date <= '".date('Y-m-d',strtotime($to_date))."'";
 	if($pers['eb_no']){
 		$sql .= " and eb_no= '".$pers['eb_no']."'";

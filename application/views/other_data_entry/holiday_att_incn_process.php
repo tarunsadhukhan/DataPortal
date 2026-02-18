@@ -868,6 +868,7 @@ function loadTareffTargetTable() {
         $('#tareff_target_tbody').html('<tr><td colspan="5" class="text-center">Please select From and To dates</td></tr>');
         return;
     }
+    alert('Loading FNE targets for period: ' + dateFrom + ' to ' + dateTo);
 
     // Destroy existing DataTable if initialized
     if ($.fn.DataTable.isDataTable('#tarrecordTable')) {

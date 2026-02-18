@@ -1305,16 +1305,189 @@ WHERE ttlf.link_for = 'G'
 		return $this->db->delete('EMPMILL12.tbl_ejm_wages_att_summary');
 	}
 
-	public function processAttPrep($dateFrom, $dateTo, $paySchm, $deptCode) {
+	public function processAttPrepclear($dateFrom, $dateTo, $paySchm, $deptCode) {
 		// Get attendance data to process using custom query
-
-
 
         $sql="update  EMPMILL12.tbl_ejm_wages_att_summary set is_active=0
         where date_from='$dateFrom' and date_to='$dateTo' and pay_scheme_id='$paySchm'
         and  update_from='ATT'  ";
+
+      //  echo $sql;
         $this->db->query($sql);
 
+    }
+    public function processAttPrepwvg($dateFrom, $dateTo, $paySchm, $deptCode) {
+        $comany_id=$this->session->userdata('companyId');
+        $sql="     insert into  EMPMILL12.tbl_ejm_wages_att_summary (date_from,date_to,eb_id,dept_code,occu_code,shift,t_p,mc_nos,working_hours,ot_hours,
+     ns_hours,pay_scheme_id)  
+     select '$dateFrom' df , '$dateTo' dt,eb_id,'08' dept_code,occu_code,shift,t_p, amcnos,rwhrs,owhrs,0 nwhrs, $paySchm  from (
+                select eb_id,shift,occu_code,t_p,
+        case when occu_code<>'55'  then mcnos
+ else ' ' end amcnos,
+        max( case when regular_ot = 'R' then rwhrs else 0 end ) rwhrs,
+        max( case when regular_ot = 'O' then rwhrs else 0 end ) owhrs,
+        sum(nwhrs) nwhrs,0 fhrs
+        from (
+    select shift,eb_id,
+    regular_ot,occu_code,t_p,mcnos,sum(rwhrs) rwhrs,sum(nwhrs) nwhrs from
+    (
+    select attendance_date,spell,shift,eb_id,
+    regular_ot,occu_code,t_p,rwhrs,nwhrs,
+        GROUP_CONCAT(DISTINCT mech_code SEPARATOR '') mcnos
+    from
+        (
+    select da.attendance_date,da.spell,substr(da.spell,1,1) shift,da.eb_id,da.worked_department_id,worked_designation_id,
+    da.attendance_type regular_ot,om.occu_code,d.time_piece t_p, 
+    case when (da.spell='C' and attendance_type='O' and (working_hours -idle_hours)=7.5) then 8
+    when (da.spell='C' and attendance_type='O' and (working_hours -idle_hours)<>7.5) then (working_hours -idle_hours)
+    when (da.spell='C' and attendance_type='R' and (working_hours -idle_hours)=7.5) then (working_hours -idle_hours)
+    when da.spell<>'C'  then (working_hours -idle_hours) 
+    else 0 end rwhrs,
+    case when (da.spell='C' and attendance_type='R' and (working_hours -idle_hours)=7.5) then 0.5
+    else 0 end nwhrs,
+    case when LENGTH(mech_code)>4 then substr(mech_code,4,3) 
+            else mech_code end mech_code
+    from vowsls.daily_attendance da 
+    left join (select * from vowsls.daily_ebmc_attendance where is_active=1 ) dea 
+    on da.daily_atten_id =dea.daily_atten_id 
+    left join vowsls.mechine_master mm on mm.mechine_id =dea.mc_id 
+    left join vowsls.worker_master wm on wm.eb_id =da.eb_id 
+    left join vowsls.designation d on d.id =da.worked_designation_id 
+    left join EMPMILL12.OCCUPATION_MASTER om on om.vow_occu_id =da.worked_designation_id 
+    left join vowsls.category_master cm on wm.cata_id =cm.cata_id 
+    where da.attendance_date  between '$dateFrom' and '$dateTo'
+    and da.worked_department_id =8 and wm.cata_id in (3,4,5,6,7,9)	
+    and da.is_active =1  and da.company_id=$comany_id
+    ) g group by attendance_date,spell,shift,eb_id, 
+    regular_ot,occu_code,t_p,rwhrs,nwhrs
+    ) g group by eb_id,shift,eb_id, 
+    regular_ot,occu_code,t_p,mcnos
+    ) h
+    group by eb_id,shift,occu_code,t_p,mcnos
+    ) g
+    left join vowsls.tbl_pay_employee_payscheme tpep on g.eb_id=tpep.EMPLOYEEID 
+    where tpep.PAY_SCHEME_ID =$paySchm and tpep.STATUS =1
+";
+          $query = $this->db->query($sql);
+    }    
+
+
+    public function processAttPrepbmg($dateFrom, $dateTo, $paySchm, $deptCode) {
+        $comany_id=$this->session->userdata('companyId');
+        $sql="     insert into  EMPMILL12.tbl_ejm_wages_att_summary (date_from,date_to,eb_id,dept_code,occu_code,shift,t_p,mc_nos,working_hours,ot_hours,
+     ns_hours,pay_scheme_id)  
+     select '$dateFrom' df , '$dateTo' dt,eb_id,'09' dept_code,occu_code,shift,t_p, amcnos,rwhrs,owhrs,0 nwhrs,'$paySchm'  from (
+                select eb_id,shift,occu_code,t_p,
+        case when occu_code<>'55'   then CONCAT('P', LPAD(mcnos, 4, '0'))
+ else ' ' end amcnos,
+        max( case when regular_ot = 'R' then rwhrs else 0 end ) rwhrs,
+        max( case when regular_ot = 'O' then rwhrs else 0 end ) owhrs,
+        sum(nwhrs) nwhrs,0 fhrs
+        from (
+    select shift,eb_id,
+    regular_ot,occu_code,t_p,mcnos,sum(rwhrs) rwhrs,sum(nwhrs) nwhrs from
+    (
+    select attendance_date,spell,shift,eb_id,
+    regular_ot,occu_code,t_p,rwhrs,nwhrs,
+        GROUP_CONCAT(DISTINCT mech_code SEPARATOR '') mcnos
+    from
+        (
+    select da.attendance_date,da.spell,substr(da.spell,1,1) shift,da.eb_id,da.worked_department_id,worked_designation_id,
+    da.attendance_type regular_ot,om.occu_code,d.time_piece t_p, 
+    case when (da.spell='C' and attendance_type='O' and (working_hours -idle_hours)=7.5) then 8
+    when (da.spell='C' and attendance_type='O' and (working_hours -idle_hours)<>7.5) then (working_hours -idle_hours)
+    when (da.spell='C' and attendance_type='R' and (working_hours -idle_hours)=7.5) then (working_hours -idle_hours)
+    when da.spell<>'C'  then (working_hours -idle_hours) 
+    else 0 end rwhrs,
+    case when (da.spell='C' and attendance_type='R' and (working_hours -idle_hours)=7.5) then 0.5
+    else 0 end nwhrs,
+    case when LENGTH(mech_code)>4 then substr(mech_code,4,3) 
+            else mech_code end mech_code
+    from vowsls.daily_attendance da 
+    left join (select * from vowsls.daily_ebmc_attendance where is_active=1 ) dea 
+    on da.daily_atten_id =dea.daily_atten_id 
+    left join vowsls.mechine_master mm on mm.mechine_id =dea.mc_id 
+    left join vowsls.worker_master wm on wm.eb_id =da.eb_id 
+    left join vowsls.designation d on d.id =da.worked_designation_id 
+    left join EMPMILL12.OCCUPATION_MASTER om on om.vow_occu_id =da.worked_designation_id 
+    left join vowsls.category_master cm on wm.cata_id =cm.cata_id 
+    where da.attendance_date  between '$dateFrom' and '$dateTo'
+    and da.worked_department_id =9 and da.worked_designation_id in (114,98) and wm.cata_id in (3,4,5,6,7,9)	
+    and da.is_active =1  and da.company_id=$comany_id
+    ) g group by attendance_date,spell,shift,eb_id, 
+    regular_ot,occu_code,t_p,rwhrs,nwhrs
+    ) g group by eb_id,shift,eb_id, 
+    regular_ot,occu_code,t_p,mcnos
+    ) h
+    group by eb_id,shift,occu_code,t_p,mcnos
+    ) g
+    left join vowsls.tbl_pay_employee_payscheme tpep on g.eb_id=tpep.EMPLOYEEID 
+    where tpep.PAY_SCHEME_ID =$paySchm and tpep.STATUS =1
+";
+          $query = $this->db->query($sql);
+    }
+
+    public function processAttPrepbmg($dateFrom, $dateTo, $paySchm, $deptCode) {
+        $comany_id=$this->session->userdata('companyId');
+        $sql="     insert into  EMPMILL12.tbl_ejm_wages_att_summary (date_from,date_to,eb_id,dept_code,occu_code,shift,t_p,mc_nos,working_hours,ot_hours,
+     ns_hours,pay_scheme_id)  
+          select '$dateFrom' df , '$dateTo' dt,eb_id,'07' dept_code,occu_code,shift,t_p, amcnos,rwhrs,owhrs,0 nwhrs,'$paySchm'  from (
+                select eb_id,shift,occu_code,t_p,
+        case when occu_code<>'55'  then CONCAT('B', LPAD(mcnos, 4, '0'))
+ else ' ' end amcnos,
+        max( case when regular_ot = 'R' then rwhrs else 0 end ) rwhrs,
+        max( case when regular_ot = 'O' then rwhrs else 0 end ) owhrs,
+        sum(nwhrs) nwhrs,0 fhrs
+        from (
+    select shift,eb_id,
+    regular_ot,occu_code,t_p,mcnos,sum(rwhrs) rwhrs,sum(nwhrs) nwhrs from
+    (
+    select attendance_date,spell,shift,eb_id,
+    regular_ot,occu_code,t_p,rwhrs,nwhrs,
+        GROUP_CONCAT(DISTINCT mech_code SEPARATOR '') mcnos
+    from
+        (
+    select da.attendance_date,da.spell,substr(da.spell,1,1) shift,da.eb_id,da.worked_department_id,worked_designation_id,
+    da.attendance_type regular_ot,om.occu_code,d.time_piece t_p, 
+    case when (da.spell='C' and attendance_type='O' and (working_hours -idle_hours)=7.5) then 8
+    when (da.spell='C' and attendance_type='O' and (working_hours -idle_hours)<>7.5) then (working_hours -idle_hours)
+    when (da.spell='C' and attendance_type='R' and (working_hours -idle_hours)=7.5) then (working_hours -idle_hours)
+    when da.spell<>'C'  then (working_hours -idle_hours) 
+    else 0 end rwhrs,
+    case when (da.spell='C' and attendance_type='R' and (working_hours -idle_hours)=7.5) then 0.5
+    else 0 end nwhrs,
+    case when LENGTH(mech_code)>4 then substr(mech_code,4,3) 
+            else mech_code end mech_code
+    from vowsls.daily_attendance da 
+    left join (select * from vowsls.daily_ebmc_attendance where is_active=1 ) dea 
+    on da.daily_atten_id =dea.daily_atten_id 
+    left join vowsls.mechine_master mm on mm.mechine_id =dea.mc_id 
+    left join vowsls.worker_master wm on wm.eb_id =da.eb_id 
+    left join vowsls.designation d on d.id =da.worked_designation_id 
+    left join EMPMILL12.OCCUPATION_MASTER om on om.vow_occu_id =da.worked_designation_id 
+    left join vowsls.category_master cm on wm.cata_id =cm.cata_id 
+    where da.attendance_date  between '$dateFrom' and '$dateTo'
+    and da.worked_department_id =7 and wm.cata_id in (3,4,5,6,7,9)	
+    and da.is_active =1  and da.company_id=$comany_id
+    ) g group by attendance_date,spell,shift,eb_id, 
+    regular_ot,occu_code,t_p,rwhrs,nwhrs
+    ) g group by eb_id,shift,eb_id, 
+    regular_ot,occu_code,t_p,mcnos
+    ) h
+    group by eb_id,shift,occu_code,t_p,mcnos
+    ) g
+    left join vowsls.tbl_pay_employee_payscheme tpep on g.eb_id=tpep.EMPLOYEEID 
+    where tpep.PAY_SCHEME_ID ='$paySchm' and tpep.STATUS =1
+";
+          $query = $this->db->query($sql);
+
+
+
+    }
+    public function processAttPrep($dateFrom, $dateTo, $paySchm, $deptCode) {
+		// Get attendance data to process using custom query
+
+ 
 
 
 		$sql = "insert into  EMPMILL12.tbl_ejm_wages_att_summary (date_from,date_to,eb_id,dept_code,occu_code,shift,t_p,mc_nos,working_hours,ot_hours,ns_hours,pay_scheme_id,update_from)         
@@ -1367,9 +1540,10 @@ WHERE ttlf.link_for = 'G'
                 TIME_PIECE ,worked_department_id
             ) da 
             ) da 
-            left join vowsls.tbl_pay_employee_payscheme tpep on tpep.EMPLOYEEID =da.eb_id and tpep.PAY_SCHEME_ID =$paySchm and tpep.STATUS =1
-            where 
-             tpep.PAY_SCHEME_ID is not null
+            left join vowsls.tbl_pay_employee_payscheme tpep on 
+            tpep.EMPLOYEEID =da.eb_id 
+            where  tpep.PAY_SCHEME_ID =$paySchm and tpep.STATUS =1
+             and da.dept_code not in ('08','07')
             GROUP BY 
                 da.eb_id,
                 da.eb_no,
@@ -1394,6 +1568,10 @@ WHERE ttlf.link_for = 'G'
 
 		return array('success' => true, 'count' => $count, 'message' => $count . ' records processed');
 	}
+
+
+
+
 
 
 	// ========== Advance & Other Entries ==========
