@@ -2570,7 +2570,7 @@ if ($holget==5) {
 				$compponentid=$row->COMPONENT_ID;
 				echo $compponentid.'==='.$lnformula."<br>";
 				if ($lnformula>0) {
-					$this->Loan_adv_model->getattwagesins($periodfromdate,$periodtodate,$att_payschm,$holget,$lnformula,$compponentid);
+//					$this->Loan_adv_model->getattwagesins($periodfromdate,$periodtodate,$att_payschm,$holget,$lnformula,$compponentid);
 				}	
 			}
  

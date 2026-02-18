@@ -2666,19 +2666,6 @@ public function get_all_fne_targets() {
 			->set_output(json_encode(array('success' => true, 'data' => $rows)));
 	}
 
-	public function delete_fne_target() {
-		$id = $this->input->post('id');
-		if (!$id) {
-			$this->output->set_content_type('application/json')
-				->set_output(json_encode(array('success' => false, 'message' => 'Missing ID')));
-			return;
-		}
-		$this->load->model('Ejmallprocessdata');
-		$result = $this->Ejmallprocessdata->deleteFneTarget($id);
-		$this->output->set_content_type('application/json')
-			->set_output(json_encode(array('success' => $result)));
-	}
-
 	// ========== Wages & Production Quality Link CRUD ==========
 
 	public function get_prod_wages_links() {
@@ -2745,6 +2732,7 @@ public function get_all_fne_targets() {
 	}
 
 
+<<<<<<< HEAD
 	// ========== Attendance Preparation & Updation CRUD ==========
 
 	public function get_att_prep_data() {
@@ -2983,6 +2971,8 @@ public function get_all_fne_targets() {
 	}
 
 
+=======
+>>>>>>> 6eb26d3 (Revert "changestr")
 }
 
 

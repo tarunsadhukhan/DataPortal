@@ -1233,11 +1233,6 @@ WHERE ttlf.link_for = 'G'
 		return $q->result();
 	}
 
-	public function deleteFneTarget($id) {
-		$this->db->where('all_trn_eff_id', $id);
-        return $this->db->delete('EMPMILL12.tbl_all_trn_eff');
-	}
-
 	// ========== Wages & Production Quality Link ==========
 
 	public function getProdWagesLinks() {
@@ -1268,6 +1263,7 @@ WHERE ttlf.link_for = 'G'
 		return $this->db->delete('EMPMILL12.tbl_prod_wages_code_link');
 	}
 
+<<<<<<< HEAD
 	// ========== Attendance Preparation & Updation ==========
 
 	public function getAttPrepData($dateFrom, $dateTo, $paySchm) {
@@ -1631,5 +1627,7 @@ WHERE ttlf.link_for = 'G'
 		return array('success' => true, 'count' => $count, 'message' => $count . ' installment records processed');
 	}
 
+=======
+>>>>>>> 6eb26d3 (Revert "changestr")
 
 }    

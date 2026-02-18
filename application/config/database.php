@@ -92,8 +92,8 @@ if($url=='localhost'){
 	// $database = "vowdev";
 
 	$servername = "3.7.255.145";
-	$username = "Tarun";
-	$password = "db_tarunji!123";
+	$username = "reports";
+	$password = "Reports@12345";
 	$database = "vowsls";
 
 	// $servername = "3.110.17.158";
