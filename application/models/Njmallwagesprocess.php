@@ -2454,7 +2454,7 @@ and tpp.TO_DATE ='$periodtodate'
 group by emp_code,
 CONCAT(thepd.first_name, ' ', thepd.middle_name, ' ', thepd.last_name),tpep.PAYSCHEME_ID,
 ifsc_code,thebd.bank_acc_no ,theod.department_id
-) g where netpay>0
+) g where Grossearn>0
 ";
     $query = $this->db->query($sql);
     $data=$query->result();
@@ -2506,7 +2506,7 @@ public function mainwgsbrksummary($att_payschm,$periodfromdate,$periodtodate) {
     group by emp_code,
     CONCAT(thepd.first_name, ' ', thepd.middle_name, ' ', thepd.last_name),tpep.PAYSCHEME_ID,
     ifsc_code,thebd.bank_acc_no  ,theod.department_id
-    ) g where netpay>0
+    ) g where Grossearn>0
 
 ";
     $query = $this->db->query($sql);
@@ -2557,7 +2557,7 @@ and tpp.TO_DATE ='$periodtodate'
 group by emp_code,
 CONCAT(thepd.first_name, ' ', thepd.middle_name, ' ', thepd.last_name),tpep.PAYSCHEME_ID,
 ifsc_code,thebd.bank_acc_no  ,theod.department_id
-) g where netpay>0
+) g where Grossearn>0
 
 
 ";
@@ -2682,7 +2682,7 @@ return $query->result_array();
     $companyId = $this->session->userdata('companyId');
     $sql="select theod.emp_code ticket_no,
     CONCAT(thepd.first_name, ' ', thepd.middle_name, ' ', thepd.last_name) AS emp_name,
-    max(case when component_id=20 then amount else 0 end) 'Grossearn',
+    max(case when component_id=20 then amount else 0 end)-max(case when component_id=62 then amount else 0 end) 'Grossearn',
     max(case when component_id=62 then amount else 0 end) 'othern',
     max(case when component_id=18 then amount else 0 end) 'pf',
     max(case when component_id=19 then amount else 0 end) 'esi',

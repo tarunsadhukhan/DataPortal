@@ -2649,8 +2649,6 @@ public function get_all_fne_targets() {
 		$dateFrom = $this->input->post('date_from');
 		$dateTo = $this->input->post('date_to');
 
-        echo "Date From: $dateFrom, Date To: $dateTo"; // Debugging line
-
 		if (!$dateFrom || !$dateTo) {
 			$this->output
 				->set_content_type('application/json')
@@ -2658,22 +2656,19 @@ public function get_all_fne_targets() {
 			return;
 		}
 
-		$this->load->model('Ejmallprocessdata');
-		$rows = $this->Ejmallprocessdata->getAllFneTargets($dateFrom, $dateTo);
-
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode(array('success' => true, 'data' => $rows)));
-	}
-
-	// ========== Wages & Production Quality Link CRUD ==========
-
-	public function get_prod_wages_links() {
-		$this->load->model('Ejmallprocessdata');
-		$rows = $this->Ejmallprocessdata->getProdWagesLinks();
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode(array('success' => true, 'data' => $rows)));
+		try {
+			$this->load->model('Ejmallprocessdata');
+			$rows = $this->Ejmallprocessdata->getAllFneTargets($dateFrom, $dateTo);
+			
+			$this->output
+				->set_content_type('application/json')
+				->set_output(json_encode(array('success' => true, 'data' => $rows)));
+		} catch (Exception $e) {
+			log_message('error', 'Error in get_all_fne_targets: ' . $e->getMessage());
+			$this->output
+				->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => $e->getMessage())));
+		}
 	}
 
 	public function save_prod_wages_link() {
@@ -2732,7 +2727,6 @@ public function get_all_fne_targets() {
 	}
 
 
-<<<<<<< HEAD
 	// ========== Attendance Preparation & Updation CRUD ==========
 
 	public function get_att_prep_data() {
@@ -2740,11 +2734,17 @@ public function get_all_fne_targets() {
 		$dateTo = $this->input->post('date_to');
 		$paySchm = $this->input->post('pay_scheme_id');
 
-		$this->load->model('Ejmallprocessdata');
-		$rows = $this->Ejmallprocessdata->getAttPrepData($dateFrom, $dateTo, $paySchm);
+		try {
+			$this->load->model('Ejmallprocessdata');
+			$rows = $this->Ejmallprocessdata->getAttPrepData($dateFrom, $dateTo, $paySchm);
 
-		$this->output->set_content_type('application/json')
-			->set_output(json_encode(array('success' => true, 'data' => $rows)));
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array('success' => true, 'data' => $rows)));
+		} catch (Exception $e) {
+			log_message('error', 'Error in get_att_prep_data: ' . $e->getMessage());
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => $e->getMessage())));
+		}
 	}
 
 	public function save_att_prep() {
@@ -2779,6 +2779,7 @@ public function get_all_fne_targets() {
 			'date_to'        => $this->input->post('date_to'),
 			'dept_code'      => $dpcd,
 			'occu_code'      => $this->input->post('occu_code'),
+			'mc_nos'         => $this->input->post('mc_nos'),
 			'shift'          => $this->input->post('shift'),
 			'working_hours'  => $this->input->post('working_hours'),
 			'ot_hours'       => $this->input->post('ot_hours'),
@@ -2816,6 +2817,7 @@ public function get_all_fne_targets() {
 		$data = array(
 			'dept_code'      => $dpcd,
 			'occu_code'      => $this->input->post('occu_code'),
+			'mc_nos'         => $this->input->post('mc_nos'),
 			'shift'          => $this->input->post('shift'),
 			'working_hours'  => $this->input->post('working_hours'),
 			'ot_hours'       => $this->input->post('ot_hours'),
@@ -2855,10 +2857,10 @@ public function get_all_fne_targets() {
 
 		$result = $this->Ejmallprocessdata->processAttPrepclear($dateFrom, $dateTo, $paySchm, $deptCode);
 
-		$result = $this->Ejmallprocessdata->processAttPrep($dateFrom, $dateTo, $paySchm, $deptCode);
 		$result = $this->Ejmallprocessdata->processAttPrepbmg($dateFrom, $dateTo, $paySchm, $deptCode);
 		$result = $this->Ejmallprocessdata->processAttPrepwvg($dateFrom, $dateTo, $paySchm, $deptCode);
 		$result = $this->Ejmallprocessdata->processAttPreppress($dateFrom, $dateTo, $paySchm, $deptCode);
+		$result = $this->Ejmallprocessdata->processAttPrep($dateFrom, $dateTo, $paySchm, $deptCode);
 
 
 
@@ -2907,8 +2909,9 @@ public function get_all_fne_targets() {
 			'misc_ded'             => $this->input->post('misc_ded') ? $this->input->post('misc_ded') : 0,
 			'misc_ot_earn'         => $this->input->post('misc_ot_earn') ? $this->input->post('misc_ot_earn') : 0,
 			'misc_ot_ded'          => $this->input->post('misc_ot_ded') ? $this->input->post('misc_ot_ded') : 0,
-			'is_active'            => 1
-		);
+			'is_active'            => 1,
+            'update_from'          => 'M'
+            );
 
 		if (!$data['eb_no'] || !$data['date_from'] || !$data['date_to']) {
 			$this->output->set_content_type('application/json')
@@ -2954,25 +2957,143 @@ public function get_all_fne_targets() {
 			->set_output(json_encode(array('success' => $result)));
 	}
 
-	public function process_installment_adv() {
-		$dateFrom = $this->input->post('date_from');
-		$dateTo = $this->input->post('date_to');
+	public function mainwagesprocess() {
+		try {
+			// Get raw POST data for debugging
+			$rawPostData = file_get_contents('php://input');
+			
+			$fromdate = trim($this->input->post('fromdate'));
+			$todate = trim($this->input->post('todate'));
+			$payscheme = trim($this->input->post('payscheme'));
+			$process = trim($this->input->post('process')); // which process to run
 
-		if (!$dateFrom || !$dateTo) {
-			$this->output->set_content_type('application/json')
-				->set_output(json_encode(array('success' => false, 'message' => 'Missing date range')));
-			return;
+			// Log all received parameters
+			log_message('info', '========== mainwagesprocess CALLED ==========');
+			log_message('info', 'Raw POST data: ' . $rawPostData);
+			log_message('info', 'Parsed - fromdate: [' . $fromdate . ']');
+			log_message('info', 'Parsed - todate: [' . $todate . ']');
+			log_message('info', 'Parsed - payscheme: [' . $payscheme . ']');
+			log_message('info', 'Parsed - process: [' . $process . ']');
+			log_message('info', '_POST array: ' . json_encode($_POST));
+
+			// Validate inputs
+			if (!$fromdate || !$todate || !$payscheme) {
+				log_message('error', 'Missing required parameters - fromdate: ' . ($fromdate ? 'OK' : 'MISSING') . 
+					', todate: ' . ($todate ? 'OK' : 'MISSING') . 
+					', payscheme: ' . ($payscheme ? 'OK' : 'MISSING'));
+				$this->output->set_content_type('application/json')
+					->set_output(json_encode(array(
+						'success' => false,
+						'message' => 'Missing required parameters'
+					)));
+				return;
+			}
+
+			// Call model function based on process parameter
+			$this->load->model('Ejmallprocessdata');
+			
+			// Initialize result with default structure
+			$result = array('success' => false, 'message' => 'Invalid process');
+			
+			log_message('debug', 'mainwagesprocess called with process: [' . $process . '], fromdate: ' . $fromdate . ', todate: ' . $todate . ', payscheme: ' . $payscheme);
+			
+			switch($process) {
+				case 'clear':
+					$result = $this->Ejmallprocessdata->MainWagesProcessclear($fromdate, $todate, $payscheme);
+					if (is_array($result)) {
+						$result['process_name'] = 'Clearing Process';
+					}
+					break;
+				case 'ns':
+					$result = $this->Ejmallprocessdata->MainWagesProcessns($fromdate, $todate, $payscheme);
+					if (is_array($result)) {
+						$result['process_name'] = 'NS Processing';
+					}
+					break;
+				case 'drg':
+                     $result = $this->Ejmallprocessdata->MainWagesProcessdrg($fromdate, $todate, $payscheme);
+					if (is_array($result)) {
+						$result['process_name'] = 'DRG Processing';
+					}
+                    break;
+				case 'sprd':
+  					$result = $this->Ejmallprocessdata->MainWagesProcesssprd($fromdate, $todate, $payscheme);
+					if (is_array($result)) {
+						$result['process_name'] = 'SPRD Processing';
+					}
+                    break;
+				case 'spinner':
+					$result = $this->Ejmallprocessdata->MainWagesProcessspinner($fromdate, $todate, $payscheme);
+					if (is_array($result)) {
+						$result['process_name'] = 'Spinner Processing';
+					}
+					break;
+				case 'winding':
+					$result = $this->Ejmallprocessdata->MainWagesProcesswinding($fromdate, $todate, $payscheme);
+					if (is_array($result)) {
+						$result['process_name'] = 'Winding Processing';
+					}
+					break;
+				case 'beaming':
+					$result = $this->Ejmallprocessdata->MainWagesProcessbeaming($fromdate, $todate, $payscheme);
+					if (is_array($result)) {
+						$result['process_name'] = 'Beaming Processing';
+					}
+					break;
+				case 'weaving':
+                    log_message('info', 'Controller: Calling MainWagesProcessweaving with fromdate: ' . $fromdate . ', todate: ' . $todate . ', payscheme: ' . $payscheme);   
+					$result = $this->Ejmallprocessdata->MainWagesProcessweaving($fromdate, $todate, $payscheme);
+					log_message('debug', 'Controller: MainWagesProcessweaving result: ' . json_encode($result));
+					if (is_array($result)) {
+						$result['process_name'] = 'Weaving Processing';
+					}
+					break;
+				case 'press':
+					$result = $this->Ejmallprocessdata->MainWagesProcesspress($fromdate, $todate, $payscheme);
+					if (is_array($result)) {
+						$result['process_name'] = 'Press Processing';
+					}
+					break;
+				case 'finishing':
+					$result = $this->Ejmallprocessdata->MainWagesProcessfinishing($fromdate, $todate, $payscheme);
+					if (is_array($result)) {
+						$result['process_name'] = 'Finishing Processing';
+					}
+					break;
+				case 'others':
+					$result = $this->Ejmallprocessdata->MainWagesProcessothers($fromdate, $todate, $payscheme);
+					if (is_array($result)) {
+						$result['process_name'] = 'Others Processing';
+					}
+					break;
+				default:
+				log_message('error', 'Invalid process received: [' . $process . ']. Available processes: clear, ns, drg, sprd, spinner, winding, beaming, weaving, press, finishing, others');
+				$result = array('success' => false, 'message' => 'Invalid process: ' . $process);
 		}
 
-		$this->load->model('Ejmallprocessdata');
-		$result = $this->Ejmallprocessdata->processInstallmentAdv($dateFrom, $dateTo);
+		// Ensure result is an array before outputting
+		if (!is_array($result)) {
+			log_message('error', 'Process returned non-array result: ' . gettype($result));
+			$result = array('success' => false, 'message' => 'Unexpected response from process');
+		}
+		
+		log_message('info', 'mainwagesprocess about to return: ' . json_encode($result));
+		
+		// Return JSON response
 		$this->output->set_content_type('application/json')
 			->set_output(json_encode($result));
+
+		} catch (Exception $e) {
+			log_message('error', 'Main Wages Process Error: ' . $e->getMessage());
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array(
+					'success' => false,
+					'message' => 'Error: ' . $e->getMessage()
+				)));
+		}
 	}
 
 
-=======
->>>>>>> 6eb26d3 (Revert "changestr")
 }
 
 

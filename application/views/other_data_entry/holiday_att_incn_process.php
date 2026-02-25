@@ -126,7 +126,7 @@
 </style>
  <style>
  
-.table-loader{position:fixed;inset:0;z-index:20000;background:rgba(255,255,255,.85);
+.table-loader{position:fixed;inset:0;z-index:999;background:rgba(255,255,255,.85);
   display:flex;align-items:center;justify-content:center;font-weight:600}
 .loader-box{text-align:center}
 .spinner-lg{width:40px;height:40px;margin:0 auto 10px;border:4px solid #ddd;border-top-color:#0d6efd;border-radius:50%;animation:spin .8s linear infinite}
@@ -868,7 +868,7 @@ function loadTareffTargetTable() {
         $('#tareff_target_tbody').html('<tr><td colspan="5" class="text-center">Please select From and To dates</td></tr>');
         return;
     }
-    alert('Loading FNE targets for period: ' + dateFrom + ' to ' + dateTo);
+//    alert('Loading FNE targets for period: ' + dateFrom + ' to ' + dateTo);
 
     // Destroy existing DataTable if initialized
     if ($.fn.DataTable.isDataTable('#tarrecordTable')) {
@@ -903,7 +903,10 @@ function loadTareffTargetTable() {
                          + 'data-eff="' + (row.eff_code || '') + '" '
                          + 'data-qual="' + (row.qual_code || '') + '" '
                          + 'data-target="' + (row.target_eff || '') + '" '
-                         + '>Edit</button></td>';
+                         + ' title="Edit" style="cursor:pointer;color:#0d6efd;background:none;border:none;font-size:14px;padding:2px 4px;">&#9998;</button> '
+                         + '<button class="tareff-delete-btn" '
+                         + 'data-id="' + row.all_trn_eff_id + '" '
+                         + ' title="Delete" style="cursor:pointer;color:#dc3545;background:none;border:none;font-size:14px;padding:2px 4px;">&#128465;</button></td>';
                     html += '</tr>';
                 });
                 $('#tareff_target_tbody').html(html);
@@ -943,6 +946,26 @@ $(document).on('click', '.tareff-edit-btn', function() {
     $('#tareff_target_id').val(btn.data('id'));
     $('#tareff_target_save').hide();
     $('#tareff_target_update').show();
+});
+
+$(document).on('click', '.tareff-delete-btn', function() {
+    var id = $(this).data('id');
+    if (!confirm('Are you sure you want to delete this FNE target?')) return;
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/delete_fne_target'); ?>",
+        type: 'POST',
+        data: { id: id },
+        dataType: 'json',
+        success: function(resp) {
+            if (resp.success) {
+                alert('Deleted successfully');
+                loadTareffTargetTable();
+            } else {
+                alert(resp.message || 'Delete failed');
+            }
+        },
+        error: function() { alert('Error deleting record'); }
+    });
 });
 
 function tareffcloseModal() {
@@ -1004,12 +1027,12 @@ function loadProdWagesTable() {
                          + 'data-wages="' + row.wages_code + '" '
                          + 'data-dept="' + row.dept_id + '" '
                          + 'data-type="' + (row.code_type || '') + '" '
-                         + '>Edit</button> '
-                         + '<button class="btn btn-sm btn-danger pw-delete-btn" '
+                         + ' title="Edit" style="cursor:pointer;color:#0d6efd;background:none;border:none;font-size:14px;padding:2px 4px;">&#9998;</button> '
+                         + '<button class="pw-delete-btn" '
                          + 'data-prod="' + row.prod_code + '" '
                          + 'data-dept="' + row.dept_id + '" '
                          + 'data-type="' + (row.code_type || '') + '" '
-                         + '>Del</button>'
+                         + ' title="Delete" style="cursor:pointer;color:#dc3545;background:none;border:none;font-size:14px;padding:2px 4px;">&#128465;</button>'
                          + '</td>';
                     html += '</tr>';
                 });
@@ -1135,6 +1158,677 @@ $(document).on('click', '#pw_clear_btn', function() {
     prodWagesClearForm();
 });
 // ========== End Wages & Production Quality Link Modal ==========
+
+// ========== Attendance Preparation & Updation Modal ==========
+function attPrepOpenModal() {
+    document.getElementById('attPrepModal').style.display = 'block';
+    var dateFrom = $('#ejmfromdt').val();
+    var dateTo = $('#ejmtodt').val();
+    var paySchmText = $('#ejm_payschm option:selected').map(function(){ return $(this).text(); }).get().join(', ');
+    $('#attprep_date_from_display').text('From: ' + dateFrom);
+    $('#attprep_date_to_display').text('To: ' + dateTo);
+    $('#attprep_payschm_display').text('PayScheme: ' + paySchmText);
+    loadAttPrepTable();
+}
+
+function mainwagesprocess() {
+    var ejmFromDate = $('#ejmfromdt').val();
+    var ejmToDate = $('#ejmtodt').val();
+    var paySchemeRaw = $('#ejm_payschm').val();
+    
+    // Convert array to first value or string (handle multi-select as single value)
+    var payScheme = Array.isArray(paySchemeRaw) ? paySchemeRaw[0] : paySchemeRaw;
+    
+    console.log('mainwagesprocess called with:', {
+        fromdate: ejmFromDate,
+        todate: ejmToDate,
+        payscheme: payScheme,
+        paySchemeRaw: paySchemeRaw
+    });
+    
+    if (!ejmFromDate || !ejmToDate || !payScheme) {
+        Swal.fire('Warning', 'Please select all required fields', 'warning');
+        return;
+    }
+    
+    showSpinnerCounter();
+    
+    // Array of processes to execute in sequence
+//    var processes = ['clear', 'ns', 'drg', 'sprd', 'spinner', 'winding', 'beaming', 'weaving', 'press', 'finishing', 'others'];
+    var processes = ['clear', 'ns', 'drg', 'sprd', 'spinner', 'winding', 'beaming', 'weaving', 'press'];
+    var currentIndex = 0;
+    var processMessages = []; // Store all messages
+    
+    // Function to execute each process
+    function executeNextProcess() {
+        if (currentIndex >= processes.length) {
+            // All processes completed
+            hideSpinnerCounter();
+            var allMessages = processMessages.join('\n');
+            Swal.fire('Success', 'All Wages Processing Completed!\n\n' + allMessages, 'success');
+            return;
+        }
+        
+        var processName = processes[currentIndex];
+        console.log('Executing process: ' + processName + ' with payScheme: ' + payScheme);
+        
+        $.ajax({
+            url: "<?php echo base_url('Ejmprocessdata/mainwagesprocess'); ?>",
+            type: "POST",
+            data: {
+                fromdate: ejmFromDate,
+                todate: ejmToDate,
+                payscheme: payScheme,
+                process: processName
+            },
+            dataType: "json",
+            timeout: 300000, // 5 minute timeout for long processes
+            success: function(response) {
+                console.log('Process response for ' + processName + ':', response); // Log for debugging
+                if (response && response.success) {
+                    // Show completion message
+                    var message = (response.process_name || processName) + ' Completed Successfully';
+                    processMessages.push(message);
+                    
+                    // Show alert for each process using SweetAlert2 with 2 second auto-close
+                    Swal.fire({
+                        title: 'Process Complete',
+                        text: message,
+                        icon: 'success',
+                        timer: 2000, // 2 second auto-close
+                        timerProgressBar: true,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then(function() {
+                        // Move to next process after 2 seconds
+                        currentIndex++;
+                        executeNextProcess();
+                    });
+                } else {
+                    hideSpinnerCounter();
+                    var errorMsg = (response && response.message) ? response.message : 'Unknown error';
+                    Swal.fire('Error', 'Error in ' + processName + ': ' + errorMsg, 'error');
+                    console.error('Process failed:', response);
+                }
+            },
+            error: function(xhr, status, error) {
+                hideSpinnerCounter();
+                console.error('AJAX Error for process ' + processName + ':', {xhr: xhr, status: status, error: error});
+                var errorMsg = 'An error occurred while processing ' + processName;
+                if (xhr && xhr.responseText) {
+                    console.log('Response text:', xhr.responseText);
+                    errorMsg += ' - ' + xhr.responseText;
+                }
+                Swal.fire('Error', errorMsg, 'error');
+            }
+        });
+    }
+    
+    // Start executing processes
+    executeNextProcess();
+}
+
+// Helper function to show process messages
+function showProcessMessage(message) {
+    // Create a temporary message alert (can be customized)
+    var msgDiv = $('<div style="position: fixed; top: 20px; right: 20px; background-color: #4caf50; color: white; padding: 15px 20px; border-radius: 4px; z-index: 9999; font-weight: bold;">' + message + '</div>');
+    $('body').append(msgDiv);
+    
+    // Remove after 1.5 seconds
+    setTimeout(function() {
+        msgDiv.fadeOut(500, function() {
+            $(this).remove();
+        });
+    }, 1500);
+}
+
+$(document).on('click', '#atp_close_btn, #attPrepCloseBtnX', function() {
+    document.getElementById('attPrepModal').style.display = 'none';
+});
+
+function attPrepClearForm() {
+    $('#atp_dept_code').val('0').trigger('change');
+    $('#atp_eb_no').val('');
+    $('#atp_emp_name').val('');
+    $('#atp_occu_code').val('');
+    $('#atp_mc_nos').val('');
+    $('#atp_atttype').val('');
+    $('#atp_working_hours').val('0');
+    $('#atp_ot_hours').val('0');
+    $('#atp_ns_hours').val('0');
+    $('#atp_edit_id').val('');
+    $('#atp_save_btn').show();
+    $('#atp_update_btn').hide();
+}
+
+// EB No lookup for attPrep
+$(document).on('change', '#atp_eb_no', function() {
+    var ebNo = $(this).val();
+    if (!ebNo) { $('#atp_emp_name').val(''); return; }
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/get_emp_name_by_eb'); ?>",
+        type: "POST",
+        data: { eb_no: ebNo },
+        dataType: "json",
+        success: function(res) {
+            $('#atp_emp_name').val(res.success ? res.name : '');
+        }
+    });
+});
+
+function loadAttPrepTable() {
+    var dateFrom = $('#ejmfromdt').val();
+    var dateTo = $('#ejmtodt').val();
+    var paySchm = $('#ejm_payschm').val();
+
+
+    if ($.fn.DataTable.isDataTable('#attPrepTable')) {
+        $('#attPrepTable').DataTable().destroy();
+    }
+    $('#atp_tbody').html('<tr><td colspan="12" class="text-center">Loading...</td></tr>');
+
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/get_att_prep_data'); ?>",
+        type: "POST",
+        data: { date_from: dateFrom, date_to: dateTo, pay_scheme_id: paySchm },
+        dataType: "json",
+        success: function(response) {
+            console.log('AttPrepData API Response:', response);
+            
+            if ($.fn.DataTable.isDataTable('#attPrepTable')) {
+                $('#attPrepTable').DataTable().destroy();
+            }
+            $('#atp_tbody').empty();
+
+            if (response.success && response.data && response.data.length > 0) {
+                var html = '';
+                $.each(response.data, function(i, row) {
+                    html += '<tr>';
+                    html += '<td>' + (row.dept_code || '') + '</td>';
+                    html += '<td>' + (row.dept_desc || '') + '</td>';
+                    html += '<td>' + (row.eb_no || '') + '</td>';
+                    html += '<td>' + (row.emp_name || '') + '</td>';
+                    html += '<td>' + (row.occu_code || '') + '</td>';
+                    html += '<td>' + (row.mc_nos || '') + '</td>';
+                    html += '<td>' + (row.shift || '') + '</td>';
+                    html += '<td>' + (row.working_hours || 0) + '</td>';
+                    html += '<td>' + (row.ot_hours || 0) + '</td>';
+                    html += '<td>' + (row.ns_hours || 0) + '</td>';
+                    html += '<td>' + (row.pay_scheme_id || '') + '</td>';
+                    html += '<td>'
+                         + '<button class="btn btn-sm btn-info atp-edit-btn" '
+                         + 'data-id="' + (row.att_summary_id || '') + '" '
+                         + 'data-dept="' + row.dept_code + '" '
+                         + 'data-deptid="' + (row.dept_id || '') + '" '
+                         + 'data-ebno="' + (row.eb_no || '') + '" '
+                         + 'data-empname="' + (row.emp_name || '') + '" '
+                         + 'data-occu="' + (row.occu_code || '') + '" '
+                         + 'data-mc="' + (row.mc_nos || '') + '" '
+                         + 'data-atttype="' + (row.shift || '') + '" '
+                         + 'data-wh="' + (row.working_hours || 0) + '" '
+                         + 'data-ot="' + (row.ot_hours || 0) + '" '
+                         + 'data-ns="' + (row.ns_hours || 0) + '" '
+                         + ' title="Edit" style="cursor:pointer;color:#0d6efd;background:none;border:none;font-size:14px;padding:2px 4px;">&#9998;</button> '
+                         + '<button class="atp-delete-btn" '
+                         + 'data-id="' + (row.att_summary_id || '') + '" '
+                         + ' title="Delete" style="cursor:pointer;color:#dc3545;background:none;border:none;font-size:14px;padding:2px 4px;">&#128465;</button>'
+                         + '</td>';
+                    html += '</tr>';
+                });
+                $('#atp_tbody').html(html);
+            } else {
+                $('#atp_tbody').html('<tr><td colspan="12" class="text-center text-warning">No data found for the selected period.</td></tr>');
+            }
+
+            $('#attPrepTable').DataTable({
+                searching: true,
+                paging: true,
+                pageLength: 10,
+                scrollX: true,
+                scrollY: '300px',
+                scrollCollapse: true,
+                ordering: true,
+                info: true,
+                autoWidth: false,
+                language: { emptyTable: 'No records found' }
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX Error in loadAttPrepTable:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+            var errorMsg = 'Error loading data';
+            if (xhr.status === 500) {
+                errorMsg = 'Server error (500): ' + (xhr.responseText ? xhr.responseText.substring(0, 100) : 'Unknown error');
+            } else if (xhr.status === 404) {
+                errorMsg = 'Endpoint not found (404)';
+            }
+            $('#atp_tbody').html('<tr><td colspan="12" class="text-center text-danger">' + errorMsg + '</td></tr>');
+        }
+    });
+}
+
+// Save
+$(document).on('click', '#atp_save_btn', function() {
+    var dateFrom = $('#ejmfromdt').val();
+    var dateTo = $('#ejmtodt').val();
+    var paySchm = $('#ejm_payschm').val();
+    var dept = $('#atp_dept_code').val();
+    var ebno = $('#atp_eb_no').val();
+    var occu = $('#atp_occu_code').val();
+    var atttype = $('#atp_atttype').val();
+    var wh = $('#atp_working_hours').val();
+    var ot = $('#atp_ot_hours').val();
+    var ns = $('#atp_ns_hours').val();
+    var mc = $('#atp_mc_nos').val();
+    
+    if (!dept || dept == '0') { alert('Please select Department'); return; }
+    $('#atp_save_btn').prop('disabled', true);
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/save_att_prep'); ?>",
+        type: "POST",
+        data: { date_from: dateFrom, date_to: dateTo, dept_code: dept, eb_no: ebno, occu_code: occu, mc_nos: mc, shift: atttype, working_hours: wh, ot_hours: ot, ns_hours: ns, pay_scheme_id: paySchm },
+        dataType: "json",
+        success: function(response) {
+            if (response.success) {
+                alert('Saved successfully');
+                attPrepClearForm();
+                loadAttPrepTable();
+            } else {
+                alert(response.message || 'Error saving');
+            }
+            $('#atp_save_btn').prop('disabled', false);
+        },
+        error: function() { alert('Error saving data'); $('#atp_save_btn').prop('disabled', false); }
+    });
+});
+
+// Edit
+$(document).on('click', '.atp-edit-btn', function() {
+    var btn = $(this);
+    $('#atp_dept_code').val(btn.data('deptid')).trigger('change');
+    $('#atp_eb_no').val(btn.data('ebno'));
+    $('#atp_emp_name').val(btn.data('empname'));
+    $('#atp_occu_code').val(btn.data('occu'));
+    $('#atp_mc_nos').val(btn.data('mc'));
+    $('#atp_atttype').val(btn.data('atttype'));
+    $('#atp_working_hours').val(btn.data('wh'));
+    $('#atp_ot_hours').val(btn.data('ot'));
+    $('#atp_ns_hours').val(btn.data('ns'));
+    $('#atp_edit_id').val(btn.data('id'));
+    $('#atp_save_btn').hide();
+    $('#atp_update_btn').show();
+});
+
+// Update
+$(document).on('click', '#atp_update_btn', function() {
+    var editId = $('#atp_edit_id').val();
+    if (!editId) { alert('No record selected'); return; }
+    var dateFrom = $('#ejmfromdt').val();
+    var dateTo = $('#ejmtodt').val();
+    var paySchm = $('#ejm_payschm').val();
+    var dept = $('#atp_dept_code').val();
+    var ebno = $('#atp_eb_no').val();
+    var occu = $('#atp_occu_code').val();
+    var mc = $('#atp_mc_nos').val();
+    var atttype = $('#atp_atttype').val();
+    var wh = $('#atp_working_hours').val();
+    var ot = $('#atp_ot_hours').val();
+    var ns = $('#atp_ns_hours').val();
+    if (!dept || dept == '0') { alert('Please select Department'); return; }
+    $('#atp_update_btn').prop('disabled', true);
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/update_att_prep'); ?>",
+        type: "POST",
+        data: {
+            att_summary_id: editId,
+            date_from: dateFrom, date_to: dateTo,
+            dept_code: dept, eb_no: ebno, occu_code: occu, mc_nos: mc, shift: atttype,
+            working_hours: wh, ot_hours: ot, ns_hours: ns, pay_scheme_id: paySchm
+        },
+        dataType: "json",
+        success: function(response) {
+            if (response.success) {
+                alert('Updated successfully');
+                attPrepClearForm();
+                loadAttPrepTable();
+            } else {
+                alert(response.message || 'Error updating');
+            }
+            $('#atp_update_btn').prop('disabled', false);
+        },
+        error: function() { alert('Error updating data'); $('#atp_update_btn').prop('disabled', false); }
+    });
+});
+
+// Delete
+$(document).on('click', '.atp-delete-btn', function() {
+    if (!confirm('Are you sure you want to delete this record?')) return;
+    var btn = $(this);
+    btn.prop('disabled', true);
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/delete_att_prep'); ?>",
+        type: "POST",
+        data: { att_summary_id: btn.data('id') },
+        dataType: "json",
+        success: function(response) {
+            if (response.success) {
+                alert('Deleted successfully');
+                loadAttPrepTable();
+            } else {
+                alert(response.message || 'Error deleting');
+                btn.prop('disabled', false);
+            }
+        },
+        error: function() { alert('Error deleting data'); btn.prop('disabled', false); }
+    });
+});
+
+// Process - insert into tbl_ejm_wages_att_summary
+$(document).on('click', '#atp_process_btn', function() {
+    var dateFrom = $('#ejmfromdt').val();
+    var dateTo = $('#ejmtodt').val();
+    var paySchm = $('#ejm_payschm').val();
+    
+    var dept = $('#atp_dept_code').val();
+    alert(paySchm);
+    var allowedSchemes = ['151', '125', '161'];
+    var paySchmArray = Array.isArray(paySchm) ? paySchm : [paySchm];
+    var isValidScheme = paySchmArray.some(function(v){ return allowedSchemes.indexOf(v) !== -1; });
+    if (!paySchm || paySchm == '0' || !isValidScheme) {
+        alert('Please select Pay Scheme (151, 125 or 161)'); return;
+    }
+    if (!dateFrom || !dateTo) { alert('Please select From and To dates'); return; }
+    if (!confirm('Process attendance data and insert into wages summary?')) return;
+    $('#atp_process_btn').prop('disabled', true);
+//    showSpinnerCounter();
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/process_att_prep'); ?>",
+        type: "POST",
+        data: { date_from: dateFrom, date_to: dateTo, pay_scheme_id: paySchm, dept_code: dept },
+        dataType: "json",
+        success: function(response) {
+//            hideSpinnerCounter();
+            if (response.success) {
+                alert('Processed successfully. ' + (response.count || '') + ' records inserted.');
+                loadAttPrepTable();
+            } else {
+                alert(response.message || 'Error processing');
+            }
+            $('#atp_process_btn').prop('disabled', false);
+        },
+        error: function() { hideSpinnerCounter(); alert('Error processing data'); $('#atp_process_btn').prop('disabled', false); }
+    });
+});
+
+// Reset
+$(document).on('click', '#atp_reset_btn', function() {
+    attPrepClearForm();
+});
+// ========== End Attendance Preparation & Updation Modal ==========
+
+// ========== Advance & Other Entries Modal ==========
+function advOthOpenModal() {
+    document.getElementById('advOthModal').style.display = 'block';
+    var dateFrom = $('#ejmfromdt').val();
+    var dateTo = $('#ejmtodt').val();
+    $('#advoth_date_display').text('From: ' + dateFrom + '  To: ' + dateTo);
+    loadAdvOthTable();
+}
+
+$(document).on('click', '#adv_close_btn, #advOthCloseBtnX', function() {
+    document.getElementById('advOthModal').style.display = 'none';
+});
+
+function advOthClearForm() {
+    $('#adv_eb_no').val('');
+    $('#adv_emp_name').val('');
+    $('#adv_stl_days').val('0');
+    $('#adv_puja_advance').val('0');
+    $('#adv_ot_advance').val('0');
+    $('#adv_installment_advance').val('0');
+    $('#adv_stl_advance').val('0');
+    $('#adv_co_loan').val('0');
+    $('#adv_misc_earn').val('0');
+    $('#adv_misc_ded').val('0');
+    $('#adv_misc_ot_earn').val('0');
+    $('#adv_misc_ot_ded').val('0');
+    $('#adv_edit_id').val('');
+    $('#adv_save_btn').show();
+    $('#adv_update_btn').hide();
+}
+
+// Fetch employee name on EB No blur
+$(document).on('blur', '#adv_eb_no', function() {
+    var ebNo = $(this).val();
+    if (!ebNo) { $('#adv_emp_name').val(''); return; }
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/get_emp_name_by_eb'); ?>",
+        type: "POST",
+        data: { eb_no: ebNo },
+        dataType: "json",
+        success: function(response) {
+            if (response.success && response.name) {
+                $('#adv_emp_name').val(response.name);
+            } else {
+                $('#adv_emp_name').val('Not Found');
+            }
+        },
+        error: function() { $('#adv_emp_name').val(''); }
+    });
+});
+
+function loadAdvOthTable() {
+    var dateFrom = $('#ejmfromdt').val();
+    var dateTo = $('#ejmtodt').val();
+
+    if ($.fn.DataTable.isDataTable('#advOthTable')) {
+        $('#advOthTable').DataTable().destroy();
+    }
+    $('#adv_tbody').html('<tr><td colspan="13" class="text-center">Loading...</td></tr>');
+
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/get_adv_oth_data'); ?>",
+        type: "POST",
+        data: { date_from: dateFrom, date_to: dateTo },
+        dataType: "json",
+        success: function(response) {
+            if ($.fn.DataTable.isDataTable('#advOthTable')) {
+                $('#advOthTable').DataTable().destroy();
+            }
+            $('#adv_tbody').empty();
+
+            if (response.success && response.data && response.data.length > 0) {
+                var html = '';
+                $.each(response.data, function(i, row) {
+                    html += '<tr>';
+                    html += '<td>' + (row.eb_no || '') + '</td>';
+                    html += '<td>' + (row.emp_name || '') + '</td>';
+                    html += '<td>' + (row.stl_days || 0) + '</td>';
+                    html += '<td>' + (row.puja_advance || 0) + '</td>';
+                    html += '<td>' + (row.ot_advance || 0) + '</td>';
+                    html += '<td>' + (row.installment_advance || 0) + '</td>';
+                    html += '<td>' + (row.stl_advance || 0) + '</td>';
+                    html += '<td>' + (row.co_loan || 0) + '</td>';
+                    html += '<td>' + (row.misc_earn || 0) + '</td>';
+                    html += '<td>' + (row.misc_ded || 0) + '</td>';
+                    html += '<td>' + (row.misc_ot_earn || 0) + '</td>';
+                    html += '<td>' + (row.misc_ot_ded || 0) + '</td>';
+                    html += '<td>'
+                         + '<button class="btn btn-sm btn-info adv-edit-btn" '
+                         + 'data-id="' + (row.id || '') + '" '
+                         + 'data-ebno="' + (row.eb_no || '') + '" '
+                         + 'data-name="' + (row.emp_name || '') + '" '
+                         + 'data-stldays="' + (row.stl_days || 0) + '" '
+                         + 'data-puja="' + (row.puja_advance || 0) + '" '
+                         + 'data-otadv="' + (row.ot_advance || 0) + '" '
+                         + 'data-instadv="' + (row.installment_advance || 0) + '" '
+                         + 'data-stladv="' + (row.stl_advance || 0) + '" '
+                         + 'data-coloan="' + (row.co_loan || 0) + '" '
+                         + 'data-miscearn="' + (row.misc_earn || 0) + '" '
+                         + 'data-miscded="' + (row.misc_ded || 0) + '" '
+                         + 'data-miscotearn="' + (row.misc_ot_earn || 0) + '" '
+                         + 'data-miscotded="' + (row.misc_ot_ded || 0) + '" '
+                         + ' title="Edit" style="cursor:pointer;color:#0d6efd;background:none;border:none;font-size:14px;padding:2px 4px;">&#9998;</button> '
+                         + '<button class="adv-delete-btn" '
+                         + 'data-id="' + (row.id || '') + '" '
+                         + ' title="Delete" style="cursor:pointer;color:#dc3545;background:none;border:none;font-size:14px;padding:2px 4px;">&#128465;</button>'
+                         + '</td>';
+                    html += '</tr>';
+                });
+                $('#adv_tbody').html(html);
+            }
+
+            $('#advOthTable').DataTable({
+                searching: true,
+                paging: true,
+                pageLength: 10,
+                scrollX: true,
+                scrollY: '300px',
+                scrollCollapse: true,
+                ordering: true,
+                info: true,
+                autoWidth: false,
+                language: { emptyTable: 'No records found' }
+            });
+        },
+        error: function() {
+            $('#adv_tbody').html('<tr><td colspan="13" class="text-center text-danger">Error loading data</td></tr>');
+        }
+    });
+}
+
+// Save
+$(document).on('click', '#adv_save_btn', function() {
+    var dateFrom = $('#ejmfromdt').val();
+    var dateTo = $('#ejmtodt').val();
+    var ebNo = $('#adv_eb_no').val();
+    if (!ebNo) { alert('Please enter EB No'); return; }
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/save_adv_oth'); ?>",
+        type: "POST",
+        data: {
+            date_from: dateFrom, date_to: dateTo, eb_no: ebNo,
+            stl_days: $('#adv_stl_days').val(), puja_advance: $('#adv_puja_advance').val(),
+            ot_advance: $('#adv_ot_advance').val(), installment_advance: $('#adv_installment_advance').val(),
+            stl_advance: $('#adv_stl_advance').val(), co_loan: $('#adv_co_loan').val(),
+            misc_earn: $('#adv_misc_earn').val(), misc_ded: $('#adv_misc_ded').val(),
+            misc_ot_earn: $('#adv_misc_ot_earn').val(), misc_ot_ded: $('#adv_misc_ot_ded').val()
+        },
+        dataType: "json",
+        success: function(response) {
+            if (response.success) {
+                alert('Saved successfully');
+                advOthClearForm();
+                loadAdvOthTable();
+            } else {
+                alert(response.message || 'Error saving');
+            }
+        },
+        error: function() { alert('Error saving data'); }
+    });
+});
+
+// Edit
+$(document).on('click', '.adv-edit-btn', function() {
+    var btn = $(this);
+    $('#adv_eb_no').val(btn.data('ebno'));
+    $('#adv_emp_name').val(btn.data('name'));
+    $('#adv_stl_days').val(btn.data('stldays'));
+    $('#adv_puja_advance').val(btn.data('puja'));
+    $('#adv_ot_advance').val(btn.data('otadv'));
+    $('#adv_installment_advance').val(btn.data('instadv'));
+    $('#adv_stl_advance').val(btn.data('stladv'));
+    $('#adv_co_loan').val(btn.data('coloan'));
+    $('#adv_misc_earn').val(btn.data('miscearn'));
+    $('#adv_misc_ded').val(btn.data('miscded'));
+    $('#adv_misc_ot_earn').val(btn.data('miscotearn'));
+    $('#adv_misc_ot_ded').val(btn.data('miscotded'));
+    $('#adv_edit_id').val(btn.data('id'));
+    $('#adv_save_btn').hide();
+    $('#adv_update_btn').show();
+});
+
+// Update
+$(document).on('click', '#adv_update_btn', function() {
+    var editId = $('#adv_edit_id').val();
+    if (!editId) { alert('No record selected'); return; }
+    var dateFrom = $('#ejmfromdt').val();
+    var dateTo = $('#ejmtodt').val();
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/update_adv_oth'); ?>",
+        type: "POST",
+        data: {
+            id: editId, date_from: dateFrom, date_to: dateTo, eb_no: $('#adv_eb_no').val(),
+            stl_days: $('#adv_stl_days').val(), puja_advance: $('#adv_puja_advance').val(),
+            ot_advance: $('#adv_ot_advance').val(), installment_advance: $('#adv_installment_advance').val(),
+            stl_advance: $('#adv_stl_advance').val(), co_loan: $('#adv_co_loan').val(),
+            misc_earn: $('#adv_misc_earn').val(), misc_ded: $('#adv_misc_ded').val(),
+            misc_ot_earn: $('#adv_misc_ot_earn').val(), misc_ot_ded: $('#adv_misc_ot_ded').val()
+        },
+        dataType: "json",
+        success: function(response) {
+            if (response.success) {
+                alert('Updated successfully');
+                advOthClearForm();
+                loadAdvOthTable();
+            } else {
+                alert(response.message || 'Error updating');
+            }
+        },
+        error: function() { alert('Error updating data'); }
+    });
+});
+
+// Delete
+$(document).on('click', '.adv-delete-btn', function() {
+    if (!confirm('Are you sure you want to delete this record?')) return;
+    var id = $(this).data('id');
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/delete_adv_oth'); ?>",
+        type: "POST",
+        data: { id: id },
+        dataType: "json",
+        success: function(response) {
+            if (response.success) {
+                alert('Deleted successfully');
+                loadAdvOthTable();
+            } else {
+                alert(response.message || 'Error deleting');
+            }
+        },
+        error: function() { alert('Error deleting data'); }
+    });
+});
+
+// Installment Processing
+$(document).on('click', '#adv_installment_btn', function() {
+    var dateFrom = $('#ejmfromdt').val();
+    var dateTo = $('#ejmtodt').val();
+    if (!dateFrom || !dateTo) { alert('Please select From and To dates'); return; }
+    if (!confirm('Process installment advances for the selected period?')) return;
+    showSpinnerCounter();
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/process_installment_adv'); ?>",
+        type: "POST",
+        data: { date_from: dateFrom, date_to: dateTo },
+        dataType: "json",
+        success: function(response) {
+            hideSpinnerCounter();
+            if (response.success) {
+                alert('Installment processed successfully. ' + (response.count || '') + ' records.');
+                loadAdvOthTable();
+            } else {
+                alert(response.message || 'Error processing installments');
+            }
+        },
+        error: function() { hideSpinnerCounter(); alert('Error processing installments'); }
+    });
+});
+// ========== End Advance & Other Entries Modal ==========
 
 function syncEjmToNjm() {
     $('#njmcntfromdt').val($('#ejmfromdt').val());
@@ -2263,32 +2957,41 @@ function cntwagespayslipprint() {
       $("#oattprdprocess").click(function(event){
           event.preventDefault(); 
           var periodfromdate= $('#oattfromdt').val();
-          alert(periodfromdate);
+          
+          if (!periodfromdate) {
+              Swal.fire('Warning', 'Please select a date', 'warning');
+              return;
+          }
+          
           showSpinnerCounter();
         $.ajax({
           url: "<?php echo base_url('Ejmprocessdata/oattprdprocess'); ?>",
           type: "POST",
           data: {periodfromdate : periodfromdate},
           dataType: "json",
+          timeout: 300000, // 5 minute timeout
           success: function(response) {
-           
-
-            var savedata=(response.savedata);
-              if (response.success) {
-                  alert('Record Updated Successfully');
-                   $('#record_id').val(0);
-                   hideSpinnerCounter();
- 
-            } else {
-                  alert('No Data');
-                   hideSpinnerCounter();
-
-      
+              console.log('oattprdprocess response:', response); // Log for debugging
+              hideSpinnerCounter();
+              
+              if (response && response.success) {
+                  Swal.fire('Success', 'Record Updated Successfully', 'success');
+                  $('#record_id').val(0);
+              } else {
+                  var errorMsg = (response && response.message) ? response.message : 'No Data';
+                  Swal.fire('Error', errorMsg, 'error');
               }
-          alert(url);
-            }
-      });
- //     refreshDataTable();
+          },
+          error: function(xhr, status, error) {
+              hideSpinnerCounter();
+              console.error('AJAX Error:', {xhr: xhr, status: status, error: error});
+              var errorMsg = 'An error occurred while processing the request';
+              if (xhr && xhr.responseText) {
+                  console.log('Response text:', xhr.responseText);
+              }
+              Swal.fire('Error', errorMsg, 'error');
+          }
+        });
     });
 
 
@@ -3223,7 +3926,7 @@ return false;
                 periodfromdate= periodfromdate.substring(8)+'-'+periodfromdate.substring(5,7)+'-'+periodfromdate.substring(0,4);
                 periodtodate= periodtodate.substring(8)+'-'+periodtodate.substring(5,7)+'-'+periodtodate.substring(0,4);
   //              alert('new js');
-//                alert(getmenu);
+                alert(getmenu);
                 var hd1 = '';
                  if (getmenu == 1) {
                      njmcntwagesprocessdata(event);
@@ -3253,6 +3956,7 @@ return false;
                     alert("Under Development");
                     }
                  if (getmenu == 7) {
+                    alert('excel wages');
                      njmwagesexceldata(event);
                 }
                 if (getmenu == 8) {
@@ -3286,6 +3990,18 @@ return false;
                }
                if ($('#ejm_getmenu').val() == 2) {
                    prodWagesOpenModal();
+                   return;
+               }
+               if ($('#ejm_getmenu').val() == 3) {
+                   attPrepOpenModal();
+                   return;
+               }
+               if ($('#ejm_getmenu').val() == 4) {
+                   advOthOpenModal();
+                   return;
+               }
+               if ($('#ejm_getmenu').val() == 5) {
+                   mainwagesprocess();
                    return;
                }
                $("#njmmenuclick").trigger('click');
@@ -3378,7 +4094,7 @@ return false;
                 periodfromdate = $('#njmcntfromdt').val();
                 periodtodate = $('#njmcnttodt').val();
                 payschemeName = $('#payschemename').val();
-alert(payschemeName);
+//alert(payschemeName);
         if (att_payschm == 0) {
               alert('Please Select Pay Scheme');
               return;

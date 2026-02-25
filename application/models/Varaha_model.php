@@ -525,9 +525,10 @@ class Varaha_model extends CI_Model
 
 	public function getAlleffM($companyId){
 	//	$this->db->where('company_id',$companyId);
+		$this->db->select("*, CONCAT(eff_code, '-', eff_mast_name) as eff_label");
 		$q = $this->db->get('EMPMILL12.tbl_eff_master');
 	//	$this->varaha->print_arrays($this->db->last_query());
-	log_message('error', $this->db->last_query());
+	//log_message('error', $this->db->last_query());
 
 		if($q->num_rows() > 0){
 			foreach($q->result() as $row){
