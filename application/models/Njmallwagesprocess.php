@@ -2297,6 +2297,45 @@ return $query->result_array();
 
     }
 
+public function njmfaexceldata($periodfromdate,$periodtodate,$att_payschm) {
+$companyId = $this->session->userdata('companyId');
+
+$sql="select eb_no,empname,tnjmfa.da_rate,tnjmfa.fa_rate,round(whrs/8,3) fa_days,round(round(whrs/8,3)*tnjmfa.fa_rate,0) fa_amount 
+from EMPMILL12.tbl_njm_food_allowance tnjmfa
+left join (
+select emp_code,CONCAT(trim(thepd.first_name), ' ', IFNULL(trim(thepd.middle_name), ''), ' ', IFNULL(trim(thepd.last_name), '')) AS empname,
+dept_desc,cata_desc,sm.status_name,tps.NAME,sum(working_hours-idle_hours) whrs,theod.date_of_join   from daily_attendance da 
+left join tbl_hrms_ed_personal_details thepd on thepd.eb_id=da.eb_id
+left join tbl_hrms_ed_official_details theod on theod.eb_id =da.eb_id and theod.is_active =1
+left join department_master dm on dm.dept_id=theod.department_id 
+left join category_master cm on cm.cata_id =theod.catagory_id 
+left join status_master sm on sm.status_id =thepd.status 
+left join tbl_pay_employee_payscheme tpep on tpep.EMPLOYEEID =da.eb_id and tpep.STATUS =1
+left join tbl_pay_scheme tps on tps.ID =tpep.PAY_SCHEME_ID 
+where da.company_id = $companyId and da.is_active =1 and da.attendance_type in ('R','O','C')
+and da.attendance_date between '$periodfromdate' and '$periodtodate'
+group by emp_code,CONCAT(trim(thepd.first_name), ' ', IFNULL(trim(thepd.middle_name), ''), ' ', IFNULL(trim(thepd.last_name), '')) ,
+dept_desc,cata_desc,sm.status_name,tps.NAME,date_of_join
+) att on att.emp_code = tnjmfa.eb_no
+ order by eb_no
+"; 
+
+//echo $sql;
+    $query = $this->db->query($sql);
+
+      
+    $data=$query->result();
+    if ($query->num_rows() > 0) {
+   //     var_dump($data);
+return $query->result_array(); 
+//        return $data;
+    } else {
+        return array(); // Return an empty array if no results are found
+    }
+
+    }
+
+
 
 public function njmproductionchecklist($periodfromdate,$periodtodate,$att_payschm) {
 $companyId = $this->session->userdata('companyId');

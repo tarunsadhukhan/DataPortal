@@ -2671,6 +2671,22 @@ public function get_all_fne_targets() {
 		}
 	}
 
+	public function get_prod_wages_links() {
+		try {
+			$this->load->model('Ejmallprocessdata');
+			$rows = $this->Ejmallprocessdata->getProdWagesLinks();
+			
+			$this->output
+				->set_content_type('application/json')
+				->set_output(json_encode(array('success' => true, 'data' => $rows)));
+		} catch (Exception $e) {
+			log_message('error', 'Error in get_prod_wages_links: ' . $e->getMessage());
+			$this->output
+				->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => $e->getMessage())));
+		}
+	}
+
 	public function save_prod_wages_link() {
 		$data = array(
 			'prod_code'  => $this->input->post('prod_code'),
@@ -2786,7 +2802,9 @@ public function get_all_fne_targets() {
 			'ns_hours'       => $this->input->post('ns_hours'),
 			'pay_scheme_id'  => is_array($this->input->post('pay_scheme_id')) ? implode(',', $this->input->post('pay_scheme_id')) : $this->input->post('pay_scheme_id'),
             'eb_id'          => $eb_id,
-            'update_from'    => 'M'
+            'update_from'    => 'ATT',
+            'updated_by'     => 'M',
+            't_p'               => 'T'
             );
 
 		if (!$data['dept_code'] || !$data['date_from'] || !$data['date_to']) {
@@ -2883,9 +2901,10 @@ public function get_all_fne_targets() {
 	public function get_adv_oth_data() {
 		$dateFrom = $this->input->post('date_from');
 		$dateTo = $this->input->post('date_to');
+        $payscheme = $this->input->post('pay_scheme_id');
 		try {
 			$this->load->model('Ejmallprocessdata');
-			$rows = $this->Ejmallprocessdata->getAdvOthData($dateFrom, $dateTo);
+			$rows = $this->Ejmallprocessdata->getAdvOthData($dateFrom, $dateTo, $payscheme);
 			$this->output->set_content_type('application/json')
 				->set_output(json_encode(array('success' => true, 'data' => $rows)));
 		} catch (Exception $e) {
@@ -2895,10 +2914,23 @@ public function get_all_fne_targets() {
 	}
 
 	public function save_adv_oth() {
-		$data = array(
+            $sql="select eb_id from vowsls.worker_master 
+            where eb_no='".$this->input->post('eb_no')."' and company_id=".$this->session->userdata('companyId')    ;
+                $ebid=$this->db->query($sql);
+            
+                $eb_result = $ebid->row();
+                if (!$eb_result) {
+                    $this->output->set_content_type('application/json')
+                        ->set_output(json_encode(array('success' => false, 'message' => 'Invalid employee number entered')));
+                    return;
+                }
+                $eb_id = $eb_result->eb_id;
+
+    
+        $data = array(
 			'date_from'            => $this->input->post('date_from'),
 			'date_to'              => $this->input->post('date_to'),
-			'eb_no'                => $this->input->post('eb_no'),
+			'eb_id'                => $eb_id,
 			'stl_days'             => $this->input->post('stl_days') ? $this->input->post('stl_days') : 0,
 			'puja_advance'         => $this->input->post('puja_advance') ? $this->input->post('puja_advance') : 0,
 			'ot_advance'           => $this->input->post('ot_advance') ? $this->input->post('ot_advance') : 0,
@@ -2910,10 +2942,10 @@ public function get_all_fne_targets() {
 			'misc_ot_earn'         => $this->input->post('misc_ot_earn') ? $this->input->post('misc_ot_earn') : 0,
 			'misc_ot_ded'          => $this->input->post('misc_ot_ded') ? $this->input->post('misc_ot_ded') : 0,
 			'is_active'            => 1,
-            'update_from'          => 'M'
+            'updt_from'          => 'M'
             );
 
-		if (!$data['eb_no'] || !$data['date_from'] || !$data['date_to']) {
+		if (!$data['eb_id'] || !$data['date_from'] || !$data['date_to']) {
 			$this->output->set_content_type('application/json')
 				->set_output(json_encode(array('success' => false, 'message' => 'Missing required fields')));
 			return;
@@ -2926,11 +2958,22 @@ public function get_all_fne_targets() {
 	}
 
 	public function update_adv_oth() {
-		$id = $this->input->post('id');
+		
+            $sql="select eb_id from vowsls.worker_master 
+            where eb_no='".$this->input->post('eb_no')."' and company_id=".$this->session->userdata('companyId')    ;
+                $ebid=$this->db->query($sql);
+            
+                $eb_result = $ebid->row();
+                if (!$eb_result) {
+                    $this->output->set_content_type('application/json')
+                        ->set_output(json_encode(array('success' => false, 'message' => 'Invalid employee number entered')));
+                    return;
+                }
+                $eb_id = $eb_result->eb_id;
 		$data = array(
 			'date_from'            => $this->input->post('date_from'),
 			'date_to'              => $this->input->post('date_to'),
-			'eb_no'                => $this->input->post('eb_no'),
+			'eb_id'                => $eb_id,
 			'stl_days'             => $this->input->post('stl_days') ?: 0,
 			'puja_advance'         => $this->input->post('puja_advance') ?: 0,
 			'ot_advance'           => $this->input->post('ot_advance') ?: 0,
@@ -2955,6 +2998,40 @@ public function get_all_fne_targets() {
 		$result = $this->Ejmallprocessdata->deleteAdvOth($id);
 		$this->output->set_content_type('application/json')
 			->set_output(json_encode(array('success' => $result)));
+	}
+
+	public function update_stl_days() {
+		$id = $this->input->post('id');
+		$stl_days = $this->input->post('stl_days');
+
+		if (!$id || $stl_days === '') {
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => 'Missing required fields')));
+			return;
+		}
+
+		$data = array('stl_days' => $stl_days);
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->updateStlDays($id, $data);
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode(array('success' => $result)));
+	}
+
+	public function process_installment_adv() {
+		$dateFrom = $this->input->post('date_from');
+		$dateTo = $this->input->post('date_to');
+
+		if (!$dateFrom || !$dateTo) {
+			$this->output->set_content_type('application/json')
+				->set_output(json_encode(array('success' => false, 'message' => 'Missing required date fields')));
+			return;
+		}
+
+		$this->load->model('Ejmallprocessdata');
+		$result = $this->Ejmallprocessdata->processInstallmentAdv($dateFrom, $dateTo);
+		
+		$this->output->set_content_type('application/json')
+			->set_output(json_encode($result));
 	}
 
 	public function mainwagesprocess() {
@@ -3008,6 +3085,12 @@ public function get_all_fne_targets() {
 					$result = $this->Ejmallprocessdata->MainWagesProcessns($fromdate, $todate, $payscheme);
 					if (is_array($result)) {
 						$result['process_name'] = 'NS Processing';
+					}
+					break;
+				case 'jute':
+					$result = $this->Ejmallprocessdata->MainWagesProcessjute($fromdate, $todate, $payscheme);
+					if (is_array($result)) {
+						$result['process_name'] = 'Jute Processing';
 					}
 					break;
 				case 'drg':

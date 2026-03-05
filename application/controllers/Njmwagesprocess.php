@@ -4174,6 +4174,177 @@ echo json_encode(array('success' => true, 'savedata' => $savedata, 'excelUrl' =>
 
 	}
 	
+public function njmfaexceldata() {
+		// Create a new Spreadsheet object
+		$periodfromdate= $this->input->get('periodfromdate');
+		$periodtodate = $this->input->get('periodtodate');
+		$att_payschm = $this->input->get('att_payschm');
+
+    echo $periodfromdate.'=='.$periodtodate.'=='.$att_payschm;
+    $result = $this->Njmallwagesprocess->njmfaexceldata($periodfromdate,$periodtodate,$att_payschm);
+//var_dump($result);
+//    $query = $this->Njmallwagesprocess->getcntwagespayslip($periodfromdate,$periodtodate,$att_payschm);
+    if (!$result) {
+        echo "Query failed.";
+        return;
+    }
+    
+    // Check if the query returned any results
+   //   
+//$result=$this->Njmallwagesprocess->njmcntwagesexceldownload($periodfromdate,$periodtodate,$att_payschm);
+  //  var_dump($query);
+
+//  var_dump($result);
+if (empty($result) || count($result) == 0) {
+    echo "No data found.";
+    return;
+}
+        $query = $result;
+//    echo "Total Rows: " . $result->num_rows() . "<br>";
+
+				$spreadsheet = new Spreadsheet();
+	$sheet = $spreadsheet->getActiveSheet();
+
+    $sdate=$periodtodate;
+	//	$sdate='2024-01-01';
+
+	// Extract month and year from periodtodate
+	$monthYear = date('F Y', strtotime($periodtodate));
+	
+	// Set headers
+	$cmphd = 'NELLIMARLA JUTE MILLS CO LTD';
+	$hdline = 'Food Allowance Statement for the month of ' . $monthYear;
+	
+	$sheet->setCellValue('A1', $cmphd);
+	$sheet->setCellValue('A2', $hdline);
+	
+	// Merge cells A1:F1 and A2:F2
+	$sheet->mergeCells('A1:F1');
+	$sheet->mergeCells('A2:F2');
+	
+	// Center align the headers
+	$sheet->getStyle('A1:F2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+//echo $this->db->last_query();
+// Fetching the result set as an array of arrays
+
+//$results = $query->result_array();
+//$columns = $query->list_fields();
+//$numCols = $query->num_fields();
+
+//$result = $query->result_array();
+
+
+$columnNames = array_keys($result[0]);
+echo "Column Names: " . implode(", ", $columnNames) . "<br>";
+$col = 'A';
+    foreach ($columnNames as $column) {
+        $sheet->setCellValue($col.'3', $column);
+        $col++;
+    }
+
+  /*   $rowNumber = 2;
+    $colno=0;
+    foreach ($result as $row) {
+    $colno=0;
+        $col = 'A';
+        foreach ($row as $cell) {
+            if ($colno<=0) {
+              //  $sheet->setCellValueExplicitByColumnAndRow($colIndex, $rowIndex, $value, DataType::TYPE_STRING);
+//                $sheet->setCellValue($col.$rowNumber, $cell, DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit($col.$rowNumber, $cell, DataType::TYPE_STRING);
+
+            } else {    
+                $sheet->setCellValue($col.$rowNumber, $cell);
+            $col++;
+            $colno++;
+            }       
+        }
+        $rowNumber++;
+    }
+ */
+
+$rowNumber = 4;
+
+foreach ($result as $row) {
+    $col = 'A';
+    $colno = 0;
+
+    foreach ($row as $cell) {
+        if ($colno <= 0) {
+            $sheet->setCellValueExplicit($col . $rowNumber, $cell, DataType::TYPE_STRING);
+        } else {
+            $sheet->setCellValue($col . $rowNumber, $cell);
+        }
+
+        $col++;     // move outside
+        $colno++;   // move outside
+    }
+
+    $rowNumber++;
+}
+
+// Calculate last column letter
+$lastColumn = chr(ord('A') + count($columnNames) - 1);
+$lastRow = $rowNumber - 1;
+
+// Set auto width for all columns
+foreach (range('A', $lastColumn) as $column) {
+    $sheet->getColumnDimension($column)->setAutoSize(true);
+}
+
+// Add borders to all data cells
+$dataRange = 'A1:' . $lastColumn . $lastRow;
+$sheet->getStyle($dataRange)->applyFromArray([
+    'borders' => [
+        'allBorders' => [
+            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            'color' => ['argb' => '00000000'],
+        ],
+    ],
+]);
+
+//$sheet = $spreadsheet->createSheet($index);
+
+// Rename the sheet
+$sheet->setTitle('fadetails');
+
+$sheet = $spreadsheet->createSheet(1);
+$sheet->setTitle('Pay Components Info');
+
+    $filename="FA deatils_".$sdate.'.xlsx';
+
+// After generating the Excel file
+$excelUrl = 'path_to_generated_excel_file.xlsx'; // Change this to the actual URL
+
+// Return the URL along with other response data
+echo json_encode(array('success' => true, 'savedata' => $savedata, 'excelUrl' => $excelUrl));
+
+	// Set headers for Excel file download
+//	ob_clean();
+	header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+//	header('Content-Disposition: attachment;filename="your_excel_file.xlsx"');
+
+//		header('Content-Type: application/vnd.ms-excel');
+	header('Content-Disposition: attachment;filename='.$filename);
+	header('Cache-Control: max-age=0');
+	ob_clean();
+
+	// Save the Excel file to output stream
+	$writer = new Xlsx($spreadsheet);
+	$writer->save('php://output');
+	// Save the Excel file to output stream
+//	$writer = new Xlsx($spreadsheet);
+//	$writer->save('php://output');
+	
+		// Terminate the script to prevent further output
+		exit;
+
+
+
+	}
+
+
 
 public function njmproductionchecklist() {
 		// Create a new Spreadsheet object

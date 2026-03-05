@@ -645,16 +645,20 @@
                     <input type="hidden" id="adv_edit_id" value="">
 
                     <div class="form-group">
-                        <div class="col-12 col-sm-4">
+                        <div class="col-12 col-sm-3">
                             <label>Save / Update</label>
                             <button id="adv_save_btn" type="button" class="form-control btn btn-primary">Save</button>
                             <button id="adv_update_btn" type="button" class="form-control btn btn-primary" style="display:none;">Update</button>
                         </div>
-                        <div class="col-12 col-sm-4">
+                        <div class="col-12 col-sm-3">
+                            <label>STL Update</label>
+                            <button id="adv_stl_update_btn" type="button" class="form-control btn btn-info">STL Update</button>
+                        </div>
+                        <div class="col-12 col-sm-3">
                             <label>Installment Process</label>
                             <button id="adv_installment_btn" type="button" class="form-control btn btn-success">Installment Processing</button>
                         </div>
-                        <div class="col-12 col-sm-4">
+                        <div class="col-12 col-sm-3">
                             <label>Close</label>
                             <button id="adv_close_btn" type="button" class="form-control btn btn-danger">Close</button>
                         </div>

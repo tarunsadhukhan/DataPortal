@@ -1194,8 +1194,8 @@ function mainwagesprocess() {
     showSpinnerCounter();
     
     // Array of processes to execute in sequence
-//    var processes = ['clear', 'ns', 'drg', 'sprd', 'spinner', 'winding', 'beaming', 'weaving', 'press', 'finishing', 'others'];
-    var processes = ['clear', 'ns', 'drg', 'sprd', 'spinner', 'winding', 'beaming', 'weaving', 'press'];
+    var processes = ['clear', 'ns', 'drg', 'sprd', 'spinner', 'winding', 'beaming', 'weaving', 'press', 'finishing','jute', 'others'];
+//    var processes = ['clear','press'];
     var currentIndex = 0;
     var processMessages = []; // Store all messages
     
@@ -1633,7 +1633,7 @@ function loadAdvOthTable() {
     $.ajax({
         url: "<?php echo base_url('Ejmprocessdata/get_adv_oth_data'); ?>",
         type: "POST",
-        data: { date_from: dateFrom, date_to: dateTo },
+        data: { date_from: dateFrom, date_to: dateTo, pay_scheme_id: $('#ejm_payschm').val() },
         dataType: "json",
         success: function(response) {
             if ($.fn.DataTable.isDataTable('#advOthTable')) {
@@ -1707,6 +1707,7 @@ $(document).on('click', '#adv_save_btn', function() {
     var dateTo = $('#ejmtodt').val();
     var ebNo = $('#adv_eb_no').val();
     if (!ebNo) { alert('Please enter EB No'); return; }
+    showSpinnerCounter();
     $.ajax({
         url: "<?php echo base_url('Ejmprocessdata/save_adv_oth'); ?>",
         type: "POST",
@@ -1720,6 +1721,7 @@ $(document).on('click', '#adv_save_btn', function() {
         },
         dataType: "json",
         success: function(response) {
+            hideSpinnerCounter();
             if (response.success) {
                 alert('Saved successfully');
                 advOthClearForm();
@@ -1728,7 +1730,7 @@ $(document).on('click', '#adv_save_btn', function() {
                 alert(response.message || 'Error saving');
             }
         },
-        error: function() { alert('Error saving data'); }
+        error: function() { hideSpinnerCounter(); alert('Error saving data'); }
     });
 });
 
@@ -1758,6 +1760,7 @@ $(document).on('click', '#adv_update_btn', function() {
     if (!editId) { alert('No record selected'); return; }
     var dateFrom = $('#ejmfromdt').val();
     var dateTo = $('#ejmtodt').val();
+    showSpinnerCounter();
     $.ajax({
         url: "<?php echo base_url('Ejmprocessdata/update_adv_oth'); ?>",
         type: "POST",
@@ -1771,6 +1774,7 @@ $(document).on('click', '#adv_update_btn', function() {
         },
         dataType: "json",
         success: function(response) {
+            hideSpinnerCounter();
             if (response.success) {
                 alert('Updated successfully');
                 advOthClearForm();
@@ -1779,7 +1783,7 @@ $(document).on('click', '#adv_update_btn', function() {
                 alert(response.message || 'Error updating');
             }
         },
-        error: function() { alert('Error updating data'); }
+        error: function() { hideSpinnerCounter(); alert('Error updating data'); }
     });
 });
 
@@ -1787,12 +1791,14 @@ $(document).on('click', '#adv_update_btn', function() {
 $(document).on('click', '.adv-delete-btn', function() {
     if (!confirm('Are you sure you want to delete this record?')) return;
     var id = $(this).data('id');
+    showSpinnerCounter();
     $.ajax({
         url: "<?php echo base_url('Ejmprocessdata/delete_adv_oth'); ?>",
         type: "POST",
         data: { id: id },
         dataType: "json",
         success: function(response) {
+            hideSpinnerCounter();
             if (response.success) {
                 alert('Deleted successfully');
                 loadAdvOthTable();
@@ -1800,7 +1806,7 @@ $(document).on('click', '.adv-delete-btn', function() {
                 alert(response.message || 'Error deleting');
             }
         },
-        error: function() { alert('Error deleting data'); }
+        error: function() { hideSpinnerCounter(); alert('Error deleting data'); }
     });
 });
 
@@ -1826,6 +1832,36 @@ $(document).on('click', '#adv_installment_btn', function() {
             }
         },
         error: function() { hideSpinnerCounter(); alert('Error processing installments'); }
+    });
+});
+
+// STL Update
+$(document).on('click', '#adv_stl_update_btn', function() {
+    var editId = $('#adv_edit_id').val();
+    if (!editId) { alert('Please select a record to update STL Days'); return; }
+    var stlDays = $('#adv_stl_days').val();
+    if (!stlDays) { alert('Please enter STL Days'); return; }
+    if (!confirm('Update STL Days for this record?')) return;
+    showSpinnerCounter();
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/update_stl_days'); ?>",
+        type: "POST",
+        data: {
+            id: editId,
+            stl_days: stlDays
+        },
+        dataType: "json",
+        success: function(response) {
+            hideSpinnerCounter();
+            if (response.success) {
+                alert('STL Days updated successfully');
+                advOthClearForm();
+                loadAdvOthTable();
+            } else {
+                alert(response.message || 'Error updating STL Days');
+            }
+        },
+        error: function() { hideSpinnerCounter(); alert('Error updating STL Days'); }
     });
 });
 // ========== End Advance & Other Entries Modal ==========
@@ -4301,6 +4337,10 @@ return false;
 
         }
 
+        if (getchecklist == 7) {
+             njmfaexceldata(event);
+
+        }
 
 
       
@@ -4331,6 +4371,34 @@ var url = '<?php echo site_url("Njmwagesprocess/njmattwithpayschmexceldata"); ?>
 			
 return false;
 };
+
+function njmfaexceldata(event){
+      event.preventDefault(); 
+	  var opt=3;
+             event.preventDefault();     
+                var att_payschm =  $('#att_payschm').val();
+                var holget =  $('#hol_get').val();
+                periodfromdate = $('#njmcntfromdt').val();
+                periodtodate = $('#njmcnttodt').val();
+                payschemeName = $('#payschemename').val();
+
+var url = '<?php echo site_url("Njmwagesprocess/njmfaexceldata"); ?>' +
+                      '?att_payschm=' + att_payschm +
+                      '&holget=' + holget+
+                      '&periodfromdate=' + periodfromdate+
+                      '&payschemeName=' + payschemeName+
+                      '&periodtodate=' + periodtodate
+                       
+                      ;
+                      alert(url);
+			//$(location).attr('href',url);
+			window.open( url, '_blank');
+			
+			
+return false;
+};
+
+
 
 function njmlinehrschecklist(event){
       event.preventDefault(); 

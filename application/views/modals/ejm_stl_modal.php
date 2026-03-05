@@ -339,6 +339,7 @@
                     $holget1[4] = 'Production Checklist';
                     $holget1[5] = 'No Production Checklist';
                     $holget1[6] = 'Leave Not Approved';
+                    $holget1[7] = 'Food Allowance Details';
 
 
                     echo form_dropdown('hol_get1', $holget1, ($hol_get1 ? $hol_get1 : "0"), 'id="getchecklist"  
