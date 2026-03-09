@@ -306,6 +306,7 @@
                     $holget[9] = 'Pay Slip Printing';
                     $holget[10] = 'Bank Statements';
                     $holget[11] = 'All Wages Break Up Summary';
+                    $holget[12] = 'Contractor ESI File Generation';
                      
 
                     echo form_dropdown('hol_get', $holget, ($hol_get ? $hol_get : "0"), 'id="getmenu"  class="myselect form-control form-control-rounded" data-placeholder="Select Report "  style="width:100%;"');
@@ -737,6 +738,59 @@
         </div> 
         </div> 
 
+
+        <div id="cntEsiModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title modal-title-center" id="exampleModalLabel">Contractor ESI File Generation</h4>
+                    <button type="button" onclick="cntEsiCloseModal()" class="close btn btn-primary" data-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row">
+                        <div class="col-sm-6">
+                            <label>From Date</label>
+                            <input class="form-control form-control-rounded" value="<?= date('Y-m-d') ?>" id="esifromdt" name="esifromdt" type="date">
+                        </div>
+                        <div class="col-sm-6">
+                            <label>To Date</label>
+                            <input class="form-control form-control-rounded" value="<?= date('Y-m-d') ?>" id="esitodt" name="esitodt" type="date">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-12">
+                            <label>Contractor Name</label>
+                            <?php
+                                $CI =& get_instance();
+                                $cntQuery = $CI->db->query("SELECT cont_id, concat(cm.contractor_name,'-',cm.contractor_esi_code) contractor_name FROM vowsls.contractor_master cm WHERE company_id=1");
+                                $cntRows = $cntQuery->result();
+                                $cntOpts['0'] = 'Select Contractor';
+                                foreach ($cntRows as $cnt) {
+                                    $cntOpts[$cnt->cont_id] = $cnt->contractor_name;
+                                }
+                                echo form_dropdown('esiContractorName', $cntOpts, '0', 'id="esiContractorName" class="myselect form-control form-control-rounded" style="width:100%;"');
+                            ?>
+                        </div>
+                         </div>
+                    <div class="form-group row">
+                        <div class="col-sm-12">
+                            <label>Upload ESI File</label>
+                            <input class="form-control form-control-rounded" id="esiFileUpload" name="esiFileUpload" type="file" accept=".csv,.xlsx,.xls">
+                        </div>
+             
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-6">
+                            <label>Submit</label>
+                            <button id="esiSubmit" type="submit" class="form-control btn btn-primary">Submit</button>
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Cancel</label>
+                            <button id="esiCancel" type="submit" class="form-control btn btn-danger" onclick="cntEsiCloseModal()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
 
     <div id="Modal" class="modal">

@@ -2271,10 +2271,9 @@ file_put_contents($fullPath, json_encode($data, JSON_PRETTY_PRINT));
                 left join vowsls.tbl_hrms_ed_personal_details thepd on tpep.EMPLOYEEID=thepd.eb_id
                 left join vowsls.tbl_hrms_ed_official_details theod on tpep.EMPLOYEEID=theod.eb_id and theod.is_active =1
                 left join vowsls.tbl_hrms_ed_resign_details therd on tpep.EMPLOYEEID=therd.eb_id and therd.is_active =1
-                where tpep.STATUS =1 and tpep.PAY_SCHEME_ID =164 
-";
+                where tpep.STATUS =1 and tpep.PAY_SCHEME_ID =169";
 
-//                echo $wsql;
+                echo $wsql;
                 $query= $this->db->query($wsql);
                 if ($query->num_rows() > 0) {
                     $row = $query->row();
@@ -2442,6 +2441,8 @@ $jsonData = file_get_contents($fullPath);
 
 //echo $jsonData;
 $this->db->query("SET @json := ?", [$jsonData]);
+ 
+//echo $djson;
 
     // Step 3: Run your query using JSON_TABLE
     $sql = "
@@ -2530,7 +2531,9 @@ FROM (
 ) AS j
 ON mst.emp_code = j.TICKET_NO
 ) g ) k";
-                    
+//echo $sql;
+//echo $jsonData;
+
                     $query = $this->db->query($sql);
                     $ebmissing = "All Employees found and processed successfully.";
                }                    
@@ -5555,6 +5558,150 @@ public function jutevowtally() {
 
 
 
+}
+
+
+public function contractorEsiFileGeneration() {
+    $this->load->library('session');
+    $this->load->helper(array('form', 'url'));
+    $this->load->library('upload');
+
+    $contractorName = $this->input->post('contractorName');
+    $periodfromdate = $this->input->post('periodfromdate');
+    $periodtodate   = $this->input->post('periodtodate');
+    $comp = $this->session->userdata('companyId');
+
+    $config['upload_path']   = './uploads/';
+    $config['allowed_types'] = 'csv|xlsx|xls';
+    $config['max_size']      = 2048;
+
+    $this->upload->initialize($config);
+
+    if (!$this->upload->do_upload('fileupload')) {
+        $error = $this->upload->display_errors('', '');
+        header('Content-Type: application/json');
+        echo json_encode(array('success' => false, 'message' => $error));
+        return;
+    }
+
+    $fileData  = $this->upload->data();
+    $full_path = $fileData['full_path'];
+    $extension = strtolower($fileData['file_ext']);
+
+
+    if ($extension === '.csv') {
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+    } else {
+        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+    }
+
+    $spreadsheet = $reader->load($full_path);
+    $worksheet   = $spreadsheet->getActiveSheet();
+    $highestRow  = $worksheet->getHighestRow();
+
+    $uploadedFileName = $fileData['file_name'];
+    $upfl = substr($uploadedFileName, 15, 17);
+
+    log_message('debug', "Uploaded file name: $uploadedFileName, Extracted ESI code: $upfl");
+    $esiCheckQuery = $this->db->query(
+        "SELECT cont_id, contractor_esi_code FROM vowsls.contractor_master WHERE contractor_esi_code = ? AND cont_id = ?",
+        array($upfl, $contractorName)
+    );
+
+    if ($esiCheckQuery->num_rows() == 0) {
+        @unlink($full_path);
+        header('Content-Type: application/json');
+        echo json_encode(array('success' => false, 'message' => 'Contractor name and esi master is different , check'));
+        return;
+    }
+
+    $sheetData = $worksheet->toArray();
+
+    $esiData = $this->Njmallwagesprocess->contractorEsiFileProcess(
+        $contractorName, $periodfromdate, $periodtodate, $full_path, $comp, $sheetData
+    );
+
+    // Clean up uploaded file
+    @unlink($full_path);
+
+    if (empty($esiData)) {
+        header('Content-Type: application/json');
+        echo json_encode(array('success' => false, 'message' => 'No ESI data found for the selected period.'));
+        return;
+    }
+
+    // Create ESI Excel file
+    $esiSpreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $esiSheet = $esiSpreadsheet->getActiveSheet();
+
+    // ESI format headers
+    $esiSheet->setCellValue('A1', "IP Number\n(10 Digits)");
+    $esiSheet->setCellValue('B1', "IP Name\n(Only alphabets and space)");
+    $esiSheet->setCellValue('C1', "No of Days for which\nwages paid/payable\nduring the month");
+    $esiSheet->setCellValue('D1', "Total Monthly\nWages");
+    $esiSheet->setCellValue('E1', "Reason Code for Zero\nworking days\n(numeric only;\nprovide 0 for all\nother reasons)");
+    $esiSheet->setCellValue('F1', "Last Working Day\n(Format DD/MM/YYYY\nor DD-MM-YYYY)");
+
+    // Style header row
+    $headerStyle = array(
+        'font' => array('bold' => true),
+        'alignment' => array('wrapText' => true, 'vertical' => 'center')
+    );
+    $esiSheet->getStyle('A1:F1')->applyFromArray($headerStyle);
+    $esiSheet->getRowDimension(1)->setRowHeight(60);
+    foreach (range('A', 'F') as $col) {
+        $esiSheet->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    // Populate data rows - all cells as explicit strings
+    $rowNum = 2;
+    foreach ($esiData as $row) {
+        $ipNumber   = isset($row['ip_number']) ? strval($row['ip_number']) : '';
+        $ipName     = isset($row['ip_name']) ? strval($row['ip_name']) : '';
+        $noOfDays   = isset($row['esidays']) ? strval(intval($row['esidays'])) : '0';
+        $totalWages = isset($row['esigross']) ? strval(floatval($row['esigross'])) : '0';
+        $reasonCode = isset($row['reasencode']) ? strval(intval($row['reasencode'])) : '0';
+        $lastWorkDay = isset($row['last_working_day']) ? strval($row['last_working_day']) : '';
+
+        $esiSheet->setCellValueExplicit('A' . $rowNum, $ipNumber, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+        $esiSheet->setCellValueExplicit('B' . $rowNum, $ipName, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+        $esiSheet->setCellValueExplicit('C' . $rowNum, $noOfDays, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+        $esiSheet->setCellValueExplicit('D' . $rowNum, $totalWages, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+        $esiSheet->setCellValueExplicit('E' . $rowNum, $reasonCode, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+        $esiSheet->setCellValueExplicit('F' . $rowNum, $lastWorkDay, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+        $rowNum++;
+    }
+
+    $mnyr= date('M Y', strtotime($periodfromdate));
+    $esiSheet->setTitle("ESI_$mnyr");
+    // Stream the file for download
+    $downloadFileName = 'ESI_Contractor_' . $upfl . '_' . $mnyr . '.xlsx';
+
+    log_message('debug', "Generated ESI file for download: $downloadFileName with " . ($rowNum - 2) . " records.");
+
+    // Clean all output buffers to prevent corruption of binary stream
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment; filename="' . $downloadFileName . '"');
+    header('Cache-Control: max-age=0');
+    header('Pragma: public');
+    header('Access-Control-Expose-Headers: Content-Disposition');
+
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($esiSpreadsheet);
+    $writer->save('php://output');
+    $esiSpreadsheet->disconnectWorksheets();
+    unset($esiSpreadsheet);
+
+    // Clean up JSON and uploaded files from uploads directory
+    $uploadDir = FCPATH . 'uploads/';
+    $jsonFiles = glob($uploadDir . 'data_*.json');
+    foreach ($jsonFiles as $jf) {
+        @unlink($jf);
+    }
+    exit;
 }
 
 

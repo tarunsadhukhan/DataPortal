@@ -831,6 +831,16 @@ function closeModal() {
         document.getElementById('nwdupdmyModal').style.display = 'none';
     }
 
+    function cntEsiOpenModal() {
+        document.getElementById('cntEsiModal').style.display = 'block';
+    }
+
+    function cntEsiCloseModal() {
+        document.getElementById('cntEsiModal').style.display = 'none';
+        $('#esiContractorName').val('0');
+        $('#esiFileUpload').val('');
+    }
+
 function openModal() {
 //    alert('open');
             document.getElementById('myModal').style.display = 'block';
@@ -2223,6 +2233,97 @@ function oattprdopenModal() {
 //                alert('closeb');
                 document.getElementById('wagesbrkModal').style.display = 'none';
         });
+
+        $("#esiCancel").click(function(event){
+                event.preventDefault();
+                cntEsiCloseModal();
+        });
+
+        $("#esiSubmit").click(function(event){
+                event.preventDefault();
+                var contractorName = $('#esiContractorName').val();
+                var esiFile = $('#esiFileUpload')[0].files[0];
+                var periodfromdate = $('#esifromdt').val();
+                var periodtodate = $('#esitodt').val();
+
+                if (!contractorName || contractorName == '0') {
+                    alert('Please select Contractor Name');
+                    return;
+                }
+                if (!esiFile) {
+                    alert('Please select a file to upload');
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('contractorName', contractorName);
+                formData.append('periodfromdate', periodfromdate);
+                formData.append('periodtodate', periodtodate);
+                formData.append('fileupload', esiFile);
+
+                showSpinnerCounter();
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', "<?php echo base_url('Njmwagesprocess/contractorEsiFileGeneration'); ?>", true);
+                xhr.responseType = 'blob';
+
+                xhr.onload = function() {
+                    hideSpinnerCounter();
+                    if (xhr.status !== 200) {
+                        // Non-200 status - try to read error message
+                        var reader = new FileReader();
+                        reader.onload = function() {
+                            try {
+                                var resp = JSON.parse(reader.result);
+                                alert(resp.message || 'Server error (' + xhr.status + ')');
+                            } catch(e) {
+                                alert('Server error (' + xhr.status + '). Please try again.');
+                            }
+                        };
+                        reader.readAsText(xhr.response);
+                        return;
+                    }
+                    var contentType = xhr.getResponseHeader('Content-Type');
+                    if (contentType && contentType.indexOf('application/json') !== -1) {
+                        // Error response as JSON
+                        var reader2 = new FileReader();
+                        reader2.onload = function() {
+                            try {
+                                var resp = JSON.parse(reader2.result);
+                                alert(resp.message || 'No Data / Error');
+                            } catch(e) {
+                                alert('Unexpected response from server.');
+                            }
+                        };
+                        reader2.readAsText(xhr.response);
+                    } else {
+                        // File download
+                        var blob = xhr.response;
+                        var disposition = xhr.getResponseHeader('Content-Disposition');
+                        var filename = 'ESI_Contractor.xlsx';
+                        if (disposition && disposition.indexOf('filename=') !== -1) {
+                            filename = disposition.split('filename=')[1].replace(/"/g, '').trim();
+                        }
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(link.href);
+                        alert('ESI File Downloaded Successfully');
+                        cntEsiCloseModal();
+                    }
+                };
+
+                xhr.onerror = function() {
+                    hideSpinnerCounter();
+                    alert('Network error. Please check connection and try again.');
+                };
+
+                xhr.send(formData);
+        });
+
         $("#payrollclose").click(function(event){
 //                alert('closeb');
                 document.getElementById('paypostModal').style.display = 'none';
@@ -4006,8 +4107,7 @@ return false;
 //                    alert("Under Development");
                 }
                 if (getmenu == 12) {
-                     //njmcntwagesprocessdata(event);
-                    alert("Under Development");
+                     cntEsiOpenModal();
                 }
                 if (getmenu == 13) {
                      //njmcntwagesprocessdata(event);

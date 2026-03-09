@@ -1058,11 +1058,12 @@ $sql="SELECT
     AND thepd.company_id = ".$comp."
     AND theod.is_active = 1
     AND thaie.is_active = 1
+    and 	round(incdays, 0)>=24
     order by dm.dept_code,
     theod.emp_code";
    }
    echo $sql;
-    $query = $this->db->query($sql);
+    $query = $this->db->query($sqla);
     //    $query = $this->db->get($sql);
  //   echo $this->db->last_query();            
 

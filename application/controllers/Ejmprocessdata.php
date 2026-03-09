@@ -3076,6 +3076,9 @@ public function get_all_fne_targets() {
 			
 			switch($process) {
 				case 'clear':
+                    $excfilename = "main_wages_process_clear.py";
+
+                    //$result = $this->callPythonClearProcess($excfilename, $fromdate, $todate, $payscheme);
 					$result = $this->Ejmallprocessdata->MainWagesProcessclear($fromdate, $todate, $payscheme);
 					if (is_array($result)) {
 						$result['process_name'] = 'Clearing Process';
@@ -3176,6 +3179,65 @@ public function get_all_fne_targets() {
 		}
 	}
 
+/* private function callPythonClearProcess($fromdate, $todate, $payscheme)
+{
+
+ 
+    $excfilename="main_wages_process_clear.py";
+    $python     = $this->config->item('python_bin', 'python');
+    $script = FCPATH . "Python\\".$excfilename;
+
+
+
+    $cmd = $python . " " .
+           escapeshellarg($script) . " " .
+           escapeshellarg($fromdate) . " " .
+           escapeshellarg($todate) . " " .
+           escapeshellarg($payscheme);
+
+    $output = shell_exec($cmd);
+
+    return json_decode($output, true);
+}
+ */
+
+private function callPythonClearProcess($fromdate, $todate, $payscheme)
+{
+
+    $excfilename = "main_wages_process_clear.py";
+
+    $python = $this->config->item('python_bin');  // python path from config
+
+    $script = FCPATH . "Python\\" . $excfilename;
+
+    $cmd = escapeshellcmd($python) . " " .
+           escapeshellarg($script) . " " .
+           escapeshellarg($fromdate) . " " .
+           escapeshellarg($todate) . " " .
+           escapeshellarg($payscheme);
+
+    $output = shell_exec($cmd);
+
+    if (!$output) {
+        return [
+            'success' => false,
+            'message' => 'Python script returned empty output'
+        ];
+    }
+
+    $result = json_decode($output, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        return [
+            'success' => false,
+            'message' => 'Invalid JSON returned from Python',
+            'raw_output' => $output
+        ];
+    }
+
+    return $result;
+}
+ 
 
 }
 

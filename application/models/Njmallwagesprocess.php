@@ -3357,6 +3357,76 @@ $this->db->query($sql);
 }
 
 
+public function contractorEsiFileProcess($contractorName, $periodfromdate, $periodtodate, $filePath, $comp, $sheetData = array()) {
+
+    // Create temporary table for ESI upload data
+    $this->db->query("DROP TEMPORARY TABLE IF EXISTS tmp_contractor_esi_upload");
+    $this->db->query("
+        CREATE TEMPORARY TABLE tmp_contractor_esi_upload (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            ip_number VARCHAR(50),
+            ip_name VARCHAR(100),
+            no_of_days INT DEFAULT 0,
+            total_wages DECIMAL(12,2) DEFAULT 0,
+            reason_code VARCHAR(10) DEFAULT '',
+            last_working_day VARCHAR(20) DEFAULT ''
+        )
+    ");
+
+    // Insert Excel rows into temp table (skip header row)
+    $insertCount = 0;
+    if (!empty($sheetData)) {
+        for ($i = 1; $i < count($sheetData); $i++) {
+            $row = $sheetData[$i];
+            $ipNumber    = isset($row[1]) ? trim($row[1]) : '';
+            $ipName      = isset($row[0]) ? trim($row[0]) : '';
+            $noOfDays    = isset($row[2]) ? intval($row[2]) : 0;
+            $totalWages  = isset($row[3]) ? floatval($row[3]) : 0;
+            $reasonCode  = isset($row[4]) ? trim($row[4]) : '';
+            $lastWorkDay = isset($row[5]) ? trim($row[5]) : '';
+
+            if (empty($ipNumber)) continue;
+
+            $this->db->query(
+                "INSERT INTO tmp_contractor_esi_upload (ip_number, ip_name, no_of_days, total_wages, reason_code, last_working_day) VALUES (?, ?, ?, ?, ?, ?)",
+                array($ipNumber, $ipName, $noOfDays, $totalWages, $reasonCode, $lastWorkDay)
+            );
+            $insertCount++;
+        }
+    }
+
+    $sql="select * from tmp_contractor_esi_upload";
+    $query = $this->db->query($sql);
+    $data=$query->result_array();
+    log_message('debug', "Inserted  $insertCount records into temporary table for Contractor ESI File Process.");
+    log_message('debug', "Temp table data: " . print_r($data, true));    
+
+    $sql="select tce.ip_number,ip_name,esidays,esigross,case when esiamt>0 then 0 else 11 end reasencode  from 
+    tmp_contractor_esi_upload tce
+    left join     
+    (
+        select contractor_esi_code,esi_no,max(case when COMPONENT_ID=66 then round(amount,0) else 0 end ) esigross,
+        max(case when COMPONENT_ID=19 then amount else 0 end ) esiamt,max(case when COMPONENT_ID=145 then amount else 0 end ) esidays from (
+        select theod.emp_code ,thee.esi_no,cm.contractor_esi_code,cm.contractor_name,tpp.STATUS ,tpp.id,tpp.FROM_DATE ,
+        tpep.EMPLOYEEID ipno,tpep.PAYSCHEME_ID,tpep.COMPONENT_ID , tpep.AMOUNT  from vowsls.tbl_pay_employee_payroll tpep 
+        left join vowsls.tbl_pay_period tpp on tpep.PAYPERIOD_ID =tpp.ID 
+        left join vowsls.tbl_hrms_ed_official_details theod on theod.eb_id =tpep.EMPLOYEEID and theod.is_active =1
+        left join vowsls.contractor_master cm on cm.cont_id =theod.contractor_id 
+        left join vowsls.tbl_hrms_ed_esi thee on thee.eb_id =tpep.EMPLOYEEID and thee.is_active =1
+        WHERE tpp.STATUS not in (4) and tpep.STATUS =1
+        and tpep.COMPONENT_ID in (66,19,145) and tpp.PAYSCHEME_ID =163
+        and tpp.FROM_DATE =? and tpp.TO_DATE =?
+        ) g group by contractor_esi_code,esi_no
+        ) h    on tce.ip_number = h.esi_no
+        ";
+
+        log_message('debug', "Contractor ESI File Process SQL: " . $sql);
+    $result = $this->db->query($sql, array($periodfromdate, $periodtodate));
+  //  var_dump($result->result_array());
+
+    log_message('debug', "Contractor ESI File Process Result: " . print_r($result->result_array(), true));
+    return $result->result_array();
+}
 
 
 
