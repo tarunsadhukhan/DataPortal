@@ -909,6 +909,18 @@ foreach ($period as $date) {
     }
 }
 
+
+/* 
+$sql="select count(*)  from EMPMILL12.non_working_days where non_working_date between '".$periodfromdate."' AND '".$periodtodate."' and company_id = ".$comp." and is_active=1 and offday_leave=1";
+$query = $this->db->query($sql);
+$ndays=0;   
+if ($query->num_rows() > 0) {
+     $ndays = $query->result()[0]->count;    
+}
+$period = new DatePeriod($start, $interval, $end);
+$eincdays=$period-$ndays;
+ */
+
  //   echo 'sundays='.$sundays;
   //  $elgdays=$tdays-$sundays;
  //   echo 'total='.$tdays.'=='. $elgdays;
@@ -988,7 +1000,8 @@ from (
    AND thepd.company_id = ".$comp."
    AND theod.is_active = 1
    AND thaie.is_active = 1
-order by
+    and 	round(incdays, 0)>=24
+   order by
    theod.emp_code";
    } else {
     $sql="select count(*) nondays from EMPMILL12.tbl_non_working_days where non_working_date 
@@ -1063,7 +1076,7 @@ $sql="SELECT
     theod.emp_code";
    }
    echo $sql;
-    $query = $this->db->query($sqla);
+    $query = $this->db->query($sql);
     //    $query = $this->db->get($sql);
  //   echo $this->db->last_query();            
 
