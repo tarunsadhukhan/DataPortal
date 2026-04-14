@@ -120,7 +120,7 @@ $ni=0;
 
 //$sqlmhd = substr($sqlmhd, 0, -1);
 
-		 $sqlp="select ".$sqlmhd."eb_id";
+		 $sqlp="select ".$sqlmhd." eb_id";
 
 		 $sqlda="select
 		 tppc.payslip_order,tppc.component_id,
@@ -209,7 +209,7 @@ $ni=0;
 		WHERE
 			tpep.PAYPERIOD_ID=".$payid."
 		) g
-		 where PAYPERIOD_ID=".$payid."  group by PAYPERIOD_ID,".$sqlfhd."eb_id ";
+		 where PAYPERIOD_ID=".$payid."  group by PAYPERIOD_ID,".$sqlfhd.",eb_id ";
  		
  
   //echo 'final';
@@ -357,7 +357,7 @@ $ni=0;
 		}
 //echo $sqlmhd;
 
-		$sqlp="select ".$sqlmhd."eb_id ";
+		$sqlp="select ".$sqlmhd." eb_id ";
 		$sqlda="select
 		tppc.payslip_order,tppc.component_id,
 		case when tppc.payslip_order=1 then 'eb_no'
@@ -448,7 +448,7 @@ $ni=0;
 	   WHERE
 		   tpep.PAYPERIOD_ID=".$payid."
 	   ) g
-		where PAYPERIOD_ID=".$payid."  group by PAYPERIOD_ID,".$sqlfhd."eb_id ";
+		where PAYPERIOD_ID=".$payid."  group by PAYPERIOD_ID,".$sqlfhd.",eb_id ";
 		
 $sql=$sqlp;
 //echo $sql;

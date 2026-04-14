@@ -1755,6 +1755,840 @@ $zt=1;
  	 
 }
 
+public function payattsheetdownloaddata() {
+	$periodfromdate= $this->input->get('periodfromdate');
+	$periodtodate= $this->input->get('periodtodate');
+	$att_dept= $this->input->get('att_dept');
+//	echo $periodfromdate,"---",$periodtodate;
+	$holget =  $this->input->get('holget');
+		 $company_name = $this->session->userdata('companyname');
+		 $comp = $this->session->userdata('companyId');
+		 $zt=1;
+//echo $periodfromdate,$periodtodate,$holget;
+
+		 /////////////////////////////////// EJM Attendance Data////////////////////////30.04.24
+$ldate=substr($periodtodate,8,2).'-'.substr($periodtodate,5,2).'-'.substr($periodtodate,0,4);        
+$mccodes = $this->Loan_adv_model2->getpayattsheetdata($periodfromdate,$periodtodate,$holget,$att_dept);
+$row=2;
+$spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+$sheet = $spreadsheet->getActiveSheet();
+$sheet->getPageSetup()
+      ->setOrientation(PageSetup::ORIENTATION_LANDSCAPE)       // 15x12 paper (136 cols)
+      ->setPaperSize(PageSetup::PAPERSIZE_TABLOID);
+// Fit to page width for 15x12 paper
+$sheet->getPageSetup()->setFitToWidth(1);
+$sheet->getPageSetup()->setFitToHeight(0);
+
+$sheet->getPageMargins()->setTop(0.3);       // tight margins for 15x12
+$sheet->getPageMargins()->setBottom(0.3);
+$sheet->getPageMargins()->setLeft(0.3);
+$sheet->getPageMargins()->setRight(0.3);
+$sheet->getPageMargins()->setHeader(0.1);
+$sheet->getPageMargins()->setFooter(0.1);
+
+//$sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1, 2);
+
+// -----------------------------------------------------------------------------
+// fill rows + style according to type
+$depnm='';
+$spl='';
+		$row=1;
+
+
+	$frdate=substr($periodfromdate,8,2).'-'.substr($periodfromdate,5,2).'-'.substr($periodfromdate,0,4);
+	$enddate=substr($periodtodate,8,2).'-'.substr($periodtodate,5,2).'-'.substr($periodtodate,0,4);			
+$row = 1;
+
+$cmpname='LIMELIGHT COMM PVT LTD';
+		$sheet->setCellValue('A' . $row, $cmpname); // Set the value for the merged cell
+		$row++;
+		$sheet->setCellValue('A' . $row, 'Attendance Sheet for the Period From '.$frdate.' To '.$enddate); // Set the value for the merged cell
+		$row++;
+
+$startDay = (int)substr($periodfromdate, 8, 2);
+$endDay   = (int)substr($periodtodate,   8, 2);
+
+$sheet->setCellValue('A' . $row, 'EB No'); // Set the value for the merged cell
+$sheet->setCellValue('B' . $row, 'Name'); // Set the value for the merged cell
+$sheet->setCellValue('C' . $row, 'ESI No'); // Set the value for the merged cell
+ 
+
+$colIndex = 'D';
+for ($d = $startDay; $d <= $endDay; $d++) {
+
+$sheet->setCellValue(
+        $colIndex.$row,
+        str_pad($d, 2, '0', STR_PAD_LEFT)   // "01" … "30"
+    );
+    $colIndex++;
+}
+
+$sheet->setCellValue($colIndex.$row, 'Total Hrs');
+$colIndex++;
+//$sheet->setCellValue($colIndex.$row, 'DAYS');
+//$colIndex++;
+//$sheet->setCellValue($colIndex.$row, 'SL');
+//$colIndex++;
+//$sheet->setCellValue($colIndex.$row, 'ACL');
+//$colIndex++;
+$sheet->setCellValue($colIndex.$row, 'PL Days');
+$colIndex++;
+$sheet->setCellValue($colIndex.$row, 'HL Days');
+$colIndex++;
+//$sheet->setCellValue($colIndex.$row, 'Tesi');
+//$colIndex++;
+$sheet->setCellValue($colIndex.$row, 'Esi Days');
+
+$row++;
+
+
+
+foreach ($mccodes as $rec) {
+ 
+
+    $sheet->setCellValue("A{$row}", $rec['emp_code']);
+    $sheet->setCellValue("B{$row}", $rec['empname']);
+    $sheet->setCellValue("C{$row}", $rec['esi_no']);
+ 
+ 
+	$colIndex = 'D';
+    for ($d = $startDay; $d <= $endDay; $d++) {
+
+        $alias  = str_pad($d, 2, '0', STR_PAD_LEFT);
+        $hrs    = $rec[$alias];        // 8, 0, 4 …
+        $atype  = $rec[$alias.'_t'];   // R / O / C / NULL
+
+        $cell = $colIndex.$row;
+        $sheet->setCellValue($cell, $hrs);
+
+        // ---------- conditional styling ----------
+ 
+        $colIndex++;
+    }
+
+    // total hours
+	
+	$sheet->setCellValue($colIndex.$row, $rec['Total_hrs']);
+    $colIndex++;
+//	$sheet->setCellValue($colIndex.$row, $rec['Total_days']);
+//    $colIndex++;
+//	$sheet->setCellValue($colIndex.$row, $rec['SL']);
+ //   $colIndex++;
+//	$sheet->setCellValue($colIndex.$row, $rec['ACL']);
+ //   $colIndex++;
+	$sheet->setCellValue($colIndex.$row, $rec['PL']);
+    $colIndex++;
+	$sheet->setCellValue($colIndex.$row, $rec['HL']);
+	$colIndex++;	
+//	$sheet->setCellValue($colIndex.$row, $rec['tesidays']);
+//	$colIndex++;
+	$sheet->setCellValue($colIndex.$row, $rec['esidays']);
+	$colIndex++;
+	$sheet->setCellValue($colIndex.$row, $rec['tdays']);
+
+	$row++;
+}
+
+$lastRow    = $sheet->getHighestDataRow();      // e.g. 37
+$lastColumn = $sheet->getHighestDataColumn();   // e.g. "AG"
+
+/* build a proper range like "A1:AG37" */
+$range = "A1:{$lastColumn}{$lastRow}";
+
+$sheet->getStyle($range)
+      ->applyFromArray([
+          'borders' => [
+              'allBorders' => [
+                  'borderStyle' => Border::BORDER_THIN,
+                  'color'       => ['rgb' => '000000'],
+              ],
+          ],
+      ]);
+
+
+//$lastColIndex	  =$lastColumn;
+
+$lastColLetter = $sheet->getHighestDataColumn();                // e.g.  "AG"
+$lastColIndex  = Coordinate::columnIndexFromString($lastColLetter); // e.g. 33
+
+
+for ($i = 1; $i <= $lastColIndex; $i++) {
+
+    $letter = Coordinate::stringFromColumnIndex($i);   // "A", "B", …
+
+    if ($i === 1) {                     // first column
+        $width = 10;
+    } elseif ($i === 2) {               // second column
+        $width = 20;
+    } elseif ($i === $lastColIndex) {   // very last column
+        $width = 7;
+    } elseif ($i >26) {               // second column
+        $width = 7;
+    } else {                            // everything in between
+        $width = 3;
+    }
+
+    $sheet->getColumnDimension($letter)->setWidth($width);
+}
+
+$sheet->getStyle("B1:B{$lastRow}")          // full height of the column
+      ->getAlignment()
+      ->setWrapText(true);
+
+/* --------------------------------------------------
+ * 3) If you need to wrap several columns (say C-to-F)
+ * -------------------------------------------------- */
+/* $wrapRange = "$lastColLetter"."1:" . $lastColLetter . $lastRow;
+$sheet->getStyle($wrapRange)
+	  ->getAlignment()
+	  ->setWrapText(true);
+ */
+
+// ===================== SAVE EXCEL FILE =====================
+$writer = new Xlsx($spreadsheet);
+$fileNameXlsx = 'attsheet.xlsx';
+$writer->save($fileNameXlsx);
+
+// ===================== GENERATE TXT FILE (136 cols, 15x12 paper) =====================
+// Match attformat.txt: pipe-separated header, dashes between each data row
+$W_EB   = 7;
+$W_NAME = 18;
+$W_ESI  = 12;
+$W_DAY  = 4;    // " 01 " = 4 chars between pipes
+$W_THRS = 5;
+$W_PL   = 4;
+$W_HL   = 4;
+$W_ESI_D= 5;
+$W_TDAY = 5;
+
+$CONDENSED_ON  = chr(18);   // condensed mode on (dot matrix)
+$CONDENSED_OFF = chr(15);   // SI
+$FORM_FEED     = chr(12);   // page eject
+
+$numDays = $endDay - $startDay + 1;
+
+// Build separator line
+$sep  = str_repeat('-', $W_EB) . '---';
+$sep .= str_repeat('-', $W_NAME) . '---';
+$sep .= str_repeat('-', $W_ESI) . '---';
+for ($d = $startDay; $d <= $endDay; $d++) {
+    $sep .= str_repeat('-', $W_DAY) . '-';
+}
+$sep .= str_repeat('-', $W_THRS) . '-';
+$sep .= str_repeat('-', $W_PL) . '-';
+$sep .= str_repeat('-', $W_HL) . '-';
+$sep .= str_repeat('-', $W_ESI_D) . '-';
+$sep .= str_repeat('-', $W_TDAY);
+$LINE_WIDTH = strlen($sep);
+
+// Build header line 1 (column names with pipes)
+$hdr1  = str_pad('EB No',  $W_EB) . ' | ';
+$hdr1 .= str_pad('Name',   $W_NAME) . ' | ';
+$hdr1 .= str_pad('ESI No', $W_ESI) . ' |';
+for ($d = $startDay; $d <= $endDay; $d++) {
+    $hdr1 .= ' ' . str_pad($d, 2, '0', STR_PAD_LEFT) . ' |';
+}
+$hdr1 .= str_pad('TotHrs', $W_THRS) . ' | ';
+$hdr1 .= str_pad('PL',     $W_PL)   . ' | ';
+$hdr1 .= str_pad('HL',     $W_HL)   . ' | ';
+$hdr1 .= str_pad('Esi',    $W_ESI_D);
+
+// Build header line 2 (sub-header row with Days labels)
+$hdr2  = str_repeat(' ', $W_EB) . ' | ';
+$hdr2 .= str_repeat(' ', $W_NAME) . ' | ';
+$hdr2 .= str_repeat(' ', $W_ESI) . ' |';
+for ($d = $startDay; $d <= $endDay; $d++) {
+    $hdr2 .= '    |';
+}
+$hdr2 .= str_repeat(' ', $W_THRS) . ' | ';
+$hdr2 .= str_pad('Days', $W_PL) . ' | ';
+$hdr2 .= str_pad('Days', $W_HL) . ' | ';
+$hdr2 .= str_pad('Days', $W_ESI_D);
+
+// Build reusable header block
+$headerLines = array();
+$headerLines[] = $CONDENSED_ON . $cmpname;
+$headerLines[] = 'Attendance Sheet for the Period From '.$frdate.' To '.$enddate;
+$headerLines[] = $CONDENSED_OFF . $sep;
+$headerLines[] = $hdr1;
+$headerLines[] = $hdr2;
+$headerLines[] = $sep;
+
+$txtContent = '';
+$lineCount  = 0;
+$PAGE_LINES = 60;
+
+// Print first page header
+$txtContent .= implode("\r\n", $headerLines) . "\r\n";
+$lineCount  += count($headerLines);
+
+// --- Data rows ---
+foreach ($mccodes as $rec) {
+    // Check if page break needed (every 60 lines)
+    if ($lineCount >= $PAGE_LINES) {
+        $txtContent .= $sep . $FORM_FEED . "\r\n";
+        $txtContent .= implode("\r\n", $headerLines) . "\r\n";
+        $lineCount   = count($headerLines);
+    }
+
+    // Data line with pipes matching header format
+    $line  = str_pad(substr($rec['emp_code'], 0, $W_EB),  $W_EB);
+    $line .= ' | ';
+    $line .= str_pad(substr($rec['empname'],  0, $W_NAME), $W_NAME);
+    $line .= ' | ';
+    $line .= str_pad(substr($rec['esi_no'],   0, $W_ESI),  $W_ESI);
+    $line .= ' |';
+
+    for ($d = $startDay; $d <= $endDay; $d++) {
+        $alias = str_pad($d, 2, '0', STR_PAD_LEFT);
+        $hrs   = isset($rec[$alias]) ? $rec[$alias] : '';
+        $line .= ' ' . str_pad($hrs, 3, ' ', STR_PAD_LEFT) . '|';
+    }
+
+    $line .= ' ' . str_pad(isset($rec['Total_hrs']) ? $rec['Total_hrs'] : '', $W_THRS, ' ', STR_PAD_LEFT) . ' |';
+    $line .= ' ' . str_pad(isset($rec['PL'])        ? $rec['PL']        : '', $W_PL,   ' ', STR_PAD_LEFT) . ' |';
+    $line .= ' ' . str_pad(isset($rec['HL'])        ? $rec['HL']        : '', $W_HL,   ' ', STR_PAD_LEFT) . ' |';
+    $line .= ' ' . str_pad(isset($rec['esidays'])   ? $rec['esidays']   : '', $W_ESI_D,' ', STR_PAD_LEFT);
+ 
+    $txtContent .= $line . "\r\n";
+    // Separator after each data row (matching sample)
+    $txtContent .= $sep . "\r\n";
+    $lineCount += 2;
+}
+
+// --- Footer form feed ---
+$txtContent .= $FORM_FEED;
+
+$fileNameTxt = 'attsheet.txt';
+file_put_contents($fileNameTxt, $txtContent);
+
+// ===================== ZIP BOTH FILES =====================
+$files = array($fileNameXlsx, $fileNameTxt);
+$zipname = 'attsheetdownload.zip';
+$zt=1;
+
+ 	$zip = new ZipArchive;
+	$zip->open($zipname, ZipArchive::CREATE);
+	foreach ($files as $file) {
+	  $zip->addFile($file);
+	}
+	$zip->close();
+ if ( $zt==1)  {	
+/* 
+	if ($zip->open($zipname, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+		$zip->addFile($fileContainer, basename($fileContainer));
+		$zip->close();
+		echo 'ZIP archive created successfully.'.'--'.$zt;
+	} else {
+//		echo 'Failed to create ZIP archive.';
+	}
+*/
+	ob_clean();
+	header('Content-Type: application/zip');
+    header('Content-Disposition: attachment; filename="' . $zipname . '"');
+    header('Content-Length: ' . filesize($zipname));
+    header('Pragma: no-cache');
+    readfile($zipname);
+
+} else {
+	echo 'generate txt created successfully.'.'--'.$zt;
+	
+	header('Content-Type: application/text');
+	header('Content-disposition: attachment; filename='.$fileNameTxt);
+	header('Content-Length: ' . filesize($fileNameTxt));
+	readfile($fileNameTxt);
+ }	
+			unlink($fileNameXlsx);
+			unlink($fileNameTxt);
+ 			unlink($zipname);
+	
+	
+
+
+	
+ 	 
+}
+
+
+public function oldmainpaysheetdownload()
+{
+	$periodfromdate= $this->input->get('periodfromdate');
+	$periodtodate= $this->input->get('periodtodate');
+
+    $yearmonth =substr($periodtodate,0,4).substr($periodtodate,5,2); 
+	//'202504';
+
+    $sql = "select  
+		date_format(concat(substr(yearmonth,1,4),'-',substr(yearmonth,5,2),'-','01'),'%b-%Y') month
+		,tktno EB_No,name Name,esino ESI_no,pfno PFNO,wg.wdays Working_Days, wg.timehrs1 Time_Hrs1,timehrs2 Time_hrs2,piecehrs Piece_hrs,
+		wg.cshift C_Shift,wg.layoffhrs Lay_off_hrs,
+		wg.sldays SL_Days,wg.eldays PL_Days,wg.layoffdays Lay_off_days,wg.ext_hrs_t OT_hrs_Time,wg.ext_hrs_p OT_Hrs_Piece,wg.esidays ESI_Days,
+		wg.timewages Time_Wages,wg.piecewage Piece_wages,wg.nightwages Night_wages,wg.geninc Gen_inc,wg.inc INC,
+		wg.fwagesinc Fest_wages_inc,slwageinc SL_wages_inc ,mve_plus ADJ_plus,wg.mve_minus Adj_minus,wg.daamt DA_Amount,
+		elwageinc PLWages_Inc,wg.ELDwagegi PL_DA_Inc_wages,wg.fwagesgi Fest_wages_DA_Gen_inc,wg.SLDwagegi SL_wages_Da_inc,
+		TOTALWAGE,PFGROSS,
+		wg.lowageinc Lay_off_wags_inc,wg.lodawagegi Lay_off_Da ,OTW OT_wages,OTi OT_Inc,wg.ODG OT_DA_GI,wg.HRA,
+		GROSs1 Gross1,Othpay Other_pay,wg.incentive Incentive,
+		ilin,0 iltpw,ILDG,wg.GROSs2 Gross2,wg.MB Advance,PTAX,CANTeen Canteen,wg.sundayadv, 
+		wg.bifr_dedn B_Ded,PFamt PF_Amount, RENT,wg.ESI ESI_amount ,wg.GOVTWFUND,landrent Landrent,
+		wg.rsd RSD,wg.grossded Gross_ded,wg.netpay,wg.roundpay  ,
+		VARD1+CAD+ILDED varibale_ded ,wg.roundpay1
+		from EMPMILL12.njm_wage0001 wg
+    where wg.yearmonth='$yearmonth' and abs(GROSs2)>0 and substr(emplcode,5,1)<>'0'
+	order by tktno
+";
+
+    $query = $this->db->query($sql);
+
+//    require APPPATH.'third_party/vendor/autoload.php';
+
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    $fields = $query->list_fields();   // get column names
+    $data   = $query->result_array();
+
+	$row=1;
+
+	$cmpname='LIMELIGHT COMM PVT LTD';
+		$sheet->setCellValue('A' . $row, $cmpname); // Set the value for the merged cell
+		$row++;
+		$sheet->setCellValue('A' . $row, 'Pay Register Main for the Period From '.$periodfromdate.' To '.$periodtodate); // Set the value for the merged cell
+		$row++;
+
+    /*
+    -------------------------
+    WRITE HEADER
+    -------------------------
+    */
+
+	$col = 1;
+    foreach($fields as $field)
+    {
+		$letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+        $sheet->setCellValue($letter.$row,$field);
+        $col++;
+    }
+
+    /*
+    -------------------------
+    WRITE DATA
+    ------------------------- */
+    
+
+   $row++;
+
+    foreach($data as $record)
+    {
+        $col = 1;
+
+        foreach($record as $value)
+        {
+            $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+            $sheet->setCellValue($letter.$row,$value);
+            $col++;
+        }
+
+        $row++;
+    }
+
+    $lastRow = $row-1;
+    $totalRow = $row;
+
+    /*
+    -------------------------
+    GRAND TOTAL (AUTO)
+    -------------------------
+    */
+
+    foreach(range(1,count($fields)) as $col)
+    {
+        $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+
+        $sheet->setCellValue(
+            $letter.$totalRow,
+            "=SUM(".$letter."2:".$letter.$lastRow.")"
+        );
+    }
+
+
+
+$lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($fields));
+
+/* HEADER BOLD */
+$row=1;
+
+$sheet->getStyle("A".$row.":".$lastCol.$row)
+      ->getFont()->setBold(true);
+
+$row=2;
+
+$sheet->getStyle("A".$row.":".$lastCol.$row)
+      ->getFont()->setBold(true);
+
+/* TOTAL BOLD */
+
+$sheet->getStyle("A".$totalRow.":".$lastCol.$totalRow)
+      ->getFont()->setBold(true);
+
+/* BORDER */
+
+		$sheet->setCellValue('C' . $totalRow, 'Grand Total'); // Set the value for the merged cell
+		$sheet->setCellValue('A' . $totalRow, ''); // Set the value for the merged cell
+		$sheet->setCellValue('B' . $totalRow, ''); // Set the value for the merged cell
+		$sheet->setCellValue('D' . $totalRow, ''); // Set the value for the merged cell
+		$sheet->setCellValue('E' . $totalRow, ''); // Set the value for the merged cell
+
+
+$sheet->getStyle("A".$row.":".$lastCol.$totalRow)
+      ->getBorders()
+      ->getAllBorders()
+      ->setBorderStyle(
+           \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
+      );
+
+    /*
+    -------------------------
+    DOWNLOAD
+    -------------------------
+    */
+
+    header('Content-Type: application/vnd.ms-excel');
+    header('Content-Disposition: attachment;filename="wage_report_main_'.$yearmonth.'.xlsx"');
+    header('Cache-Control: max-age=0');
+
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    $writer->save('php://output');
+}
+
+
+public function oldrtdpaysheetdownload()
+{
+	$periodfromdate= $this->input->get('periodfromdate');
+	$periodtodate= $this->input->get('periodtodate');
+
+    $yearmonth =substr($periodtodate,0,4).substr($periodtodate,5,2); 
+	//'202504';
+
+    $sql = "select  
+		date_format(concat(substr(yearmonth,1,4),'-',substr(yearmonth,5,2),'-','01'),'%b-%Y') month
+		,tktno EB_No,name Name,esino ESI_no,''  PFNO,wg.wdays Working_Days, wg.timehrs1 Time_Hrs1,timehrs2 Time_hrs2,piecehrs Piece_hrs,
+		wg.cshift C_Shift,wg.layoffhrs Lay_off_hrs,
+		wg.sldays SL_Days,wg.eldays PL_Days,wg.layoffdays Lay_off_days,wg.ext_hrs_t OT_hrs_Time,wg.ext_hrs_p OT_Hrs_Piece,wg.esidays ESI_Days,
+		wg.timewages Time_Wages,wg.piecewage Piece_wages,wg.nightwages Night_wages,wg.geninc Gen_inc,wg.inc INC,
+		wg.fwagesinc Fest_wages_inc,slwageinc SL_wages_inc ,mve_plus ADJ_plus,wg.mve_minus Adj_minus,wg.daamt DA_Amount,
+		elwageinc PLWages_Inc,wg.ELDwagegi PL_DA_Inc_wages,wg.fwagesgi Fest_wages_DA_Gen_inc,wg.SLDwagegi SL_wages_Da_inc,
+		TOTALWAGE,PFGROSS,
+		wg.lowageinc Lay_off_wags_inc,wg.lodawagegi Lay_off_Da ,OTW OT_wages,OTi OT_Inc,wg.ODG OT_DA_GI,wg.HRA,
+		GROSs1 Gross1,Othpay Other_pay,wg.incentive Incentive,
+		ilin,0 iltpw,ILDG,wg.GROSs2 Gross2,wg.MB Advance,PTAX,CANTeen Canteen,wg.sundayadv, 
+		wg.bifr_dedn B_Ded,PFamt PF_Amount, RENT,wg.ESI ESI_amount ,wg.GOVTWFUND,landrent Landrent,
+		wg.rsd RSD,wg.grossded Gross_ded,wg.netpay,wg.roundpay  ,
+		VARD1+CAD+ILDED varibale_ded ,wg.roundpay1
+		from EMPMILL12.njm_wage0001 wg
+    where wg.yearmonth='$yearmonth' and abs(GROSs2)>0 and substr(emplcode,5,1)='0'
+	order by tktno
+";
+
+    $query = $this->db->query($sql);
+
+//    require APPPATH.'third_party/vendor/autoload.php';
+
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    $fields = $query->list_fields();   // get column names
+    $data   = $query->result_array();
+
+	$row=1;
+
+	$cmpname='LIMELIGHT COMM PVT LTD';
+		$sheet->setCellValue('A' . $row, $cmpname); // Set the value for the merged cell
+		$row++;
+		$sheet->setCellValue('A' . $row, 'Pay Register Retired for the Period From '.$periodfromdate.' To '.$periodtodate); // Set the value for the merged cell
+		$row++;
+
+    /*
+    -------------------------
+    WRITE HEADER
+    -------------------------
+    */
+
+	$col = 1;
+    foreach($fields as $field)
+    {
+		$letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+        $sheet->setCellValue($letter.$row,$field);
+        $col++;
+    }
+
+    /*
+    -------------------------
+    WRITE DATA
+    ------------------------- */
+    
+
+   $row++;
+
+    foreach($data as $record)
+    {
+        $col = 1;
+
+        foreach($record as $value)
+        {
+            $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+            $sheet->setCellValue($letter.$row,$value);
+            $col++;
+        }
+
+        $row++;
+    }
+
+    $lastRow = $row-1;
+    $totalRow = $row;
+
+    /*
+    -------------------------
+    GRAND TOTAL (AUTO)
+    -------------------------
+    */
+
+    foreach(range(1,count($fields)) as $col)
+    {
+        $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+
+        $sheet->setCellValue(
+            $letter.$totalRow,
+            "=SUM(".$letter."2:".$letter.$lastRow.")"
+        );
+    }
+
+
+
+$lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($fields));
+
+/* HEADER BOLD */
+$row=1;
+
+$sheet->getStyle("A".$row.":".$lastCol.$row)
+      ->getFont()->setBold(true);
+
+$row=2;
+
+$sheet->getStyle("A".$row.":".$lastCol.$row)
+      ->getFont()->setBold(true);
+
+/* TOTAL BOLD */
+
+$sheet->getStyle("A".$totalRow.":".$lastCol.$totalRow)
+      ->getFont()->setBold(true);
+
+/* BORDER */
+
+		$sheet->setCellValue('C' . $totalRow, 'Grand Total'); // Set the value for the merged cell
+		$sheet->setCellValue('A' . $totalRow, ''); // Set the value for the merged cell
+		$sheet->setCellValue('B' . $totalRow, ''); // Set the value for the merged cell
+		$sheet->setCellValue('D' . $totalRow, ''); // Set the value for the merged cell
+		$sheet->setCellValue('E' . $totalRow, ''); // Set the value for the merged cell
+
+
+$sheet->getStyle("A".$row.":".$lastCol.$totalRow)
+      ->getBorders()
+      ->getAllBorders()
+      ->setBorderStyle(
+           \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
+      );
+
+    /*
+    -------------------------
+    DOWNLOAD
+    -------------------------
+    */
+
+    header('Content-Type: application/vnd.ms-excel');
+    header('Content-Disposition: attachment;filename="wage_report_rtd_'.$yearmonth.'.xlsx"');
+    header('Cache-Control: max-age=0');
+
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    $writer->save('php://output');
+}
+
+
+public function oldnbdlpaysheetdownload()
+{
+	$periodfromdate= $this->input->get('periodfromdate');
+	$periodtodate= $this->input->get('periodtodate');
+
+    $yearmonth =substr($periodtodate,0,4).substr($periodtodate,5,2); 
+	//'202504';
+
+    $sql = "select  
+		date_format(concat(substr(yearmonth,1,4),'-',substr(yearmonth,5,2),'-','01'),'%b-%Y') month
+		,tktno EB_No,name Name,esino ESI_no,pfno PFNO,wg.wdays Working_Days, wg.timehrs1 Time_Hrs1,timehrs2 Time_hrs2,piecehrs Piece_hrs,
+		wg.cshift C_Shift,wg.layoffhrs Lay_off_hrs,
+		wg.sldays SL_Days,wg.eldays PL_Days,wg.layoffdays Lay_off_days,wg.ext_hrs_t OT_hrs_Time,wg.ext_hrs_p OT_Hrs_Piece,wg.esidays ESI_Days,
+		wg.timewages Time_Wages,wg.piecewage Piece_wages,wg.nightwages Night_wages,wg.geninc Gen_inc,wg.inc INC,
+		wg.fwagesinc Fest_wages_inc,slwageinc SL_wages_inc ,mve_plus ADJ_plus,wg.mve_minus Adj_minus,wg.daamt DA_Amount,
+		elwageinc PLWages_Inc,wg.ELDwagegi PL_DA_Inc_wages,wg.fwagesgi Fest_wages_DA_Gen_inc,wg.SLDwagegi SL_wages_Da_inc,
+		TOTALWAGE,PFGROSS,
+		wg.lowageinc Lay_off_wags_inc,wg.lodawagegi Lay_off_Da ,OTW OT_wages,OTi OT_Inc,wg.ODG OT_DA_GI,wg.HRA,
+		GROSs1 Gross1,Othpay Other_pay,wg.incentive Incentive,
+		ilin,0 iltpw,ILDG,wg.GROSs2 Gross2,wg.MB Advance,PTAX,CANTeen Canteen,wg.sundayadv, 
+		wg.bifr_dedn B_Ded,PFamt PF_Amount, RENT,wg.ESI ESI_amount ,wg.GOVTWFUND,landrent Landrent,
+		wg.rsd RSD,wg.grossded Gross_ded,wg.netpay,wg.roundpay  ,
+		VARD1+CAD+ILDED varibale_ded ,wg.roundpay1
+		from EMPMILL12.njm_wagenbdl wg
+    where wg.yearmonth='$yearmonth' and abs(GROSs2)>0 and substr(emplcode,5,1)='0'
+	order by tktno
+";
+
+/* $sql="select  
+date_format(concat(substr(yearmonth,1,4),'-',substr(yearmonth,5,2),'-','01'),'%b-%Y') month
+,tktno EB_No,name Name,esino ESI_no,pfno PFNO,wg.wdays Working_Days, wg.timehrs1 Time_Hrs1,timehrs2 Time_hrs2,piecehrs Piece_hrs,
+wg.cshift C_Shift,wg.layoffhrs Lay_off_hrs,
+wg.sldays SL_Days,wg.eldays PL_Days,wg.layoffdays Lay_off_days,wg.ext_hrs_t OT_hrs_Time,wg.ext_hrs_p OT_Hrs_Piece,wg.esidays ESI_Days,
+wg.timewages+wg.piecewage+wg.nightwages+wg.geninc+wg.inc Basic_wages,
+wg.fwagesinc+wg.fwagesgi Fest_wages,slwageinc+wg.SLDwagegi SL_wages,elwageinc+wg.ELDwagegi PL_wages,wg.daamt DA_Amount,
+mve_plus ADJ_plus,wg.mve_minus Adj_minus,
+TOTALWAGE,PFGROSS,wg.lowageinc+wg.lodawagegi Lay_off_wages,
+OTW+OTi+wg.ODG OT_wages,wg.HRA,GROSs1 Gross1,
+Othpay Other_pay,wg.incentive Incentive,
+wg.GROSs2 Gross2,wg.MB Advance,PTAX,CANTeen Canteen,wg.sundayadv, 
+wg.bifr_dedn B_Ded,PFamt PF_Amount, RENT,wg.ESI ESI_amount ,wg.GOVTWFUND,landrent Landrent,
+wg.rsd RSD,wg.grossded Gross_ded,wg.netpay ,wg.roundpay  ,
+VARD1+CAD+ILDED varibale_ded ,wg.roundpay1 Final_pay_Amount
+from EMPMILL12.njm_wagenbdl wg where wg.yearmonth ='$yearmonth'
+and abs(GROSs2)>0 
+	order by tktno";
+ */
+
+
+
+    $query = $this->db->query($sql);
+
+//    require APPPATH.'third_party/vendor/autoload.php';
+
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    $fields = $query->list_fields();   // get column names
+    $data   = $query->result_array();
+
+	$row=1;
+
+	$cmpname='LIMELIGHT COMM PVT LTD';
+		$sheet->setCellValue('A' . $row, $cmpname); // Set the value for the merged cell
+		$row++;
+		$sheet->setCellValue('A' . $row, 'Pay Register NBDL for the Period From '.$periodfromdate.' To '.$periodtodate); // Set the value for the merged cell
+		$row++;
+
+    /*
+    -------------------------
+    WRITE HEADER
+    -------------------------
+    */
+
+	$col = 1;
+    foreach($fields as $field)
+    {
+		$letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+        $sheet->setCellValue($letter.$row,$field);
+        $col++;
+    }
+
+    /*
+    -------------------------
+    WRITE DATA
+    ------------------------- */
+    
+
+   $row++;
+
+    foreach($data as $record)
+    {
+        $col = 1;
+
+        foreach($record as $value)
+        {
+            $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+            $sheet->setCellValue($letter.$row,$value);
+            $col++;
+        }
+
+        $row++;
+    }
+
+    $lastRow = $row-1;
+    $totalRow = $row;
+
+    /*
+    -------------------------
+    GRAND TOTAL (AUTO)
+    -------------------------
+    */
+
+    foreach(range(1,count($fields)) as $col)
+    {
+        $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+
+        $sheet->setCellValue(
+            $letter.$totalRow,
+            "=SUM(".$letter."2:".$letter.$lastRow.")"
+        );
+    }
+
+
+
+$lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($fields));
+
+/* HEADER BOLD */
+$row=1;
+
+$sheet->getStyle("A".$row.":".$lastCol.$row)
+      ->getFont()->setBold(true);
+
+$row=2;
+
+$sheet->getStyle("A".$row.":".$lastCol.$row)
+      ->getFont()->setBold(true);
+
+/* TOTAL BOLD */
+
+$sheet->getStyle("A".$totalRow.":".$lastCol.$totalRow)
+      ->getFont()->setBold(true);
+
+/* BORDER */
+
+		$sheet->setCellValue('C' . $totalRow, 'Grand Total'); // Set the value for the merged cell
+		$sheet->setCellValue('A' . $totalRow, ''); // Set the value for the merged cell
+		$sheet->setCellValue('B' . $totalRow, ''); // Set the value for the merged cell
+		$sheet->setCellValue('D' . $totalRow, ''); // Set the value for the merged cell
+		$sheet->setCellValue('E' . $totalRow, ''); // Set the value for the merged cell
+
+
+$sheet->getStyle("A".$row.":".$lastCol.$totalRow)
+      ->getBorders()
+      ->getAllBorders()
+      ->setBorderStyle(
+           \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
+      );
+
+    /*
+    -------------------------
+    DOWNLOAD
+    -------------------------
+    */
+
+    header('Content-Type: application/vnd.ms-excel');
+    header('Content-Disposition: attachment;filename="wage_report_nbdl_'.$yearmonth.'.xlsx"');
+    header('Cache-Control: max-age=0');
+
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    $writer->save('php://output');
+}
+
+
+
 
 
 public function stldownloaddata() {

@@ -2535,13 +2535,23 @@ ON mst.emp_code = j.TICKET_NO
 //echo $jsonData;
 
                     $query = $this->db->query($sql);
-                    $ebmissing = "All Employees found and processed successfully.";
+                    $totamt=0;
+                    $sql="select sum(other_pay) totamt from  EMPMILL12.tbl_njm_wages_data_collection 
+                    where date_from='$periodfromdate' and date_to='$periodtodate' and update_for='FA' 
+                    and is_active=1 and payscheme_id=$att_payschm";
+//                    echo $sql;
+                    $query = $this->db->query($sql);
+                    if ($query->num_rows() > 0) {
+                        $row = $query->row();
+                        $totamt = $row->totamt;
+                    }    
+                            $ebmissing = "All Employees found and processed successfully. Total Amount:". $totamt;
                }                    
 
 
     
 
-//  
+  
 
 
 
@@ -2741,7 +2751,8 @@ ON mst.emp_code = j.EB_NO
 
 
                 } else {
-   $sql="insert into EMPMILL12.tbl_njm_wages_data_collection (eb_id,date_from ,date_to,is_active,update_for,payscheme_id,hours_wkd_1
+   $sql="insert into EMPMILL12.tbl_njm_wages_data_collection (eb_id,date_from ,date_to,is_active,update_for,
+   payscheme_id,hours_wkd_1
 ,hours_wkd_2,esi_days,el_days,sl_days,lay_off_hrs,piece_hours,canteen,sunday_adv,
 other_adv,other_pay,el_advance,installment_advance,
 extra_hours_t,extra_hours_p,c_shift_days,festival_hours,arrear_plus,arrear_minus,iltime_hrs,ilpiece_hrs,act_prod_amount,
@@ -2750,7 +2761,8 @@ piece_wages_inc,cl_days,minus_bal,ul_days,advance
 select eb_id,'$periodfromdate' date_from,'$periodtodate' date_to,1 is_active,'OTH' update_for,$att_payschm, 
 C_wrkhrs1_,C_wrkhours2_,C_esi_days_,C_eldays_,C_sld_,C_LayOffHrs_,C_PHours_,C_canteen_,C_sundayadv_,
 C_otheradv1_,C_otherpay_,C_eladvance_,C_instadvded_,C_extrahrstime_,C_extrahourspiece_,C_nightdays_,
-C_FHours_,C_mveplus_,C_mveminus_,C_iltime_,C_ilpiece_,C_pwage_,C_pwagesinc_,C_cldays_,C_minusbalance_,C_uldays_,C_exadvance_ from
+C_FHours_,C_mveplus_,C_mveminus_,C_iltime_,C_ilpiece_,C_pwage_,C_pwagesinc_,C_cldays_,C_minusbalance_,C_uldays_,
+C_exadvance_ from
 (
 select EMPLOYEEID eb_id,g.* FROM (
 select  
@@ -4274,7 +4286,7 @@ foreach ($result as $row) {
     $colno = 0;
 
     foreach ($row as $cell) {
-        if ($colno <= 0) {
+        if ($colno <= 1) {
             $sheet->setCellValueExplicit($col . $rowNumber, $cell, DataType::TYPE_STRING);
         } else {
             $sheet->setCellValue($col . $rowNumber, $cell);

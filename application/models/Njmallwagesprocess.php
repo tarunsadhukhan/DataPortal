@@ -1027,7 +1027,8 @@ public function njmwagesprocessdata($periodfromdate,$periodtodate,$att_payschm) 
         max( case when (time_piece = 'P' and REGULAR_OT='O'  )  then wkhrs else 0 end ) AS OTP,
         max( case when (time_piece = 'N'   )  then wkhrs else 0 end ) AS NS,
         max( case when (time_piece = 'E'   )  then wkhrs else 0 end ) AS ED,$yrmn yearmn FROM (
-        SELECT dept_code,wm.eb_id,eb_no,time_piece,piece_rate_type,wkhrs,REGULAR_OT,lay_off_hours,concat(wm.worker_name,' ',ifnull(middle_name,''),' ',ifnull(last_name,'')) wrk_name
+        SELECT dept_code,wm.eb_id,eb_no,time_piece,piece_rate_type,wkhrs,REGULAR_OT,
+        lay_off_hours,concat(wm.worker_name,' ',ifnull(middle_name,''),' ',ifnull(last_name,'')) wrk_name
         FROM ( 
         SELECT worked_department_id,eb_id,'N' AS time_piece,0 AS piece_rate_type,SUM(NSHFT) AS wkhrs,'E' REGULAR_OT,0 lay_off_hours FROM ( 
         SELECT da.worked_department_id,da.eb_id,attendance_type ,da.attendance_date ,SUM(da.working_hours-idle_hours) AS HRS,
@@ -2300,7 +2301,7 @@ return $query->result_array();
 public function njmfaexceldata($periodfromdate,$periodtodate,$att_payschm) {
 $companyId = $this->session->userdata('companyId');
 
-$sql="select eb_no,empname,tnjmfa.da_rate,tnjmfa.fa_rate,round(whrs/8,3) fa_days,round(round(whrs/8,3)*tnjmfa.fa_rate,0) fa_amount 
+$sql="select 1 sno, eb_no TICKET_NO,empname,tnjmfa.da_rate,tnjmfa.fa_rate,round(whrs/8,3) fa_days,round(round(whrs/8,3)*tnjmfa.fa_rate,0) AMOUNT 
 from EMPMILL12.tbl_njm_food_allowance tnjmfa
 left join (
 select emp_code,CONCAT(trim(thepd.first_name), ' ', IFNULL(trim(thepd.middle_name), ''), ' ', IFNULL(trim(thepd.last_name), '')) AS empname,
@@ -2317,7 +2318,8 @@ and da.attendance_date between '$periodfromdate' and '$periodtodate'
 group by emp_code,CONCAT(trim(thepd.first_name), ' ', IFNULL(trim(thepd.middle_name), ''), ' ', IFNULL(trim(thepd.last_name), '')) ,
 dept_desc,cata_desc,sm.status_name,tps.NAME,date_of_join
 ) att on att.emp_code = tnjmfa.eb_no
- order by eb_no
+where whrs>0
+order by eb_no
 "; 
 
 //echo $sql;

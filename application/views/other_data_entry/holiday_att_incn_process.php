@@ -1185,6 +1185,59 @@ function mainwagesprocess() {
     var ejmFromDate = $('#ejmfromdt').val();
     var ejmToDate = $('#ejmtodt').val();
     var paySchemeRaw = $('#ejm_payschm').val();
+    var payScheme = Array.isArray(paySchemeRaw) ? paySchemeRaw[0] : paySchemeRaw;
+
+    if (!ejmFromDate || !ejmToDate || !payScheme) {
+        Swal.fire('Warning', 'Please select all required fields', 'warning');
+        return;
+    }
+
+    $('#btnMainWagesProcess').prop('disabled', true).text('Processing...');
+    showSpinnerCounter();
+
+    $.ajax({
+        url: "<?php echo base_url('Ejmprocessdata/mainwagesprocess'); ?>",
+        type: "POST",
+        data: {
+            fromdate: ejmFromDate,
+            todate: ejmToDate,
+            payscheme: payScheme
+        },
+        dataType: "json",
+        timeout: 1800000,
+        success: function(response) {
+            hideSpinnerCounter();
+            $('#btnMainWagesProcess').prop('disabled', false).text('Process');
+
+            console.log('SUCCESS RESPONSE:', response);
+            alert(JSON.stringify(response));
+
+            if (response && response.success) {
+                Swal.fire('Success', response.message, 'success');
+            } else {
+                Swal.fire('Warning', response.message || 'Unknown error', 'warning');
+            }
+        },
+        error: function(xhr, status, error) {
+            hideSpinnerCounter();
+            $('#btnMainWagesProcess').prop('disabled', false).text('Process');
+
+            console.log('AJAX status:', status);
+            console.log('AJAX error:', error);
+            console.log('Response text:', xhr.responseText);
+
+            alert(xhr.responseText || 'AJAX error');
+        }
+    });
+}
+
+
+
+
+function mainwagesprocess1() {
+    var ejmFromDate = $('#ejmfromdt').val();
+    var ejmToDate = $('#ejmtodt').val();
+    var paySchemeRaw = $('#ejm_payschm').val();
     
     // Convert array to first value or string (handle multi-select as single value)
     var payScheme = Array.isArray(paySchemeRaw) ? paySchemeRaw[0] : paySchemeRaw;
@@ -3402,6 +3455,121 @@ $("#attsheetdownload").click(function(event){
 			
 return false;
 });
+
+
+
+
+$("#payattsheetdownload").click(function(event){
+      event.preventDefault(); 
+             event.preventDefault();     
+             var att_payschm =  $('#att_payschm').val();
+                var holget =  $('#hol_get').val();
+                periodfromdate = $('#attfromdt').val();
+                periodtodate = $('#atttodt').val();
+                payschemeName = $('#payschemename').val();
+                att_dept= $('#att_dept').val();
+    //     alert (periodfromdate);
+              var url = '<?php echo site_url("Data_entry_2/payattsheetdownloaddata"); ?>' +
+                      '?att_payschm=' + att_payschm +
+                      '&att_dept=' + att_dept+
+                      '&holget=' + holget+
+                      '&periodfromdate=' + periodfromdate+
+                      '&payschemeName=' + payschemeName+
+                      '&periodtodate=' + periodtodate
+                       
+                      ;
+      //                alert(url);
+			//$(location).attr('href',url);
+			window.open( url, '_blank');
+			
+			
+return false;
+});
+
+
+
+
+$("#oldmainpaysheetdownload").click(function(event){
+      event.preventDefault(); 
+             event.preventDefault();     
+             var att_payschm =  $('#att_payschm').val();
+                var holget =  $('#hol_get').val();
+                periodfromdate = $('#attfromdt').val();
+                periodtodate = $('#atttodt').val();
+                payschemeName = $('#payschemename').val();
+                att_dept= $('#att_dept').val();
+    //     alert (periodfromdate);
+              var url = '<?php echo site_url("Data_entry_2/oldmainpaysheetdownload"); ?>' +
+                      '?att_payschm=' + att_payschm +
+                      '&att_dept=' + att_dept+
+                      '&holget=' + holget+
+                      '&periodfromdate=' + periodfromdate+
+                      '&payschemeName=' + payschemeName+
+                      '&periodtodate=' + periodtodate
+                       
+                      ;
+      //                alert(url);
+			//$(location).attr('href',url);
+			window.open( url, '_blank');
+			
+			
+return false;
+});
+
+$("#oldrtdpaysheetdownload").click(function(event){
+      event.preventDefault(); 
+             event.preventDefault();     
+             var att_payschm =  $('#att_payschm').val();
+                var holget =  $('#hol_get').val();
+                periodfromdate = $('#attfromdt').val();
+                periodtodate = $('#atttodt').val();
+                payschemeName = $('#payschemename').val();
+                att_dept= $('#att_dept').val();
+    //     alert (periodfromdate);
+              var url = '<?php echo site_url("Data_entry_2/oldrtdpaysheetdownload"); ?>' +
+                      '?att_payschm=' + att_payschm +
+                      '&att_dept=' + att_dept+
+                      '&holget=' + holget+
+                      '&periodfromdate=' + periodfromdate+
+                      '&payschemeName=' + payschemeName+
+                      '&periodtodate=' + periodtodate
+                       
+                      ;
+      //                alert(url);
+			//$(location).attr('href',url);
+			window.open( url, '_blank');
+			
+			
+return false;
+});
+
+$("#oldnbdlpaysheetdownload").click(function(event){
+      event.preventDefault(); 
+             event.preventDefault();     
+             var att_payschm =  $('#att_payschm').val();
+                var holget =  $('#hol_get').val();
+                periodfromdate = $('#attfromdt').val();
+                periodtodate = $('#atttodt').val();
+                payschemeName = $('#payschemename').val();
+                att_dept= $('#att_dept').val();
+    //     alert (periodfromdate);
+              var url = '<?php echo site_url("Data_entry_2/oldnbdlpaysheetdownload"); ?>' +
+                      '?att_payschm=' + att_payschm +
+                      '&att_dept=' + att_dept+
+                      '&holget=' + holget+
+                      '&periodfromdate=' + periodfromdate+
+                      '&payschemeName=' + payschemeName+
+                      '&periodtodate=' + periodtodate
+                       
+                      ;
+      //                alert(url);
+			//$(location).attr('href',url);
+			window.open( url, '_blank');
+			
+			
+return false;
+});
+
 
 ////
 $("#wrkfaexlfileupload").change(function(event){

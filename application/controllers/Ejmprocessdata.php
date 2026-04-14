@@ -2872,19 +2872,125 @@ public function get_all_fne_targets() {
 		}
 
 		$this->load->model('Ejmallprocessdata');
+        $fromdate=$dateFrom;
+        $todate=$dateTo;
+        $payscheme=$paySchm;
+///====
+        $allResults = [];
 
-		$result = $this->Ejmallprocessdata->processAttPrepclear($dateFrom, $dateTo, $paySchm, $deptCode);
+         $process='MAIN_ATT_PROCESS';
+        $minutes=10;            
+        $msql="
+        UPDATE EMPMILL12.process_run_log
+        SET status = 0,
+            completed_at = NOW(),
+            remarks = 'Auto failed due to stale running process'
+        WHERE process_name = '$process'
+          AND status = 1
+          AND started_at < DATE_SUB(NOW(), INTERVAL {$minutes} MINUTE)
+        ";
+        $this->clearStaleMainProcess($msql);
+
+        // Full batch lock check
+        
+        if ($this->isMainProcessRunning($fromdate, $todate, $payscheme,$process)) {
+            $this->output->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'success' => false,
+                    'message' => 'Processing running currently.'
+                ]));
+            return;
+        }
+
+        // Start lock
+        $process='ATT_WAGES_LOG';
+        $this->startMainProcessLog($fromdate, $todate, $payscheme,$process);
+
+        
+
+
+
+//		$result = $this->Ejmallprocessdata->processAttPrepclear($dateFrom, $dateTo, $paySchm, $deptCode);
+
+        $excfilename = "process_att_prep_clear.py";
+//        $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					$result = $this->Ejmallprocessdata->MainWagesProcessclear($fromdate, $todate, $payscheme);
+		if (is_array($result)) {
+			$result['process_name'] = 'Clearing Process';
+		}
+        $result['process_name'] = $process_name;
+        $allResults[] = $result;
+
+
 
 		$result = $this->Ejmallprocessdata->processAttPrepbmg($dateFrom, $dateTo, $paySchm, $deptCode);
-		$result = $this->Ejmallprocessdata->processAttPrepwvg($dateFrom, $dateTo, $paySchm, $deptCode);
+       $excfilename = "process_att_prep_bmg.py";
+//        $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+//					$result = $this->Ejmallprocessdata->MainWagesProcessclear($fromdate, $todate, $payscheme);
+		if (is_array($result)) {
+			$result['process_name'] = 'Beaming Attendanance Process';
+		}
+    $result['process_name'] = $process_name;
+        $allResults[] = $result;
+
+        $result = $this->Ejmallprocessdata->processAttPrepwvg($dateFrom, $dateTo, $paySchm, $deptCode);
+        $excfilename = "process_att_prep_wvg.py";
+  //      $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					//$result = $this->Ejmallprocessdata->MainWagesProcessclear($fromdate, $todate, $payscheme);
+		if (is_array($result)) {
+			$result['process_name'] = 'Weaving Attendanance Process';
+		}
+      $result['process_name'] = $process_name;
+        $allResults[] = $result;
 		$result = $this->Ejmallprocessdata->processAttPreppress($dateFrom, $dateTo, $paySchm, $deptCode);
-		$result = $this->Ejmallprocessdata->processAttPrep($dateFrom, $dateTo, $paySchm, $deptCode);
+        $excfilename = "process_att_prep_press.py";
+    //    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+				//$result = $this->Ejmallprocessdata->MainWagesProcessclear($fromdate, $todate, $payscheme);
+		if (is_array($result)) {
+			$result['process_name'] = 'Press Attendanance Process';
+		}
+    $result['process_name'] = $process_name;
+        $allResults[] = $result;
+
+        $result = $this->Ejmallprocessdata->processAttPrep($dateFrom, $dateTo, $paySchm, $deptCode);
+        $excfilename = "process_att_prep.py";
+//        $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					//$result = $this->Ejmallprocessdata->MainWagesProcessclear($fromdate, $todate, $payscheme);
+		if (is_array($result)) {
+			$result['process_name'] = 'Other Attendanance Process';
+		}
+        $result['process_name'] = $process_name;
+        $allResults[] = $result;
+
+            if (!is_array($result)) {
+                $result = [
+                    'success' => false,
+                    'message' => 'Unexpected response from ' . $process_name
+                ];
+            }
+
+            $result['process_name'] = $process_name;
+            $allResults[] = $result;
 
 
 
+        
 
-		$this->output->set_content_type('application/json')
-			->set_output(json_encode($result));
+
+        // All done
+        $this->updateMainProcessLog($fromdate, $todate, $payscheme, 'COMPLETE', 'All complete',$process);
+
+        $this->output->set_content_type('application/json')
+            ->set_output(json_encode([
+                'success' => true,
+                'message' => 'All complete',
+                'results' => $allResults
+            ]));
+
+
+
+//		$this->output->set_content_type('application/json')
+//			->set_output(json_encode($result));
 	}
 
 
@@ -3034,7 +3140,8 @@ public function get_all_fne_targets() {
 			->set_output(json_encode($result));
 	}
 
-	public function mainwagesprocess() {
+
+    public function mainwagesprocess1() {
 		try {
 			// Get raw POST data for debugging
 			$rawPostData = file_get_contents('php://input');
@@ -3074,82 +3181,145 @@ public function get_all_fne_targets() {
 			
 			log_message('debug', 'mainwagesprocess called with process: [' . $process . '], fromdate: ' . $fromdate . ', todate: ' . $todate . ', payscheme: ' . $payscheme);
 			
+
+            
+
+
+
 			switch($process) {
 				case 'clear':
                     $excfilename = "main_wages_process_clear.py";
-
-                    //$result = $this->callPythonClearProcess($excfilename, $fromdate, $todate, $payscheme);
-					$result = $this->Ejmallprocessdata->MainWagesProcessclear($fromdate, $todate, $payscheme);
-					if (is_array($result)) {
-						$result['process_name'] = 'Clearing Process';
+                    $startTime = microtime(true);
+                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					//$result = $this->Ejmallprocessdata->MainWagesProcessclear($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);
+                        $duration = $endtime - $startTime;
+                    if (is_array($result)) {
+						$result['process_name'] = 'Clearing Process '.$duration;
 					}
 					break;
 				case 'ns':
-					$result = $this->Ejmallprocessdata->MainWagesProcessns($fromdate, $todate, $payscheme);
+                    $excfilename = "main_wages_process_ns.py";
+                    $startTime = microtime(true);
+                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+                    $endtime= microtime(true);
+                        $duration = $endtime - $startTime;
+                    //$result = $this->Ejmallprocessdata->MainWagesProcessns($fromdate, $todate, $payscheme);
 					if (is_array($result)) {
-						$result['process_name'] = 'NS Processing';
+						$result['process_name'] = 'NS Processing '.$duration;
 					}
 					break;
 				case 'jute':
-					$result = $this->Ejmallprocessdata->MainWagesProcessjute($fromdate, $todate, $payscheme);
-					if (is_array($result)) {
-						$result['process_name'] = 'Jute Processing';
+                    $excfilename = "main_wages_process_jute.py";
+                    $startTime = microtime(true);
+                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					//$result = $this->Ejmallprocessdata->MainWagesProcessjute($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    if (is_array($result)) {
+						$result['process_name'] = 'Jute Processing '.$duration;
 					}
 					break;
 				case 'drg':
-                     $result = $this->Ejmallprocessdata->MainWagesProcessdrg($fromdate, $todate, $payscheme);
-					if (is_array($result)) {
-						$result['process_name'] = 'DRG Processing';
+                    $excfilename = "main_wages_process_drg.py";
+                    $startTime = microtime(true);
+                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+               //      $result = $this->Ejmallprocessdata->MainWagesProcessdrg($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+               if (is_array($result)) {
+						$result['process_name'] = 'DRG Processing '.$duration;
 					}
                     break;
 				case 'sprd':
-  					$result = $this->Ejmallprocessdata->MainWagesProcesssprd($fromdate, $todate, $payscheme);
-					if (is_array($result)) {
-						$result['process_name'] = 'SPRD Processing';
+                    $excfilename = "main_wages_process_sprd.py";
+                        $startTime = microtime(true);
+                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+//  					$result = $this->Ejmallprocessdata->MainWagesProcesssprd($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    if (is_array($result)) {
+						$result['process_name'] = 'SPRD Processing '.$duration;
 					}
                     break;
 				case 'spinner':
-					$result = $this->Ejmallprocessdata->MainWagesProcessspinner($fromdate, $todate, $payscheme);
-					if (is_array($result)) {
-						$result['process_name'] = 'Spinner Processing';
+                    $excfilename = "main_wages_process_spinner.py";
+                    $startTime = microtime(true);
+                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					//$result = $this->Ejmallprocessdata->MainWagesProcessspinner($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    if (is_array($result)) {
+						$result['process_name'] = 'Spinner Pr   ocessing';
 					}
 					break;
 				case 'winding':
-					$result = $this->Ejmallprocessdata->MainWagesProcesswinding($fromdate, $todate, $payscheme);
+                    $excfilename = "main_wages_process_winding.py";
+                    $startTime = microtime(true);   
+                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    //				$result = $this->Ejmallprocessdata->MainWagesProcesswinding($fromdate, $todate, $payscheme);
 					if (is_array($result)) {
-						$result['process_name'] = 'Winding Processing';
+						$result['process_name'] = 'Winding Processing '.$duration;
 					}
 					break;
 				case 'beaming':
-					$result = $this->Ejmallprocessdata->MainWagesProcessbeaming($fromdate, $todate, $payscheme);
-					if (is_array($result)) {
-						$result['process_name'] = 'Beaming Processing';
+                    $excfilename = "main_wages_process_beaming.py";
+                    $startTime = microtime(true);
+                                $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					//$result = $this->Ejmallprocessdata->MainWagesProcessbeaming($fromdate, $todate, $payscheme);
+					
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    if (is_array($result)) {
+						$result['process_name'] = 'Beaming Processing '.$duration;
 					}
 					break;
 				case 'weaving':
                     log_message('info', 'Controller: Calling MainWagesProcessweaving with fromdate: ' . $fromdate . ', todate: ' . $todate . ', payscheme: ' . $payscheme);   
-					$result = $this->Ejmallprocessdata->MainWagesProcessweaving($fromdate, $todate, $payscheme);
+                    $excfilename = "main_wages_process_weaving.py";
+                    $startTime = microtime(true);
+                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+//                    $result = $this->Ejmallprocessdata->MainWagesProcessweaving($fromdate, $todate, $payscheme);
 					log_message('debug', 'Controller: MainWagesProcessweaving result: ' . json_encode($result));
-					if (is_array($result)) {
-						$result['process_name'] = 'Weaving Processing';
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    if (is_array($result)) {
+						$result['process_name'] = 'Weaving Processing '.$duration;
 					}
 					break;
 				case 'press':
-					$result = $this->Ejmallprocessdata->MainWagesProcesspress($fromdate, $todate, $payscheme);
-					if (is_array($result)) {
-						$result['process_name'] = 'Press Processing';
+                    $excfilename = "main_wages_process_press.py";
+                    $startTime = microtime(true);
+                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+                    //$result = $this->Ejmallprocessdata->MainWagesProcesspress($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    if (is_array($result)) {
+						$result['process_name'] = 'Press Processing '.$duration;
 					}
 					break;
 				case 'finishing':
-					$result = $this->Ejmallprocessdata->MainWagesProcessfinishing($fromdate, $todate, $payscheme);
-					if (is_array($result)) {
-						$result['process_name'] = 'Finishing Processing';
+                    $excfilename = "main_wages_process_finishing.py";
+                    $startTime = microtime(true);
+                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+//					$result = $this->Ejmallprocessdata->MainWagesProcessfinishing($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    if (is_array($result)) {
+						$result['process_name'] = 'Finishing Processing '.$duration;
 					}
 					break;
 				case 'others':
-					$result = $this->Ejmallprocessdata->MainWagesProcessothers($fromdate, $todate, $payscheme);
-					if (is_array($result)) {
-						$result['process_name'] = 'Others Processing';
+                    $excfilename = "main_wages_process_others.py";
+                    $startTime = microtime(true);
+                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					//$result = $this->Ejmallprocessdata->MainWagesProcessothers($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    if (is_array($result)) {
+						$result['process_name'] = 'Others Processing '.$duration;
 					}
 					break;
 				default:
@@ -3201,22 +3371,36 @@ public function get_all_fne_targets() {
 }
  */
 
-private function callPythonClearProcess($fromdate, $todate, $payscheme)
+private function callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id)
 {
 
-    $excfilename = "main_wages_process_clear.py";
+//    $excfilename = "main_wages_process_clear.py";
 
     $python = $this->config->item('python_bin');  // python path from config
+    //$python = $this->config->item('python_bin');
 
     $script = FCPATH . "Python\\" . $excfilename;
 
-    $cmd = escapeshellcmd($python) . " " .
+/*     $cmd = escapeshellcmd($python) . " " .
            escapeshellarg($script) . " " .
            escapeshellarg($fromdate) . " " .
            escapeshellarg($todate) . " " .
-           escapeshellarg($payscheme);
+           escapeshellarg($payscheme) . " " .
+           escapeshellarg($company_id);
+ */
+
+           log_message('info', 'my infor Executing Python script: ' . $script . ' with parameters fromdate: ' . $fromdate . ', todate: ' . $todate . ', payscheme: ' . $payscheme . ', company_id: ' . $company_id); 
+           $cmd = escapeshellcmd($python) . " " .
+           escapeshellarg($script) . " " .
+           escapeshellarg($fromdate) . " " .
+           escapeshellarg($todate) . " " .
+           escapeshellarg($payscheme) . " " .
+           escapeshellarg($company_id) . " 2>&1";
+
 
     $output = shell_exec($cmd);
+           log_message('info', 'my infor Executing Python script: ' . $cmd . ' with parameters fromdate: ' . $fromdate . ', todate: ' . $todate . ', payscheme: ' . $payscheme . ', company_id: ' . $company_id); 
+log_message('info', 'Python CMD: ' . $cmd);
 
     if (!$output) {
         return [
@@ -3224,8 +3408,12 @@ private function callPythonClearProcess($fromdate, $todate, $payscheme)
             'message' => 'Python script returned empty output'
         ];
     }
+     //      log_message('info', 'refore Executing Python script: ' . $result . ' with parameters fromdate: ' . $fromdate . ', todate: ' . $todate . ', payscheme: ' . $payscheme . ', company_id: ' . $company_id); 
 
     $result = json_decode($output, true);
+    log_message('info', 'Python CMD: ' . $result);
+    log_message('info', 'Python Result: ' . json_encode($result));
+
 
     if (json_last_error() !== JSON_ERROR_NONE) {
         return [
@@ -3238,6 +3426,405 @@ private function callPythonClearProcess($fromdate, $todate, $payscheme)
     return $result;
 }
  
+
+private function isProcessRunning($process_name, $fromdate, $todate, $payscheme)
+{
+    $this->db->where('process_name', $process_name);
+    $this->db->where('from_date', $fromdate);
+    $this->db->where('to_date', $todate);
+    $this->db->where('pay_scheme_id', $payscheme);
+    $this->db->where('status', 'RUNNING');
+
+    return $this->db->get('process_run_log')->num_rows() > 0;
+}
+
+
+private function startProcessLog($process_name, $fromdate, $todate, $payscheme)
+{
+    $data = [
+        'process_name'  => $process_name,
+        'from_date'     => $fromdate,
+        'to_date'       => $todate,
+        'pay_scheme_id' => $payscheme,
+        'status'        => 'RUNNING',
+        'started_at'    => date('Y-m-d H:i:s'),
+        'started_by'    => $this->session->userdata('username')
+    ];
+
+    $this->db->insert('process_run_log', $data);
+    return $this->db->insert_id();
+}
+
+
+public function mainwagesprocess()
+{
+    try {
+        $fromdate  = trim($this->input->post('fromdate'));
+        $todate    = trim($this->input->post('todate'));
+        $payscheme = trim($this->input->post('payscheme'));
+        $company_id = $this->session->userdata('companyId');            
+        if (!$fromdate || !$todate || !$payscheme) {
+            $this->output->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'success' => false,
+                    'message' => 'Missing required parameters'
+                ]));
+            return;
+        }
+
+        $this->load->model('Ejmallprocessdata');
+        log_message('info', 'Starting main wages process for 
+        fromdate: ' . $fromdate . ', todate: ' . $todate . ', payscheme: ' . $payscheme);  
+        // Optional: clear stale running locks
+        $mprocess='MAIN_WAGES_LOG';
+        $minutes=10;            
+        $msql="
+        UPDATE EMPMILL12.process_run_log
+        SET status = 0,
+            completed_at = NOW(),
+            remarks = 'Auto failed due to stale running process'
+        WHERE process_name = '$mprocess'
+          AND status = 1
+          AND started_at < DATE_SUB(NOW(), INTERVAL {$minutes} MINUTE)";
+        $this->clearStaleMainProcess($msql);
+
+        // Full batch lock check
+        if ($this->isMainProcessRunning($fromdate, $todate, $payscheme,$mprocess)) {
+            $this->output->set_content_type('application/json')
+                ->set_output(json_encode([
+                    'success' => false,
+                    'message' => 'Processing running currently.'
+                ]));
+            return;
+        }
+
+        // Start lock
+        $this->startMainProcessLog($fromdate, $todate, $payscheme, $mprocess);
+
+        $allResults = [];
+        $processes = [
+            'clear',
+            'ns',
+            'drg',
+            'sprd',
+            'spinner',
+            'winding',
+            'beaming',
+            'weaving',
+            'press',
+            'finishing',
+            'jute',
+            'others'
+        ];
+
+        foreach ($processes as $process) {
+            $result = ['success' => false, 'message' => 'Invalid process'];
+            log_message('info', 'Starting process: ' . $process);        
+			switch($process) {
+				case 'clear':
+                    $excfilename = "main_wages_process_clear.py";
+                    $startTime = microtime(true);
+                    log_message('start',$starttime);
+              //      $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					$result = $this->Ejmallprocessdata->MainWagesProcessclear($fromdate, $todate, $payscheme);
+               log_message('info', 'Process started');
+
+            //$result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme, $company_id);
+
+            log_message('info', 'Result raw: ' . print_r($result, true));
+            log_message('info', 'Result type: ' . gettype($result));
+
+            if (is_string($result)) {
+                $result = json_decode($result, true);
+            }
+
+            log_message('info', 'After decode type: ' . gettype($result));
+
+            $endtime = microtime(true);
+            $duration = $endtime - $startTime;
+
+            log_message(
+                'info',
+                'process name '.$excfilename.
+                ' process start time '.$startTime.
+                ' Process end time '.$endtime.
+                ' duration '.$duration.' seconds'
+            );
+
+//            if (is_array($result)) {
+                log_message('info', 'php cleaning result: in array');
+
+                $result['process_name'] = 'Clearing Process completed';
+//            }     
+            log_message('info', 'php Result: ' . json_encode($result));
+                                $endtime= microtime(true);
+                                $duration = $endtime - $startTime;
+                                log_message('info','process name '.$excfilename. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+//                                if (is_array($result)) {
+                                    $result['process_name'] = 'Clearing Process  completed '.$duration;
+                                log_message('info', 'php cleaning result:  in array' );
+
+            log_message('info', 'AFTER PRCESS NAME: ' . json_encode($result));
+                                
+
+//                                    }
+					break;
+				case 'ns':
+                    $excfilename = "main_wages_process_ns.py";
+                    $startTime = microtime(true);
+                    log_message('start',$startTime);
+//                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+                    $endtime= microtime(true);
+                    $duration = $endtime - $startTime;
+                    $result = $this->Ejmallprocessdata->MainWagesProcessns($fromdate, $todate, $payscheme);
+                    log_message('info','process name '.$excfilename. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+//					if (is_array($result)) {
+						$result['process_name'] = 'NS Processing '.$duration;
+//					}
+					break;
+				case 'jute':
+                    $excfilename = "main_wages_process_jute.py";
+                    $startTime = microtime(true);
+                    //$result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					$result = $this->Ejmallprocessdata->MainWagesProcessjute($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    log_message('info','process name '.$excfilename. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+                    if (is_array($result)) {
+						$result['process_name'] = 'Jute Processing '.$duration;
+					}
+					break;
+				case 'drg':
+                    $excfilename = "main_wages_process_drg.py";
+                    $startTime = microtime(true);
+                   // $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+                     $result = $this->Ejmallprocessdata->MainWagesProcessdrg($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    log_message('info','process name '.$excfilename. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+               if (is_array($result)) {
+						$result['process_name'] = 'DRG Processing '.$duration;
+					}
+                    break;
+				case 'sprd':
+                    $excfilename = "main_wages_process_sprd.py";
+                        $startTime = microtime(true);
+                    $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+//  					$result = $this->Ejmallprocessdata->MainWagesProcesssprd($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    log_message('info','process name '.$excfilename. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+                    if (is_array($result)) {
+						$result['process_name'] = 'SPRD Processing '.$duration;
+					}
+                    break;
+				case 'spinner':
+                    $excfilename = "main_wages_process_spinner.py";
+                    $startTime = microtime(true);
+                    //$result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					$result = $this->Ejmallprocessdata->MainWagesProcessspinner($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    log_message('info','process name '.$excfilename. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+                    if (is_array($result)) {
+						$result['process_name'] = 'Spinner Pr   ocessing';
+					}
+ 					break;
+				case 'winding':
+                    $excfilename = "main_wages_process_winding.py";
+                    $startTime = microtime(true);   
+ //                   $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    				$result = $this->Ejmallprocessdata->MainWagesProcesswinding($fromdate, $todate, $payscheme);
+                     log_message('info','process name '.$excfilename. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+					if (is_array($result)) {
+						$result['process_name'] = 'Winding Processing '.$duration;
+					}
+					break;
+				case 'beaming':
+                    $excfilename = "main_wages_process_beaming.py";
+                    $startTime = microtime(true);
+   //                             $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					$result = $this->Ejmallprocessdata->MainWagesProcessbeaming($fromdate, $todate, $payscheme);
+					
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    log_message('info','process name '.$excfilename. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+                    if (is_array($result)) {
+						$result['process_name'] = 'Beaming Processing '.$duration;
+					}
+					break;
+				case 'weaving':
+                    log_message('info', 'Controller: Calling MainWagesProcessweaving with fromdate: ' . $fromdate . ', todate: ' . $todate . ', payscheme: ' . $payscheme);   
+                    $excfilename = "main_wages_process_weaving.py";
+                    $startTime = microtime(true);
+     //               $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+                    $result = $this->Ejmallprocessdata->MainWagesProcessweaving($fromdate, $todate, $payscheme);
+                    log_message('info','process name '.$excfilename. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    log_message('info','process '.$process. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+                    if (is_array($result)) {
+						$result['process_name'] = 'Weaving Processing '.$duration;
+					}
+					break;
+				case 'press':
+                    $excfilename = "main_wages_process_press.py";
+                    $startTime = microtime(true);
+       //             $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+                    $result = $this->Ejmallprocessdata->MainWagesProcesspress($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    log_message('info','process name '.$excfilename. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+                    if (is_array($result)) {
+						$result['process_name'] = 'Press Processing '.$duration;
+					}
+					break;
+				case 'finishing':
+                    $excfilename = "main_wages_process_finishing.py";
+                    $startTime = microtime(true);
+         //           $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					$result = $this->Ejmallprocessdata->MainWagesProcessfinishing($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    log_message('info','process name '.$excfilename. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+                    if (is_array($result)) {
+						$result['process_name'] = 'Finishing Processing '.$duration;
+					}
+					break;
+				case 'others':
+                    $excfilename = "main_wages_process_others.py";
+                    $startTime = microtime(true);
+           //         $result = $this->callPythonProcess($excfilename, $fromdate, $todate, $payscheme,$company_id);
+					$result = $this->Ejmallprocessdata->MainWagesProcessothers($fromdate, $todate, $payscheme);
+                    $endtime= microtime(true);  
+                        $duration = $endtime - $startTime;
+                    log_message('info','process name '.$excfilename. 'process start time '.$startTime. ' Process end time: ' . $endtime . ', duration: ' . $duration . ' seconds');
+                    if (is_array($result)) {
+						$result['process_name'] = 'Others Processing '.$duration;
+					}
+					break;
+				default:
+				log_message('error', 'Invalid process received: [' . $process . ']. Available processes: clear, ns, drg, sprd, spinner, winding, beaming, weaving, press, finishing, others');
+				$result = array('success' => false, 'message' => 'Invalid process: ' . $process);
+		}
+
+            if (!is_array($result)) {
+                $result = [
+                    'success' => false,
+                    'message' => 'Unexpected response from ' . $process_name
+                ];
+            }
+
+            $result['process_name'] = $process_name;
+            $allResults[] = $result;
+
+            if (empty($result['success'])) {
+                $this->updateMainProcessLog(
+                    $fromdate,
+                    $todate,
+                    $payscheme,
+                    'FAILED',
+                    $process_name . ' failed: ' . (isset($result['message']) ? $result['message'] : 'Unknown error'),$mprocess
+                );
+
+                $this->output->set_content_type('application/json')
+                    ->set_output(json_encode([
+                        'success' => false,
+                        'message' => $process_name . ' failed',
+                        'results' => $allResults
+                    ]));
+                return;
+            }
+        }
+
+        // All done
+        $this->updateMainProcessLog($fromdate, $todate, $payscheme, 'COMPLETE', 'All complete',$mprocess);
+
+        $this->output->set_content_type('application/json')
+            ->set_output(json_encode([
+                'success' => true,
+                'message' => 'All complete',
+                'results' => $allResults
+            ]));
+
+    } catch (Exception $e) {
+        if (!empty($fromdate) && !empty($todate) && !empty($payscheme)) {
+            $this->updateMainProcessLog($fromdate, $todate, $payscheme, 'FAILED', $e->getMessage(),$mprocess);
+        }
+
+        $this->output->set_content_type('application/json')
+            ->set_output(json_encode([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]));
+    }
+}
+
+
+private function getMainProcessKey($fromdate, $todate, $payscheme)
+{
+    return 'MAIN_WAGES_PROCESS_' . $fromdate . '_' . $todate . '_' . $payscheme;
+}
+
+private function isMainProcessRunning($fromdate, $todate, $payscheme,$process)
+{
+    $process_key = $this->getMainProcessKey($fromdate, $todate, $payscheme);
+
+    $this->db->where('process_key', $process_key);
+    $this->db->where('status', 1);
+    $this->db->where('process_name', $process);
+ 
+    return $this->db->get('EMPMILL12.process_run_log')->num_rows() > 0;
+}
+
+private function startMainProcessLog($fromdate, $todate, $payscheme,$process)
+{
+    $process_key = $this->getMainProcessKey($fromdate, $todate, $payscheme);
+
+    $data = [
+        'process_name'  => $process,
+        'process_key'   => $process_key,
+        'from_date'     => $fromdate,
+        'to_date'       => $todate,
+        'pay_scheme_id' => $payscheme,
+        'status'        => 1,
+        'started_at'    => date('Y-m-d H:i:s'),
+        'started_by'    => $this->session->userdata('username')
+    ];
+
+    $this->db->insert('EMPMILL12.process_run_log', $data);
+    return $this->db->insert_id();
+}
+
+
+
+
+private function updateMainProcessLog($fromdate, $todate, $payscheme, $status, $remarks = null,$process)
+{
+    $process_key = $this->getMainProcessKey($fromdate, $todate, $payscheme);
+
+    $this->db->where('process_key', $process_key);
+    $this->db->where('status', 1);
+    $this->db->where('process_name', $process);
+    $this->db->update('EMPMILL12.process_run_log', [
+        'status'       => $status,
+        'completed_at' => date('Y-m-d H:i:s'),
+        'remarks'      => $remarks
+    ]);
+}
+
+private function clearStaleMainProcess($msql)
+{
+    $this->db->query($msql)
+    ;
+}
+
+ 
+
+
+
 
 }
 

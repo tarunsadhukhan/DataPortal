@@ -58,7 +58,7 @@
          #advOthTable tbody td {
             font-size: 10px !important;
             white-space: nowrap !important;
-            padding: 3px 5px !important;
+            padding.: 3px 5px !important;
             border: 1px solid #999 !important;
         }
          /* Right-align numeric columns in body */

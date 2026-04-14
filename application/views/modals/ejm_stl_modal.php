@@ -560,7 +560,8 @@
 
             <div class="modal-body">
                  <tbody>
-                    <div class="form-group">
+
+                 <div class="form-group">
                         <div class="col-sm-6">
                             <label for="email">From Date</label>
                             <input class="form-control form-control-rounded" value="<?= date('Y-m-d') ?>" id="attfromdt" name="attfromdt" type="date">
@@ -570,8 +571,9 @@
                             <input class="form-control form-control-rounded" value="<?= date('Y-m-d') ?>" id="atttodt" name="atttodt" type="date">
                         </div>
                     </div>
-    <div class="col-12 col-sm-6">
+
               <div class="form-group">
+                    <div class="col-12 col-sm-6">
               <label for="email">Departments</label>
               <?php
                     $dep['0'] = 'ALL';
@@ -589,15 +591,38 @@
  
                     <div class="form-group">
                         <div class="col-12 col-sm-6">
-                            <label for="purchaseDetailsPurchaseDate">Download Data <span class="text-center"></span></label>
+                            <label for="purchaseDetailsPurchaseDate">Mill Sheet  <span class="text-center"></span></label>
                             <button name="submit" id="attsheetdownload"  type="submit" class="form-control btn btn-primary">Download</button>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <label for="purchaseDetailsPurchaseDate">Att Sheet  <span class="text-center"></span></label>
+                            <button name="submit" id="payattsheetdownload"  type="submit" class="form-control btn btn-primary">Download</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-12 col-sm-6">
+                            <label for="purchaseDetailsPurchaseDate">Old Main Paysheet  <span class="text-center"></span></label>
+                            <button name="submit" id="oldmainpaysheetdownload"  type="submit" class="form-control btn btn-primary">Download</button>
+                        </div>
+                        <div class="col-12 col-sm-6">
+                            <label for="purchaseDetailsPurchaseDate">Old RTD Paysheet  <span class="text-center"></span></label>
+                            <button name="submit" id="oldrtdpaysheetdownload"  type="submit" class="form-control btn btn-primary">Download</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                    
+                        <div class="col-12 col-sm-6">
+                            <label for="purchaseDetailsPurchaseDate">Old NBDL Paysheet  <span class="text-center"></span></label>
+                            <button name="submit" id="oldnbdlpaysheetdownload"  type="submit" class="form-control btn btn-primary">Download</button>
                         </div>
 
                         <div class="col-12 col-sm-6">
                             <label for="purchaseDetailsPurchaseDate">Close<span class="text-center"></span></label>
                             <button name="submit" id="attsheetclose"  type="submit" class="form-control btn btn-danger">Close</button>
                         </div>
-                </tbody>
+                </div>
+                    </tbody>
             </div>
                 </div>
         </div> 

@@ -927,7 +927,8 @@ $eincdays=$period-$ndays;
      $attp="('R','O')";
     //echo 'choss-'.$holget;
     //echo 'ro-'.$attp;
-    
+
+    $gdays=24;
    //  echo $sql;   
    if  ($holget<>8) {
     $sql="select count(*) nondays from EMPMILL12.tbl_non_working_days where non_working_date 
@@ -1000,7 +1001,7 @@ from (
    AND thepd.company_id = ".$comp."
    AND theod.is_active = 1
    AND thaie.is_active = 1
-    and 	round(incdays, 0)>=24
+    and 	round(incdays, 0)>=$gdays
    order by
    theod.emp_code";
    } else {
@@ -1071,7 +1072,7 @@ $sql="SELECT
     AND thepd.company_id = ".$comp."
     AND theod.is_active = 1
     AND thaie.is_active = 1
-    and 	round(incdays, 0)>=24
+    and 	round(incdays, 0)>=$gdays
     order by dm.dept_code,
     theod.emp_code";
    }

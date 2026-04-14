@@ -863,8 +863,8 @@ $this->load->library('excel');
 						
 
 						$this->data['godowns'] = $this->varaha_model->getAllGodownsNos();			
-				$this->data['agents'] = $this->varaha_model->getAllAgents($this->data['companyId']	);
-				$this->data['jutequalitys'] = $this->varaha_model->getJuteQuality($this->data['companyId']);
+						$this->data['agents'] = $this->varaha_model->getAllAgents($this->data['companyId']	);
+						$this->data['jutequalitys'] = $this->varaha_model->getJuteQuality($this->data['companyId']);
 
 						$this->data['menudit'] = $this->varaha_model->getMenuData($mainmenuId);
 						$this->data['menuName'] = ($this->data['menudit'] ? $this->data['menudit']->menu : "Reports");

@@ -393,7 +393,7 @@ ORDER BY dm.dept_desc, theod.emp_code
         $company_name = $this->session->userdata('companyname');
         $comp = $this->session->userdata('companyId');      
 
-echo $att_dept;
+//echo $att_dept;
 //echo $sql;
 
 $stda = (int)substr($periodfromdate, 8, 2);   // e.g.  1
@@ -454,9 +454,13 @@ a.attendance_date BETWEEN '".$periodfromdate."' AND '".$periodtodate."'
 AND a.company_id = ".$comp." 
 and a.is_active=1
 AND theod.is_active = 1
-AND thepd.company_id = 1
-and md.dept_desc='".$att_dept."' 
-GROUP BY
+AND thepd.company_id = 1";
+if ($att_dept!=0) {
+    $sql=$sql." 
+and md.dept_id='".$att_dept."' 
+";
+}
+$sql=$sql." GROUP BY
 a.worked_department_id,attendance_type,
 theod.emp_code,
 empname,
@@ -477,6 +481,153 @@ a.worked_department_id,attendance_type,emp_code
  
 
     }
+
+
+public function getpayattsheetdata($periodfromdate,$periodtodate,$holget,$att_dept) {
+
+//echo $periodfromdate.'  -  '.$periodtodate;
+
+        // Replace this with your actual database query to fetch MCCodes based on department
+        $company_name = $this->session->userdata('companyname');
+        $comp = $this->session->userdata('companyId');      
+
+//echo $att_dept;
+//echo $sql;
+
+$yrmn=substr($periodfromdate, 0, 4).substr($periodfromdate, 5, 2);  // e.g. '2025-06'
+
+
+$stda = (int)substr($periodfromdate, 8, 2);   // e.g.  1
+$mda  = (int)substr($periodtodate, 8, 2);     // e.g. 30
+
+//$periodfromdate = '2025-06-01';
+//$periodtodate   = '2025-06-30';
+
+// -----------------------------------------------------------------------------
+// work out first/last calendar day numbers ( 1 … 31 )
+$startDay = (int)substr($periodfromdate, 8, 2);
+$endDay   = (int)substr($periodtodate,   8, 2);
+
+// -----------------------------------------------------------------------------
+// build 2 parallel column-lists: one for hours, one for attendance_type
+$hourCols = [];
+$typeCols = [];
+
+for ($d = $startDay; $d <= $endDay; $d++) {
+    $alias = str_pad($d, 2, '0', STR_PAD_LEFT);      // 01 … 31
+
+    // hours (pivot)
+    $hourCols[] = 
+        "MAX(CASE WHEN DAY(a.attendance_date) = $d " .
+        "         THEN a.working_hours END) AS `{$alias}`";
+
+    // attendance_type (pivot) – needed only for styling
+ /*    $typeCols[] =
+        "MAX(CASE WHEN DAY(a.attendance_date) = $d " .
+        "         THEN a.spell END) AS `{$alias}_t`";
+ */
+
+        }
+$hoursSelect = implode(",\n        ", $hourCols);
+//$typeSelect  = implode(",\n        ", $typeCols);
+
+
+
+$sql = "
+select da.*,wg.eldays 'PL',wg.fldays 'HL',ifnull(da.tdays,0)+ifnull(wg.eldays,0)+ifnull(wg.fldays,0) tesidays,  wg.esidays,thee.esi_no  from (			
+sELECT
+	theod.eb_id,
+	theod.emp_code,
+	CONCAT(TRIM(thepd.first_name), ' ', IFNULL(TRIM(thepd.middle_name), ''), ' ', IFNULL(TRIM(thepd.last_name), '')) AS empname,
+    $hoursSelect,
+  	SUM(a.working_hours) AS Total_hrs,
+	ROUND(SUM(a.working_hours)/ 8, 2) AS Total_days,count(*) tdays
+FROM
+	(
+	select
+		a.company_id,
+		a.is_active ,
+		eb_id,
+		a.attendance_date,
+		round(sum(working_hours-a.idle_hours), 1) working_hours,
+		count(*) tdays
+	from
+		daily_attendance a
+	where
+		company_id = 1
+		and is_active = 1
+		and a.attendance_date BETWEEN '$periodfromdate' AND '$periodtodate' and a.attendance_type not in ('C')
+	group by
+		a.company_id,
+		a.is_active ,
+		eb_id,
+		a.attendance_date
+		) a
+LEFT JOIN tbl_hrms_ed_official_details theod ON
+	a.eb_id = theod.eb_id
+JOIN tbl_hrms_ed_personal_details thepd ON
+	theod.eb_id = thepd.eb_id
+WHERE
+	a.attendance_date BETWEEN '$periodfromdate' AND '$periodtodate'
+	AND a.company_id = 1
+	and a.is_active = 1
+	AND theod.is_active = 1
+	AND thepd.company_id = 1
+GROUP BY
+	theod.eb_id,
+	theod.emp_code,
+	empname
+) da left join	
+(
+	select eb_id,	
+	MAX(CASE WHEN (leave_type) = 'SL' THEN lvdays END) AS `SL`,
+	MAX(CASE WHEN (leave_type) = 'PL' THEN lvdays END) AS `PL`,
+	MAX(CASE WHEN (leave_type) = 'ACL' THEN lvdays END) AS `ACL`,
+	MAX(CASE WHEN (leave_type) = 'HL' THEN lvdays END) AS `HL`
+	from (
+	select eb_id,case when lt2.leave_type_code='S' then 'SL' 
+	when lt2.leave_type_code='L' then 'PL'
+	when lt2.leave_type_code='A' then 'AL'
+	when lt2.leave_type_code='C' then 'ACL' end leave_type
+	,count(*)  lvdays from leave_tran_details ltd
+	join leave_transactions lt on lt.leave_transaction_id =ltd.ltran_id 
+	left join leave_types lt2 on lt2.leave_type_id =lt.leave_type_id 
+	where lt.status =3 and ltd.is_active =1 and ltd.leave_date BETWEEN 
+	'$periodfromdate' and '$periodtodate'  and lt.company_id=1
+	group by eb_id,lt2.leave_type_code
+	union all
+	select eb_id,'HL' leave_type,sum(thht.holiday_hours/8) lvdays from tbl_hrms_holiday_transactions thht 
+	left join holiday_master hm on hm.id =thht.holiday_id
+	where thht.is_active =1 and hm.holiday_date 
+	between '$periodfromdate' and '$periodtodate' and hm.company_id =1
+	group by eb_id
+	) g group by eb_id
+	) lv  on da.eb_id=lv.eb_id
+	left join ( 
+	select tktno,esidays,eldays,fhours/8 fldays from EMPMILL12.njm_wage0001 wg where wg.yearmonth ='$yrmn'
+	union all 
+	select tktno,esidays,eldays,fhours/8 fldays from EMPMILL12.njm_wagenbdl nwg where nwg.yearmonth ='$yrmn'
+	) wg on da.emp_code=wg.tktno   
+	left join tbl_hrms_ed_official_details theod on theod.is_active=1 and theod.eb_id =da.eb_id 
+    left join tbl_hrms_ed_esi thee on theod.eb_id=thee.eb_id and thee.is_active =1
+		where theod.catagory_id in (15,16,17,20)
+	order by da.emp_code
+";
+
+//$result = $this->db->query($sql, [$periodfromdate, $periodtodate])->result_array();
+
+//echo $sql;
+
+
+
+    $query = $this->db->query($sql);
+  return $query->result_array();      
+          
+ 
+
+    }
+
+
 
 
     public function getstlleavedata($periodfromdate,$periodtodate,$holget) {

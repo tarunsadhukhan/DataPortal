@@ -1960,7 +1960,8 @@ GROUP BY
             group by df,dt,eff_code,shift,eb_id,tewom.deptcode,tewom.occucode 
             ) sprd on tewas.dept_code =sprd.deptcode and tewas.occu_code =sprd.occucode and sprd.shift =tewas.shift and tewas.eb_id =sprd.eb_id 
             where tewas.pay_scheme_id =$payscheme and tewas.update_from ='ATT'
-            and sprd.acteff is not null
+            and tewas.dept_code='02' and tewas.occu_code in ('06')
+            and tewas.date_from ='$fromdate' and tewas.date_to ='$todate'
             ";
 			$result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
 
@@ -1998,6 +1999,7 @@ GROUP BY
                 group by df,dt,eff_code,tewom.deptcode,tewom.occucode 
                 ) sprd on tewas.dept_code =sprd.deptcode and tewas.occu_code =sprd.occucode   
                 where tewas.pay_scheme_id =$payscheme and tewas.update_from ='ATT'
+                and tewas.date_from ='$fromdate' and tewas.date_to ='$todate'
                 and sprd.acteff is not null
             ";
 			$result = $this->db->query($sql);
@@ -2026,6 +2028,14 @@ GROUP BY
 				return array('success' => false, 'message' => 'Invalid date format');
 			}
 
+
+$sql = "CREATE TEMPORARY TABLE IF NOT EXISTS tmp_view_proc_daily_doff_details AS
+        SELECT *
+        FROM EMPMILL12.view_proc_daily_doff_details
+        WHERE doffdate BETWEEN ? AND ?
+        AND compid = ?";
+
+            $this->db->query($sql, array($fromdate, $todate, $company));
 			// Custom Query: Process wages from attendance summary
 			$sql = "insert into EMPMILL12.tbl_ejm_wages_data_collection (date_from,date_to,eb_id,dept_code,occu_code,shift,t_p,working_hours,
             ot_hours,working_hours_eff,ot_hours_eff,pay_scheme_id,update_for,updt_from,act_eff)
@@ -2039,7 +2049,7 @@ GROUP BY
             select doff.*,tate.target_eff  from (
             select '$fromdate' df,'$todate' dt,vpddd.eb_id ,substr(vpddd.spell,1,1) shift  ,sum(prod) prod,
             sum(prod100) targetprod,round(sum(prod)/sum(prod100)*100,2) eff, 4 eff_code  
-            from EMPMILL12.view_proc_daily_doff_details vpddd 
+            from tmp_view_proc_daily_doff_details vpddd 
             where vpddd.doffdate between '$fromdate' and '$todate' and compid=$comany_id and vpddd.frameno <60    
             group by vpddd.eb_id,substr(vpddd.spell,1,1) 
             ) doff 
@@ -2049,10 +2059,11 @@ GROUP BY
             tewom.eff_code =4 and tewom.effcheck ='CI' 
             where tewas.pay_scheme_id =$payscheme and tewas.update_from ='ATT' and tewas.is_active =1
             and tewas.occu_code ='01' and tewas.dept_code ='04' 	
-                    ";
+            and tewas.date_from ='$fromdate' and tewas.date_to ='$todate'
+            ";
 			$result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
-
-            $sql = "insert into EMPMILL12.tbl_ejm_wages_data_collection (date_from,date_to,eb_id,dept_code,occu_code,shift,t_p,working_hours,
+ 
+             $sql = "insert into EMPMILL12.tbl_ejm_wages_data_collection (date_from,date_to,eb_id,dept_code,occu_code,shift,t_p,working_hours,
             ot_hours,working_hours_eff,ot_hours_eff,pay_scheme_id,update_for,updt_from,act_eff)
             select df,dt,tewas.eb_id,tewas.dept_code ,tewas.occu_code ,tewas.shift,'T' t_p,tewas.working_hours,tewas.ot_hours,
             case when (eff/target_eff*100)<100 then round(eff/target_eff*tewas.working_hours,2) else tewas.working_hours end  working_hours_eff,
@@ -2064,7 +2075,7 @@ GROUP BY
             select doff.*,tate.target_eff  from (
             select '$fromdate' df,'$todate' dt,vpddd.eb_id ,substr(vpddd.spell,1,1) shift  ,sum(prod) prod,
             sum(prod100) targetprod,round(sum(prod)/sum(prod100)*100,2) eff, 4 eff_code  
-            from EMPMILL12.view_proc_daily_doff_details vpddd 
+            from tmp_view_proc_daily_doff_details vpddd 
             where vpddd.doffdate between '$fromdate' and '$todate' and vpddd.compid=$comany_id and vpddd.frameno >=60    
             group by vpddd.eb_id,substr(vpddd.spell,1,1) 
             ) doff 
@@ -2074,6 +2085,7 @@ GROUP BY
             tewom.eff_code =4 and tewom.effcheck ='CI' 
             where tewas.pay_scheme_id =$payscheme and tewas.update_from ='ATT' and tewas.is_active =1
             and tewas.occu_code ='06' and tewas.dept_code ='04' 	
+            and tewas.date_from ='$fromdate' and tewas.date_to ='$todate'
 	
                     ";
 			$result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
@@ -2094,7 +2106,7 @@ GROUP BY
             select '$fromdate' df,'$todate' dt,da.eb_id ,substr(vpddd.spell,1,1) shift  ,
             sum(prod) prod,
             sum(prod100) targetprod,round(sum(prod)/sum(prod100)*100,2) eff, 4 eff_code
-            from EMPMILL12.view_proc_daily_doff_details vpddd 
+            from tmp_view_proc_daily_doff_details vpddd 
             left join vowsls.daily_ebmc_attendance dea  on dea.attendace_date =vpddd.doffdate and dea.spell =vpddd.spell 
             and dea.mc_id =vpddd.mechine_id and dea.is_active =1
             left join vowsls.daily_attendance da on da.daily_atten_id =dea.daily_atten_id and da.is_active =1
@@ -2106,7 +2118,8 @@ GROUP BY
             left join EMPMILL12.tbl_ejm_wages_occu_mast tewom  on tewom.deptcode =tewas.dept_code and tewom.occucode =tewas.occu_code and
             tewom.eff_code =4 and tewom.effcheck ='CI' 
             where tewas.pay_scheme_id =$payscheme and tewas.update_from ='ATT' and tewas.is_active =1
-            and tewas.occu_code ='02' and tewas.dept_code ='04'"; 	
+            and tewas.occu_code ='02' and tewas.dept_code ='04' 	
+            and tewas.date_from ='$fromdate' and tewas.date_to ='$todate'";
 			$result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
 	
 	
@@ -2122,7 +2135,7 @@ GROUP BY
 	select doff.*,tate.target_eff  from (
 	select '$fromdate' df,'$todate' dt,da.eb_id ,substr(vpddd.spell,1,1) shift  ,sum(prod) prod,
 	sum(prod100) targetprod,round(sum(prod)/sum(prod100)*100,2) eff, 4 eff_code
-	from EMPMILL12.view_proc_daily_doff_details vpddd 
+	from tmp_view_proc_daily_doff_details vpddd 
 	left join vowsls.daily_ebmc_attendance dea  on dea.attendace_date =vpddd.doffdate and dea.spell =vpddd.spell 
 	and dea.mc_id =vpddd.mechine_id and dea.is_active =1
 	left join vowsls.daily_attendance da on da.daily_atten_id =dea.daily_atten_id and da.is_active =1
@@ -2134,14 +2147,15 @@ GROUP BY
 	left join EMPMILL12.tbl_ejm_wages_occu_mast tewom  on tewom.deptcode =tewas.dept_code and tewom.occucode =tewas.occu_code and
 	tewom.eff_code =4 and tewom.effcheck ='CI' 
 	where tewas.pay_scheme_id =$payscheme and tewas.update_from ='ATT' and tewas.is_active =1
-    and tewas.occu_code ='07' and tewas.dept_code ='04'";
+    and tewas.occu_code ='07' and tewas.dept_code ='04'
+    and tewas.date_from ='$fromdate' and tewas.date_to ='$todate'";
     	$result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
 	
 
     
    $sql="insert into EMPMILL12.tbl_ejm_wages_data_collection (date_from,date_to,eb_id,dept_code,occu_code,shift,t_p,working_hours,
-	ot_hours,working_hours_eff,ot_hours_eff,pay_scheme_id,update_for,updt_from)
-	select df,dt,tewas.eb_id,tewas.dept_code ,tewas.occu_code ,tewas.shift,'T' t_p,tewas.working_hours,tewas.ot_hours,
+	ot_hours,working_hours_eff,ot_hours_eff,pay_scheme_id,update_for,updt_from,act_eff)
+	select tewas.date_from df, tewas.date_to dt,tewas.eb_id,tewas.dept_code ,tewas.occu_code ,tewas.shift,'T' t_p,tewas.working_hours,tewas.ot_hours,
 	case when (eff/target_eff*100)<100 then round(eff/target_eff*tewas.working_hours,2) else tewas.working_hours end  working_hours_eff,
 	case when (eff/target_eff*100)<100 then round(eff/target_eff*tewas.ot_hours,2) else tewas.ot_hours end  ot_hours_eff,
     $payscheme payschm, 'DOFFS' updt,'PROD' updtfr, doff.eff act_eff
@@ -2151,7 +2165,7 @@ GROUP BY
 	select doff.*,tate.target_eff  from (
 	select '$fromdate' df,'$todate' dt,da.eb_id ,substr(vpddd.spell,1,1) shift  ,sum(prod) prod,
 	sum(prod100) targetprod,round(sum(prod)/sum(prod100)*100,2) eff, 4 eff_code
-	from EMPMILL12.view_proc_daily_doff_details vpddd 
+	from tmp_view_proc_daily_doff_details vpddd 
 	left join vowsls.daily_ebmc_attendance dea  on dea.attendace_date =vpddd.doffdate and dea.spell =vpddd.spell 
 	and dea.mc_id =vpddd.mechine_id and dea.is_active =1
 	left join vowsls.daily_attendance da on da.daily_atten_id =dea.daily_atten_id and da.is_active =1
@@ -2163,13 +2177,13 @@ GROUP BY
 	left join EMPMILL12.tbl_ejm_wages_occu_mast tewom  on tewom.deptcode =tewas.dept_code and tewom.occucode =tewas.occu_code and
 	tewom.eff_code =4 and tewom.effcheck ='CI' 
 	where tewas.pay_scheme_id =$payscheme and tewas.update_from ='ATT' and tewas.is_active =1
-    and tewas.occu_code ='19' and tewas.dept_code ='04' ";
+    and tewas.occu_code ='19' and tewas.dept_code ='04' and tewas.date_from ='$fromdate' and tewas.date_to ='$todate'";
     $result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
     
 
 
    $sql="insert into EMPMILL12.tbl_ejm_wages_data_collection (date_from,date_to,eb_id,dept_code,occu_code,shift,t_p,working_hours,
-	ot_hours,working_hours_eff,ot_hours_eff,pay_scheme_id,update_for,updt_from)
+	ot_hours,working_hours_eff,ot_hours_eff,pay_scheme_id,update_for,updt_from,act_eff)
 	select df,dt,tewas.eb_id,tewas.dept_code ,tewas.occu_code ,tewas.shift,'T' t_p,tewas.working_hours,tewas.ot_hours,
 	case when (eff/target_eff*100)<100 then round(eff/target_eff*tewas.working_hours,2) else tewas.working_hours end  working_hours_eff,
 	case when (eff/target_eff*100)<100 then round(eff/target_eff*tewas.ot_hours,2) else tewas.ot_hours end  ot_hours_eff,
@@ -2180,7 +2194,7 @@ GROUP BY
 	select doff.*,tate.target_eff  from (
 	select '$fromdate' df,'$todate' dt,da.eb_id ,substr(vpddd.spell,1,1) shift  ,sum(prod) prod,
 	sum(prod100) targetprod,round(sum(prod)/sum(prod100)*100,2) eff, 4 eff_code
-	from EMPMILL12.view_proc_daily_doff_details vpddd 
+	from tmp_view_proc_daily_doff_details vpddd 
 	left join vowsls.daily_ebmc_attendance dea  on dea.attendace_date =vpddd.doffdate and dea.spell =vpddd.spell 
 	and dea.mc_id =vpddd.mechine_id and dea.is_active =1
 	left join vowsls.daily_attendance da on da.daily_atten_id =dea.daily_atten_id and da.is_active =1
@@ -2193,7 +2207,8 @@ GROUP BY
 	tewom.eff_code =4 and tewom.effcheck ='CI' 
 	where tewas.pay_scheme_id =$payscheme and tewas.update_from ='ATT' and tewas.is_active =1
     and tewas.occu_code ='20' and tewas.dept_code ='04' 	
-	";
+    and tewas.date_from ='$fromdate' and tewas.date_to ='$todate'
+    ";
 		$result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
 
 
@@ -2230,7 +2245,8 @@ EMPMILL12.tbl_ejm_wages_occu_mast tewom
 	select  sum(totprd) totprd,sum(tottarget) tottarget,sum(tottarget*target_eff/100),round(sum(totprd)/sum(tottarget*target_eff/100)*100,2) eff, 2 eff_code  from
 	(
 	select eff_code,sum(prd_a +prd_b+prd_c) totprd,sum(tarprda+tarprdb+tarprdc) tottarget from (
-	select sdt.*, case when substr(q_code,1,1) in ('1','2') then 4 else 3 end eff_code  from EMPMILL12.spining_daily_transaction sdt 
+	select sdt.*, case when substr(q_code,1,1) in ('1','2') then 4 else 3 end eff_code  
+    from EMPMILL12.spining_daily_transaction sdt 
 	where sdt.tran_date between '$fromdate' AND '$todate' and sdt.company_id=$comany_id and substr(q_code,1,1) in ('1','2')
 	) g group by eff_code
 	) sdt 
@@ -2242,6 +2258,7 @@ ON tew.deptcode = tewas.dept_code
 WHERE tewas.pay_scheme_id = $payscheme
   AND tewas.update_from   = 'ATT'
   AND tewas.is_active     = 1
+  and tewas.date_from='$fromdate' and tewas.date_to='$todate'  
   and df is not null";
 	
 		$result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
@@ -2269,7 +2286,7 @@ WHERE tewas.pay_scheme_id = $payscheme
     END AS ot_hours_eff,
     $payscheme AS payschm,
     'SPGAV' AS updt,
-    'PROD' AS updtfr FROM EMPMILL12.tbl_ejm_wages_att_summary tewas
+    'PROD' AS updtfr, tew.acteff AS act_eff FROM EMPMILL12.tbl_ejm_wages_att_summary tewas
 LEFT JOIN  
 (
 select '$fromdate' df,'$todate' dt,tewom.eff_code,tewom.deptcode,tewom.occucode,eff acteff    from 
@@ -2279,7 +2296,8 @@ EMPMILL12.tbl_ejm_wages_occu_mast tewom
 	select  sum(totprd) totprd,sum(tottarget) tottarget,sum(tottarget*target_eff/100),round(sum(totprd)/sum(tottarget*target_eff/100)*100,2) eff, 3 eff_code  from
 	(
 	select eff_code,sum(prd_a +prd_b+prd_c) totprd,sum(tarprda+tarprdb+tarprdc) tottarget from (
-	select sdt.*, case when substr(q_code,1,1) in ('1','2') then 4 else 3 end eff_code  from EMPMILL12.spining_daily_transaction sdt 
+	select sdt.*, case when substr(q_code,1,1) in ('1','2') then 4 else 3 end eff_code  from 
+    EMPMILL12.spining_daily_transaction sdt 
 	where sdt.tran_date between '$fromdate' AND '$todate' and sdt.company_id=$comany_id and substr(q_code,1,1)='3'
 	) g group by eff_code
 	) sdt 
@@ -2291,6 +2309,7 @@ ON tew.deptcode = tewas.dept_code
 WHERE tewas.pay_scheme_id = $payscheme
   AND tewas.update_from   = 'ATT'
   AND tewas.is_active     = 1
+    and tewas.date_from='$fromdate' and tewas.date_to='$todate'
   and df is not null ";
 		$result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
 
@@ -2319,7 +2338,7 @@ WHERE tewas.pay_scheme_id = $payscheme
     END AS ot_hours_eff,
     $payscheme AS payschm,
     'SPGAV' AS updt,
-    'PROD' AS updtfr FROM EMPMILL12.tbl_ejm_wages_att_summary tewas
+    'PROD' AS updtfr, tew.acteff AS act_eff FROM EMPMILL12.tbl_ejm_wages_att_summary tewas
 LEFT JOIN  
 (
 select '$fromdate' df,'$todate' dt,tewom.eff_code,tewom.deptcode,tewom.occucode,eff acteff    from 
@@ -2329,7 +2348,8 @@ EMPMILL12.tbl_ejm_wages_occu_mast tewom
 	select  sum(totprd) totprd,sum(tottarget) tottarget,sum(tottarget*target_eff/100),round(sum(totprd)/sum(tottarget*target_eff/100)*100,2) eff, 4 eff_code  from
 	(
 	select eff_code,sum(prd_a +prd_b+prd_c) totprd,sum(tarprda+tarprdb+tarprdc) tottarget from (
-	select sdt.*, case when substr(q_code,1,1) in ('1','2') then 4 else 3 end eff_code  from EMPMILL12.spining_daily_transaction sdt 
+	select sdt.*, case when substr(q_code,1,1) in ('1','2') then 4 else 3 end eff_code  from 
+    EMPMILL12.spining_daily_transaction sdt 
 	where sdt.tran_date between '$fromdate' AND '$todate' and sdt.company_id=$comany_id and substr(q_code,1,1) in ('1','2')
 	) g group by eff_code
 	) sdt 
@@ -2341,6 +2361,7 @@ ON tew.deptcode = tewas.dept_code
 WHERE tewas.pay_scheme_id = $payscheme
   AND tewas.update_from   = 'ATT'
   AND tewas.is_active     = 1
+  and tewas.date_from='$fromdate' and tewas.date_to='$todate'
   and df is not null ";
 		$result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
 
@@ -2399,6 +2420,7 @@ ON tew.deptcode = tewas.dept_code
 WHERE tewas.pay_scheme_id = $payscheme
   AND tewas.update_from   = 'ATT'
   AND tewas.is_active     = 1
+  and tewas.date_from='$fromdate' and tewas.date_to='$todate'  
   and df is not null ";
 		$result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
 
@@ -2462,6 +2484,7 @@ ON tew.deptcode = tewas.dept_code
 WHERE tewas.pay_scheme_id = $payscheme
   AND tewas.update_from   = 'ATT'
   AND tewas.is_active     = 1
+  and tewas.date_from='$fromdate' and tewas.date_to='$todate'
   and df is not null ";
 		$result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
 
@@ -2524,9 +2547,10 @@ ON tew.deptcode = tewas.dept_code
 WHERE tewas.pay_scheme_id = $payscheme
   AND tewas.update_from   = 'ATT'
   AND tewas.is_active     = 1
+  and tewas.date_from='$fromdate' and tewas.date_to='$todate'
   and df is not null ";
     		$result = $this->db->query($sql, array($fromdate, $todate, $payscheme));
-    		
+     		
     		if ($result) {
     	//		log_message('info', 'MainWagesProcessspinner completed');
     			return array('success' => true, 'message' => 'Spinner processing completed');
@@ -2546,6 +2570,12 @@ WHERE tewas.pay_scheme_id = $payscheme
 
             $fndate = date('Y-m-d', strtotime($todate . ' +1 day'));
             // TODO: Add your winding process SQL query here
+        $sql="create temporary table tmp_allwindingdata as select * from 
+        EMPMILL12.allwindingdata  where tran_date   between '$fromdate' AND '$todate'  
+                         and company_id =$comany_id";
+        $this->db->query($sql);                 
+
+
             $sql = "   
   	 insert into EMPMILL12.tbl_ejm_wages_data_collection (date_from,date_to,eb_id,dept_code,occu_code,shift,t_p,working_hours,
 	ot_hours,working_hours_eff,ot_hours_eff,pay_scheme_id,update_for,updt_from,prod_basic,time_basic,act_eff)
@@ -2577,7 +2607,7 @@ WHERE tewas.pay_scheme_id = $payscheme
     then   (tewas.working_hours*twor.f_b_rate )/3*2+  (((wnd.prod/(tewas.working_hours+ot_hours)*8)/target_eff)*(tewas.working_hours*twor.f_b_rate)/3 )
     when payschm=125 and ((wnd.prod/(tewas.working_hours+ot_hours)*8)/target_eff*100)>=100 
     then   (tewas.working_hours*twor.f_b_rate)
-    else 0 end time_basic,    wnd.act_eff AS act_eff
+    else 0 end time_basic,    (wnd.prod/wnd.target_eff*100) AS act_eff
     FROM EMPMILL12.tbl_ejm_wages_att_summary tewas
     left join 
  			( 
@@ -2586,7 +2616,7 @@ WHERE tewas.pay_scheme_id = $payscheme
                         '00000000000000000000000000000','".$fndate."') prods,eb_no,deptcode,occu_code,shift,wage_code,prod from (
                         select b.deptcode,eb_no,shift,b.wage_code,b.OCCU_CODE,case when deptcode='06' then round(sum(production)/14,0) else sum(production) end prod from
                         (select  tran_date,substr(spell,1,1) shift,eb_no,wnd_q_code,sum(prod) production
-                        from EMPMILL12.allwindingdata a where tran_date   between '$fromdate' AND '$todate'  
+                        from tmp_allwindingdata a where tran_date   between '$fromdate' AND '$todate'  
                          and company_id =$comany_id
                         group by tran_date,substr(spell,1,1),eb_no,wnd_q_code 
                         ) a 
@@ -2601,7 +2631,9 @@ WHERE tewas.pay_scheme_id = $payscheme
 			left join EMPMILL12.tbl_quality_rate tqr on tqr.qcode =wnd.wage_code and tqr.dept_code=wnd.deptcode   
 			left join EMPMILL12.tbl_wages_occu_rate twor on wnd.deptcode =twor.dept_code and wnd.occu_code =twor.occu_code 
 			where tewas.dept_code in ('05') and tewas.occu_code in ('01','02')
-			and tewas.pay_scheme_id =$payscheme";
+			and tewas.pay_scheme_id =$payscheme
+            and tewas.date_from='$fromdate' and tewas.date_to='$dateto'
+            ";
 
 		
 
@@ -2636,7 +2668,7 @@ WHERE tewas.pay_scheme_id = $payscheme
     then   (tewas.working_hours*twor.f_b_rate )/3*2+  (((wnd.prod/(tewas.working_hours+ot_hours)*8)/target_eff)*(tewas.working_hours*twor.f_b_rate)/3 )
     when payschm=125 and ((wnd.prod/(tewas.working_hours+ot_hours)*8)/target_eff*100)>=100 
     then   (tewas.working_hours*twor.f_b_rate)
-    else 0 end time_basic,    wnd.act_eff AS act_eff
+    else 0 end time_basic, (wnd.prod/wnd.target_eff*100) AS act_eff
     FROM EMPMILL12.tbl_ejm_wages_att_summary tewas
   			left join 
  			( 
@@ -2645,7 +2677,7 @@ WHERE tewas.pay_scheme_id = $payscheme
                         '00000000000000000000000000000','".$fndate."') prods,eb_no,deptcode,occu_code,shift,wage_code,prod from (
                         select b.deptcode,eb_no,shift,b.wage_code,b.OCCU_CODE,case when deptcode='06' then round(sum(production)/14,0) else sum(production) end prod from
                         (select  tran_date,substr(spell,1,1) shift,eb_no,wnd_q_code,sum(prod) production
-                        from EMPMILL12.allwindingdata a where tran_date   between '$fromdate' AND '$todate'  
+                        from tmp_allwindingdata a where tran_date   between '$fromdate' AND '$todate'  
                          and company_id =$comany_id
                         group by tran_date,substr(spell,1,1),eb_no,wnd_q_code 
                         ) a 
@@ -2661,6 +2693,7 @@ WHERE tewas.pay_scheme_id = $payscheme
 			left join EMPMILL12.tbl_wages_occu_rate twor on wnd.deptcode =twor.dept_code and wnd.occu_code =twor.occu_code 
 			where tewas.dept_code in ('06') and tewas.occu_code in ('01','02')
 			and tewas.pay_scheme_id =$payscheme
+            and tewas.date_from='$fromdate' and tewas.date_to='$todate'
 ";
             $result = $this->db->query($sql);
             
@@ -2948,7 +2981,15 @@ WITH
             
             // START TRANSACTION
             $this->db->query("START TRANSACTION");
-            
+
+            $sql="create temporary table tmp_view_proc_ejm_loom_data_spell as 
+            select * from EMPMILL12.view_proc_ejm_loom_data_spell vpelds 
+            WHERE vpelds.loom_date BETWEEN '$fromdate' AND '$todate'
+";
+            $this->db->query($sql);
+           
+
+
             // Weaving process - insert wages data with production efficiency calculations
             $sql = "INSERT INTO EMPMILL12.tbl_ejm_wages_data_collection 
             (date_from, date_to, eb_id, dept_code, occu_code, shift, t_p, working_hours,
@@ -3002,7 +3043,7 @@ WITH
                     ROUND(
                         IFNULL(tate.target_eff, 100) / NULLIF(100, 0) * 100, 2
                     ) AS acteff
-                FROM EMPMILL12.view_proc_ejm_loom_data_spell vpelds
+                FROM tmp_view_proc_ejm_loom_data_spell vpelds
                 LEFT JOIN EMPMILL12.tbl_prod_wages_code_link ewql ON ewql.prod_code = vpelds.qcod AND ewql.dept_id = 8
                 LEFT JOIN EMPMILL12.tbl_quality_rate tqr ON ewql.wages_code = tqr.qcode AND tqr.dept_code = '08'
                 LEFT JOIN EMPMILL12.tbl_all_trn_eff tate ON tate.qual_code = vpelds.qcod 
@@ -3030,7 +3071,9 @@ WITH
                 AND tewas.occu_code IN ('01', '04')
                 AND tewas.is_active = 1
                 AND tewas.pay_scheme_id = $payscheme
-                AND tewas.update_from = 'ATT'";
+                AND tewas.update_from = 'ATT'
+                and tewas.date_from = '$fromdate' and tewas.date_to = '$todate'
+            ";
 
 
         $sql=" insert into EMPMILL12.tbl_ejm_wages_data_collection (date_from,date_to,eb_id,dept_code,occu_code,shift,t_p,working_hours,
@@ -3098,7 +3141,7 @@ LEFT JOIN (
             dm.dept_code,
             omn.OCCU_CODE AS occu_code,
             wm.eb_id
-        FROM EMPMILL12.view_proc_ejm_loom_data_spell vpelds
+        FROM tmp_view_proc_ejm_loom_data_spell vpelds
         LEFT JOIN EMPMILL12.tbl_prod_wages_code_link ewql
                ON ewql.prod_code = vpelds.qcod
               AND ewql.dept_id = 8
@@ -3138,6 +3181,8 @@ WHERE tewas.dept_code = '08'
   AND tewas.occu_code IN ('01','04')
   AND tewas.is_active = 1
   AND tewas.pay_scheme_id = $payscheme
+  and tewas.update_from = 'ATT'
+  and tewas.date_from = '$fromdate' and tewas.date_to = '$todate
 ";
 
 
@@ -3285,6 +3330,7 @@ WHERE tewas.dept_code = '08'
         where tewas.date_from ='$fromdate' and tewas.date_to ='$todate' and tewas.update_from ='ATT'
         and tewas.dept_code ='09' and tewas.occu_code in ('01','02')
         and tewas.pay_scheme_id =$payscheme and tewas.is_active =1
+        and tewas.update_from ='ATT' and tewas.date_from ='$fromdate' and tewas.date_to ='$todate
         ";
         $result=$this->db->query($sql);
 
@@ -3311,7 +3357,7 @@ WHERE tewas.dept_code = '08'
             //hemming opr
             $sql = "INSERT INTO EMPMILL12.tbl_ejm_wages_data_collection 
             (date_from, date_to, eb_id, dept_code, occu_code, shift, t_p, working_hours,
-             ot_hours, working_hours_eff, ot_hours_eff, pay_scheme_id, update_for, updt_from, prod_basic, time_basic)
+             ot_hours, working_hours_eff, ot_hours_eff, pay_scheme_id, update_for, updt_from, prod_basic, time_basic,act_eff)
             with `raw_hemm_data` as (
             select fe.company_id,substr(fe.entry_date ,1,10) trandate,spell,tpwcl.wages_code,fe.eb_no, fe.production,tate.target_eff,ptm.process_code     from vowsls.finishing_entries fe 
             left join vowsls.process_type_master ptm on fe.work_type =ptm.process_type_id 
@@ -3376,6 +3422,7 @@ WHERE tewas.dept_code = '08'
             where tewas.date_from ='$fromdate' and tewas.date_to ='$todate' and tewas.update_from ='ATT'
             and tewas.dept_code ='10' and tewas.occu_code ='02'
             and tewas.pay_scheme_id =$payscheme and tewas.is_active =1
+            and tewas.update_from ='ATT' and tewas.date_from ='$fromdate' and tewas.date_to ='$todate
 ";
             $result = $this->db->query($sql);
 
@@ -3448,6 +3495,7 @@ WHERE tewas.dept_code = '08'
             where tewas.date_from ='$fromdate' and tewas.date_to ='$todate' and tewas.update_from ='ATT'
             and tewas.dept_code ='10' and tewas.occu_code ='01'
             and tewas.pay_scheme_id =$payscheme and tewas.is_active =1
+            and tewas.update_from ='ATT' and tewas.date_from ='$fromdate' and tewas.date_to ='$todate
 
 ";
             $result = $this->db->query($sql);
@@ -3521,6 +3569,7 @@ WHERE tewas.dept_code = '08'
         where tewas.date_from ='$fromdate' and tewas.date_to ='$todate' and tewas.update_from ='ATT'
         and tewas.dept_code ='10' and tewas.occu_code ='04'
         and tewas.pay_scheme_id =$payscheme and tewas.is_active =1
+        and tewas.update_from ='ATT' and tewas.date_from ='$fromdate' and tewas.date_to ='$todate
 
 ";
 //        log_message('info', 'MainWagesProcess finishing: Executing main insert query =='. $sql );
@@ -3611,6 +3660,7 @@ omn.OCCU_CODE
 where tewas.date_from ='$fromdate' and tewas.date_to ='$todate' and tewas.update_from ='ATT'
 and tewas.dept_code ='10' and tewas.occu_code ='14'
 and tewas.pay_scheme_id =$payscheme and tewas.is_active =1
+and tewas.update_from ='ATT' and tewas.date_from ='$fromdate' and tewas.date_to ='$todate
 ";
 $this->db->query($sql);
 
@@ -3674,6 +3724,7 @@ omn.OCCU_CODE
 where tewas.date_from ='$fromdate' and tewas.date_to ='$todate' and tewas.update_from ='ATT'
 and tewas.dept_code ='10' and tewas.occu_code ='10'
 and tewas.pay_scheme_id =$payscheme and tewas.is_active =1
+and tewas.update_from ='ATT' and tewas.date_from ='$fromdate' and tewas.date_to ='$todate
 ";
 $result=$this->db->query($sql);
  
@@ -3722,6 +3773,7 @@ from EMPMILL12.tbl_ejm_wages_att_summary tewas
 where tewas.date_from ='$fromdate' and tewas.date_to ='$todate' and tewas.update_from ='ATT'
 and  tewas.occu_code ='55'
 and tewas.pay_scheme_id =$payscheme and tewas.is_active =1
+and tewas.update_from ='ATT' and tewas.date_from ='$fromdate' and tewas.date_to ='$todate
 ";
             $result = $this->db->query($sql);
             
@@ -3767,7 +3819,7 @@ and tewas.pay_scheme_id =$payscheme and tewas.is_active =1
              	and tate.date_from =tewas.date_from and tate.date_to =tewas.date_to 
                 where tewas.dept_code ='01' and tewas.occu_code ='01'
                 and tewas.date_from ='$fromdate' and tewas.date_to ='$todate'
-                and tewas.is_active =1
+                and tewas.is_active =1 and tewas.update_from ='ATT' and tewas.pay_scheme_id =$payscheme
              	
 ";
             $result = $this->db->query($sql);
@@ -3784,6 +3836,31 @@ and tewas.pay_scheme_id =$payscheme and tewas.is_active =1
             return array('success' => false, 'message' => 'Exception: ' . $e->getMessage());
         }
     }
+
+    public function MainWagesProcessfinal($fromdate, $todate, $payscheme) {
+        try {
+            $comany_id = $this->session->userdata('companyId');
+            
+            // TODO: Add your others process SQL query here
+            $sql = "update EMPMILL12.EMPMILL12.process_run_log set status =0 
+            where process_name ='MAIN_WAGES_PROCESS' and date_from='$fromdate' and 
+            date_to='$todate' and pay_scheme_id=$payscheme";
+             $result = $this->db->query($sql);
+            
+            if ($result) {
+//                log_message('info', 'MainWagesProcessothers completed');
+                return array('success' => true, 'message' => 'Others processing completed');
+            } else {
+  //              log_message('error', 'MainWagesProcessothers Error: ' . $this->db->error()['message']);
+                return array('success' => false, 'message' => 'Error: ' . $this->db->error()['message']);
+            }
+        } catch (Exception $e) {
+    //        log_message('error', 'MainWagesProcessothers Exception: ' . $e->getMessage());
+            return array('success' => false, 'message' => 'Exception: ' . $e->getMessage());
+        }
+    }
+
+
 
 
     }
