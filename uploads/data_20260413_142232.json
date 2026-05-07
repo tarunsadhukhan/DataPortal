@@ -1,0 +1,1172 @@
+[
+    {
+        "S.no": "1",
+        "TICKET_NO": "621001",
+        "empname": "PATHIVADA LAXMANA RAO",
+        "da_rate": "33.44165",
+        "fa_rate": "139.39",
+        "fa_days": "18.75",
+        "fa_amount": "2614"
+    },
+    {
+        "S.no": "2",
+        "TICKET_NO": "650003",
+        "empname": "EIDADESI TRINATH",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "17",
+        "fa_amount": "1030"
+    },
+    {
+        "S.no": "3",
+        "TICKET_NO": "650005",
+        "empname": "AVANAPU RAMU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "13",
+        "fa_amount": "788"
+    },
+    {
+        "S.no": "4",
+        "TICKET_NO": "650007",
+        "empname": "YEDLA RAMANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "20",
+        "fa_amount": "1212"
+    },
+    {
+        "S.no": "5",
+        "TICKET_NO": "650013",
+        "empname": "GEDALA RAMBABU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "18",
+        "fa_amount": "1091"
+    },
+    {
+        "S.no": "6",
+        "TICKET_NO": "650018",
+        "empname": "POLUBOTHU MOHAN",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15",
+        "fa_amount": "909"
+    },
+    {
+        "S.no": "7",
+        "TICKET_NO": "650019",
+        "empname": "NADEPENA APPA RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "12.896",
+        "fa_amount": "782"
+    },
+    {
+        "S.no": "8",
+        "TICKET_NO": "650025",
+        "empname": "DORA VISWESWARA  RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "10",
+        "fa_amount": "606"
+    },
+    {
+        "S.no": "9",
+        "TICKET_NO": "650026",
+        "empname": "TADDI NARASINGARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15.896",
+        "fa_amount": "963"
+    },
+    {
+        "S.no": "10",
+        "TICKET_NO": "650029",
+        "empname": "SARIPALLI DHARMA RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "18.896",
+        "fa_amount": "1145"
+    },
+    {
+        "S.no": "11",
+        "TICKET_NO": "650030",
+        "empname": "GORLI RAMANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "16.896",
+        "fa_amount": "1024"
+    },
+    {
+        "S.no": "12",
+        "TICKET_NO": "650032",
+        "empname": "MADDILA PRASAD",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "27",
+        "fa_amount": "1636"
+    },
+    {
+        "S.no": "13",
+        "TICKET_NO": "650036",
+        "empname": "PATHIVADA APPLANAIDU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "16",
+        "fa_amount": "970"
+    },
+    {
+        "S.no": "14",
+        "TICKET_NO": "650037",
+        "empname": "GUNTAMANI SANYASAPPADU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "13",
+        "fa_amount": "788"
+    },
+    {
+        "S.no": "15",
+        "TICKET_NO": "650040",
+        "empname": "SHAIK MAGBUL",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "11",
+        "fa_amount": "667"
+    },
+    {
+        "S.no": "16",
+        "TICKET_NO": "650043",
+        "empname": "BANTUPALLI SANKARA RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "16",
+        "fa_amount": "970"
+    },
+    {
+        "S.no": "17",
+        "TICKET_NO": "650046",
+        "empname": "GORLI RAMANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "19",
+        "fa_amount": "1152"
+    },
+    {
+        "S.no": "18",
+        "TICKET_NO": "650049",
+        "empname": "KORADA SANKARARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "20",
+        "fa_amount": "1212"
+    },
+    {
+        "S.no": "19",
+        "TICKET_NO": "650050",
+        "empname": "TOMPALA YELLAYYA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "19.875",
+        "fa_amount": "1205"
+    },
+    {
+        "S.no": "20",
+        "TICKET_NO": "650061",
+        "empname": "KARUKONDA KRISHNA",
+        "da_rate": "39.09015",
+        "fa_rate": "91.88",
+        "fa_days": "22",
+        "fa_amount": "2021"
+    },
+    {
+        "S.no": "21",
+        "TICKET_NO": "660002",
+        "empname": "PATHIVADA SATYANARAYANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "17",
+        "fa_amount": "1030"
+    },
+    {
+        "S.no": "22",
+        "TICKET_NO": "660010",
+        "empname": "MADILA NARAYANA MURTHY",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "11",
+        "fa_amount": "667"
+    },
+    {
+        "S.no": "23",
+        "TICKET_NO": "660014",
+        "empname": "PATHIVADA POTHINAIDU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "13",
+        "fa_amount": "788"
+    },
+    {
+        "S.no": "24",
+        "TICKET_NO": "660026",
+        "empname": "MOIDA RAVIPRASAD RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "12",
+        "fa_amount": "727"
+    },
+    {
+        "S.no": "25",
+        "TICKET_NO": "660029",
+        "empname": "PATHIVADA SRINIVASARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15.896",
+        "fa_amount": "963"
+    },
+    {
+        "S.no": "26",
+        "TICKET_NO": "660041",
+        "empname": "KALYNAM RAMUNAIDU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "23",
+        "fa_amount": "1394"
+    },
+    {
+        "S.no": "27",
+        "TICKET_NO": "660051",
+        "empname": "KORADA RAMA RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "17",
+        "fa_amount": "1030"
+    },
+    {
+        "S.no": "28",
+        "TICKET_NO": "660064",
+        "empname": "EPPILI RAMAPPADU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "23",
+        "fa_amount": "1394"
+    },
+    {
+        "S.no": "29",
+        "TICKET_NO": "660082",
+        "empname": "BOLE SANKARA RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "16",
+        "fa_amount": "970"
+    },
+    {
+        "S.no": "30",
+        "TICKET_NO": "660087",
+        "empname": "RELLI SEETHAM NAIDU",
+        "da_rate": "40.33005",
+        "fa_rate": "81.46",
+        "fa_days": "19",
+        "fa_amount": "1548"
+    },
+    {
+        "S.no": "31",
+        "TICKET_NO": "660088",
+        "empname": "CHINAPPAYYAGARI APPARAO",
+        "da_rate": "39.09015",
+        "fa_rate": "91.88",
+        "fa_days": "18",
+        "fa_amount": "1654"
+    },
+    {
+        "S.no": "32",
+        "TICKET_NO": "660089",
+        "empname": "KAYNAPU RAMASWAMY",
+        "da_rate": "39.09015",
+        "fa_rate": "91.88",
+        "fa_days": "21.625",
+        "fa_amount": "1987"
+    },
+    {
+        "S.no": "33",
+        "TICKET_NO": "670008",
+        "empname": "CIDAGALA PYDIRAM",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15",
+        "fa_amount": "909"
+    },
+    {
+        "S.no": "34",
+        "TICKET_NO": "670015",
+        "empname": "TADITURI SREENU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "13.5",
+        "fa_amount": "818"
+    },
+    {
+        "S.no": "35",
+        "TICKET_NO": "670016",
+        "empname": "NALLI GOPALAKRISHNA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "27.896",
+        "fa_amount": "1691"
+    },
+    {
+        "S.no": "36",
+        "TICKET_NO": "670021",
+        "empname": "KALYNAM RAMASWAMY",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "20.896",
+        "fa_amount": "1267"
+    },
+    {
+        "S.no": "37",
+        "TICKET_NO": "670030",
+        "empname": "PATHIVADA SURYANARAYANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "17",
+        "fa_amount": "1030"
+    },
+    {
+        "S.no": "38",
+        "TICKET_NO": "670048",
+        "empname": "TIPPANAGIRI SANKARARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "19",
+        "fa_amount": "1152"
+    },
+    {
+        "S.no": "39",
+        "TICKET_NO": "680005",
+        "empname": "SUNKARA APPALANAIDU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15.896",
+        "fa_amount": "963"
+    },
+    {
+        "S.no": "40",
+        "TICKET_NO": "680006",
+        "empname": "CHELAMALA RAMU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "18",
+        "fa_amount": "1091"
+    },
+    {
+        "S.no": "41",
+        "TICKET_NO": "680007",
+        "empname": "BOLE SURYARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "19",
+        "fa_amount": "1152"
+    },
+    {
+        "S.no": "42",
+        "TICKET_NO": "680015",
+        "empname": "TULUGU PYDIRAJU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "18",
+        "fa_amount": "1091"
+    },
+    {
+        "S.no": "43",
+        "TICKET_NO": "680016",
+        "empname": "GUNTAMANI RAMANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "10",
+        "fa_amount": "606"
+    },
+    {
+        "S.no": "44",
+        "TICKET_NO": "680020",
+        "empname": "PINNITY PAPU NAIDU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "17",
+        "fa_amount": "1030"
+    },
+    {
+        "S.no": "45",
+        "TICKET_NO": "680021",
+        "empname": "AVANAPU MUTYALA NAIDU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "18",
+        "fa_amount": "1091"
+    },
+    {
+        "S.no": "46",
+        "TICKET_NO": "680022",
+        "empname": "SAMUDRAPU APPARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "25",
+        "fa_amount": "1515"
+    },
+    {
+        "S.no": "47",
+        "TICKET_NO": "680024",
+        "empname": "NALLI SATYANARAYANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15",
+        "fa_amount": "909"
+    },
+    {
+        "S.no": "48",
+        "TICKET_NO": "680025",
+        "empname": "POLUBOTHU APPALANAIDU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "27.896",
+        "fa_amount": "1691"
+    },
+    {
+        "S.no": "49",
+        "TICKET_NO": "680026",
+        "empname": "REDDY SANYASINAIDU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "12",
+        "fa_amount": "727"
+    },
+    {
+        "S.no": "50",
+        "TICKET_NO": "680029",
+        "empname": "NADIPENA SEETHAMNAIDU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "16",
+        "fa_amount": "970"
+    },
+    {
+        "S.no": "51",
+        "TICKET_NO": "680034",
+        "empname": "BAGADI BHASKARARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "11",
+        "fa_amount": "667"
+    },
+    {
+        "S.no": "52",
+        "TICKET_NO": "680035",
+        "empname": "SARIPALLI PUDAPPADU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "18",
+        "fa_amount": "1091"
+    },
+    {
+        "S.no": "53",
+        "TICKET_NO": "680040",
+        "empname": "NADUPURU RAJARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15.896",
+        "fa_amount": "963"
+    },
+    {
+        "S.no": "54",
+        "TICKET_NO": "680043",
+        "empname": "BONI RAMANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "17",
+        "fa_amount": "1030"
+    },
+    {
+        "S.no": "55",
+        "TICKET_NO": "680044",
+        "empname": "KANAKALA SAIRAM",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "19",
+        "fa_amount": "1152"
+    },
+    {
+        "S.no": "56",
+        "TICKET_NO": "680045",
+        "empname": "RESETTY SANKARARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "13",
+        "fa_amount": "788"
+    },
+    {
+        "S.no": "57",
+        "TICKET_NO": "680047",
+        "empname": "KONDRU RAMAKRISHNA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "14",
+        "fa_amount": "849"
+    },
+    {
+        "S.no": "58",
+        "TICKET_NO": "680053",
+        "empname": "MEESALA SRINIVASA RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15",
+        "fa_amount": "909"
+    },
+    {
+        "S.no": "59",
+        "TICKET_NO": "680059",
+        "empname": "BALI NARAYANARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "18.896",
+        "fa_amount": "1145"
+    },
+    {
+        "S.no": "60",
+        "TICKET_NO": "680061",
+        "empname": "PUNAMAJJI BHASKARARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "16.896",
+        "fa_amount": "1024"
+    },
+    {
+        "S.no": "61",
+        "TICKET_NO": "680063",
+        "empname": "KOYYAPU SATYARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "12.896",
+        "fa_amount": "782"
+    },
+    {
+        "S.no": "62",
+        "TICKET_NO": "680064",
+        "empname": "MADDILA NARAYANARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "20.646",
+        "fa_amount": "1251"
+    },
+    {
+        "S.no": "63",
+        "TICKET_NO": "680078",
+        "empname": "JARJAPU RAMBABU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "13.896",
+        "fa_amount": "842"
+    },
+    {
+        "S.no": "64",
+        "TICKET_NO": "680080",
+        "empname": "PADALA PRAKASHARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "13",
+        "fa_amount": "788"
+    },
+    {
+        "S.no": "65",
+        "TICKET_NO": "680082",
+        "empname": "KANKALA SRINU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15",
+        "fa_amount": "909"
+    },
+    {
+        "S.no": "66",
+        "TICKET_NO": "680085",
+        "empname": "BODDANA RAMBABU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "11",
+        "fa_amount": "667"
+    },
+    {
+        "S.no": "67",
+        "TICKET_NO": "680088",
+        "empname": "PALLA SURIBABU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15",
+        "fa_amount": "909"
+    },
+    {
+        "S.no": "68",
+        "TICKET_NO": "680090",
+        "empname": "TULUGU SRINIVASA RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15.896",
+        "fa_amount": "963"
+    },
+    {
+        "S.no": "69",
+        "TICKET_NO": "680091",
+        "empname": "EJJIPURAPU RAJA RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "16.896",
+        "fa_amount": "1024"
+    },
+    {
+        "S.no": "70",
+        "TICKET_NO": "680098",
+        "empname": "HARI SEKHAR",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "22.896",
+        "fa_amount": "1388"
+    },
+    {
+        "S.no": "71",
+        "TICKET_NO": "680108",
+        "empname": "LENKA PARASURAM",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "14.396",
+        "fa_amount": "873"
+    },
+    {
+        "S.no": "72",
+        "TICKET_NO": "680109",
+        "empname": "PATRO NAGESWARA RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "10.896",
+        "fa_amount": "660"
+    },
+    {
+        "S.no": "73",
+        "TICKET_NO": "680118",
+        "empname": "PINJARLA BHASKARA RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "11",
+        "fa_amount": "667"
+    },
+    {
+        "S.no": "74",
+        "TICKET_NO": "680119",
+        "empname": "VOLLA LAKSHMANARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "17.896",
+        "fa_amount": "1085"
+    },
+    {
+        "S.no": "75",
+        "TICKET_NO": "680120",
+        "empname": "MANYAPURI TATARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15",
+        "fa_amount": "909"
+    },
+    {
+        "S.no": "76",
+        "TICKET_NO": "680122",
+        "empname": "ROGOLU VENKATARAMANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "19",
+        "fa_amount": "1152"
+    },
+    {
+        "S.no": "77",
+        "TICKET_NO": "680123",
+        "empname": "MUDUMANCHI SRINU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "17",
+        "fa_amount": "1030"
+    },
+    {
+        "S.no": "78",
+        "TICKET_NO": "680125",
+        "empname": "MAHANTI ADINARAYANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "20",
+        "fa_amount": "1212"
+    },
+    {
+        "S.no": "79",
+        "TICKET_NO": "680128",
+        "empname": "GIDITURI SANYASIBABU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "11",
+        "fa_amount": "667"
+    },
+    {
+        "S.no": "80",
+        "TICKET_NO": "680133",
+        "empname": "SEELA  APPARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "20",
+        "fa_amount": "1212"
+    },
+    {
+        "S.no": "81",
+        "TICKET_NO": "680134",
+        "empname": "GUNTAMANI PYDIRAJU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "10",
+        "fa_amount": "606"
+    },
+    {
+        "S.no": "82",
+        "TICKET_NO": "680138",
+        "empname": "KANAKALA PAPARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "18",
+        "fa_amount": "1091"
+    },
+    {
+        "S.no": "83",
+        "TICKET_NO": "680139",
+        "empname": "KANAKALA NARAYANARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "19",
+        "fa_amount": "1152"
+    },
+    {
+        "S.no": "84",
+        "TICKET_NO": "680140",
+        "empname": "PALLI RAJINAIDU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "16",
+        "fa_amount": "970"
+    },
+    {
+        "S.no": "85",
+        "TICKET_NO": "680141",
+        "empname": "MEESALA GOVINDA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "19",
+        "fa_amount": "1152"
+    },
+    {
+        "S.no": "86",
+        "TICKET_NO": "680148",
+        "empname": "PATHIGIDI VENKATARAMANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "14",
+        "fa_amount": "849"
+    },
+    {
+        "S.no": "87",
+        "TICKET_NO": "680149",
+        "empname": "SUNKARA SRINU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "25",
+        "fa_amount": "1515"
+    },
+    {
+        "S.no": "88",
+        "TICKET_NO": "680151",
+        "empname": "JAMMU PYDINAIDU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "13",
+        "fa_amount": "788"
+    },
+    {
+        "S.no": "89",
+        "TICKET_NO": "680152",
+        "empname": "KALLA SATYANARAYANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "18",
+        "fa_amount": "1091"
+    },
+    {
+        "S.no": "90",
+        "TICKET_NO": "680161",
+        "empname": "BODDANA RAMANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "13.896",
+        "fa_amount": "842"
+    },
+    {
+        "S.no": "91",
+        "TICKET_NO": "680162",
+        "empname": "BURA TRINADH",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "14",
+        "fa_amount": "849"
+    },
+    {
+        "S.no": "92",
+        "TICKET_NO": "680164",
+        "empname": "SAMUDRAPU MURALIKRISHNA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "13.896",
+        "fa_amount": "842"
+    },
+    {
+        "S.no": "93",
+        "TICKET_NO": "680166",
+        "empname": "KILLAMPALLI SURIBABU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "16",
+        "fa_amount": "970"
+    },
+    {
+        "S.no": "94",
+        "TICKET_NO": "680172",
+        "empname": "CHIKKALA RAMARAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15",
+        "fa_amount": "909"
+    },
+    {
+        "S.no": "95",
+        "TICKET_NO": "680174",
+        "empname": "ALTI SRINIVASA RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15.5",
+        "fa_amount": "939"
+    },
+    {
+        "S.no": "96",
+        "TICKET_NO": "680177",
+        "empname": "AVALA RAMU",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "16",
+        "fa_amount": "970"
+    },
+    {
+        "S.no": "97",
+        "TICKET_NO": "680179",
+        "empname": "PALLA SANAKA RAO",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "17",
+        "fa_amount": "1030"
+    },
+    {
+        "S.no": "98",
+        "TICKET_NO": "680180",
+        "empname": "LENKA SATYANARAYANA",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "15.896",
+        "fa_amount": "963"
+    },
+    {
+        "S.no": "99",
+        "TICKET_NO": "680193",
+        "empname": "PATHIVADA KUMAR",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "13",
+        "fa_amount": "788"
+    },
+    {
+        "S.no": "100",
+        "TICKET_NO": "680196",
+        "empname": "GASADA PRASAD",
+        "da_rate": "42.80125",
+        "fa_rate": "60.61",
+        "fa_days": "13.5",
+        "fa_amount": "818"
+    },
+    {
+        "S.no": "101",
+        "TICKET_NO": "680211",
+        "empname": "SUNKARA APPA RAO",
+        "da_rate": "39.09015",
+        "fa_rate": "91.88",
+        "fa_days": "14",
+        "fa_amount": "1286"
+    },
+    {
+        "S.no": "102",
+        "TICKET_NO": "680212",
+        "empname": "ALETY RAMU",
+        "da_rate": "30.63555",
+        "fa_rate": "120",
+        "fa_days": "13",
+        "fa_amount": "1560"
+    },
+    {
+        "S.no": "103",
+        "TICKET_NO": "680216",
+        "empname": "ALTHI LAXMANA RAO",
+        "da_rate": "29.43553",
+        "fa_rate": "142.78",
+        "fa_days": "17",
+        "fa_amount": "2427"
+    },
+    {
+        "S.no": "104",
+        "TICKET_NO": "680224",
+        "empname": "TALAPUDI LAXMU NAIDU",
+        "da_rate": "26.09173",
+        "fa_rate": "170.86",
+        "fa_days": "10",
+        "fa_amount": "1709"
+    },
+    {
+        "S.no": "105",
+        "TICKET_NO": "710007",
+        "empname": "PATHIVADA GOVINDA",
+        "da_rate": "27.84413",
+        "fa_rate": "156.15",
+        "fa_days": "18.5",
+        "fa_amount": "2889"
+    },
+    {
+        "S.no": "106",
+        "TICKET_NO": "710009",
+        "empname": "BAIREDDI SURESH",
+        "da_rate": "27.84413",
+        "fa_rate": "156.15",
+        "fa_days": "18",
+        "fa_amount": "2811"
+    },
+    {
+        "S.no": "107",
+        "TICKET_NO": "710013",
+        "empname": "TUMMU RAMA RAO",
+        "da_rate": "27.84413",
+        "fa_rate": "156.15",
+        "fa_days": "22",
+        "fa_amount": "3435"
+    },
+    {
+        "S.no": "108",
+        "TICKET_NO": "710021",
+        "empname": "SESHAPU SURYANARAYANA",
+        "da_rate": "27.84413",
+        "fa_rate": "156.15",
+        "fa_days": "22",
+        "fa_amount": "3435"
+    },
+    {
+        "S.no": "109",
+        "TICKET_NO": "710031",
+        "empname": "BODDANA RAMU NAIDU",
+        "da_rate": "27.84413",
+        "fa_rate": "156.15",
+        "fa_days": "24",
+        "fa_amount": "3748"
+    },
+    {
+        "S.no": "110",
+        "TICKET_NO": "710036",
+        "empname": "SARIPALLI JAGADEESWARA RAO",
+        "da_rate": "27.84413",
+        "fa_rate": "156.15",
+        "fa_days": "23",
+        "fa_amount": "3591"
+    },
+    {
+        "S.no": "111",
+        "TICKET_NO": "710039",
+        "empname": "YERUKUMAJJI GANAPATHI RAO",
+        "da_rate": "27.84413",
+        "fa_rate": "156.15",
+        "fa_days": "18",
+        "fa_amount": "2811"
+    },
+    {
+        "S.no": "112",
+        "TICKET_NO": "710064",
+        "empname": "JAGGINA MAHESH",
+        "da_rate": "27.84413",
+        "fa_rate": "156.15",
+        "fa_days": "26",
+        "fa_amount": "4060"
+    },
+    {
+        "S.no": "113",
+        "TICKET_NO": "710065",
+        "empname": "MADDILA NAGA RAJU",
+        "da_rate": "27.84413",
+        "fa_rate": "156.15",
+        "fa_days": "19",
+        "fa_amount": "2967"
+    },
+    {
+        "S.no": "114",
+        "TICKET_NO": "750019",
+        "empname": "AVALA SURI BABU",
+        "da_rate": "23.55943",
+        "fa_rate": "192.15",
+        "fa_days": "13",
+        "fa_amount": "2498"
+    },
+    {
+        "S.no": "115",
+        "TICKET_NO": "750023",
+        "empname": "GIDAJALA KRISHNA",
+        "da_rate": "20.38123",
+        "fa_rate": "218.84",
+        "fa_days": "15",
+        "fa_amount": "3283"
+    },
+    {
+        "S.no": "116",
+        "TICKET_NO": "760133",
+        "empname": "BADIGANTI SRINU",
+        "da_rate": "20.38123",
+        "fa_rate": "218.84",
+        "fa_days": "13.896",
+        "fa_amount": "3041"
+    },
+    {
+        "S.no": "117",
+        "TICKET_NO": "771002",
+        "empname": "KANAKALA THATA RAO",
+        "da_rate": "32.09793",
+        "fa_rate": "146.67",
+        "fa_days": "17",
+        "fa_amount": "2493"
+    },
+    {
+        "S.no": "118",
+        "TICKET_NO": "771003",
+        "empname": "VALLA ESWARA RAO",
+        "da_rate": "32.09793",
+        "fa_rate": "146.67",
+        "fa_days": "19",
+        "fa_amount": "2787"
+    },
+    {
+        "S.no": "119",
+        "TICKET_NO": "771005",
+        "empname": "KANAKALA VENKATA RAMANA",
+        "da_rate": "26.09173",
+        "fa_rate": "170.86",
+        "fa_days": "16",
+        "fa_amount": "2734"
+    },
+    {
+        "S.no": "120",
+        "TICKET_NO": "780075",
+        "empname": "KALLA TRINADH",
+        "da_rate": "21.74463",
+        "fa_rate": "207.39",
+        "fa_days": "12",
+        "fa_amount": "2489"
+    },
+    {
+        "S.no": "121",
+        "TICKET_NO": "780101",
+        "empname": "KOKKIRI SRIDHAR",
+        "da_rate": "21.90693",
+        "fa_rate": "206.01",
+        "fa_days": "12",
+        "fa_amount": "2472"
+    },
+    {
+        "S.no": "122",
+        "TICKET_NO": "781002",
+        "empname": "SARAMPATI SRINIVASA RAO",
+        "da_rate": "32.09793",
+        "fa_rate": "146.67",
+        "fa_days": "10",
+        "fa_amount": "1467"
+    },
+    {
+        "S.no": "123",
+        "TICKET_NO": "840001",
+        "empname": "PALLI APPALA NAIDU",
+        "da_rate": "26.09165",
+        "fa_rate": "170.86",
+        "fa_days": "28.5",
+        "fa_amount": "4870"
+    },
+    {
+        "S.no": "124",
+        "TICKET_NO": "860001",
+        "empname": "KANAKALA CHANDRA SEKHAR",
+        "da_rate": "27.84413",
+        "fa_rate": "156.15",
+        "fa_days": "23",
+        "fa_amount": "3591"
+    },
+    {
+        "S.no": "125",
+        "TICKET_NO": "860017",
+        "empname": "BYREDDI V RAMANA",
+        "da_rate": "27.84413",
+        "fa_rate": "156.15",
+        "fa_days": "19",
+        "fa_amount": "2967"
+    },
+    {
+        "S.no": "126",
+        "TICKET_NO": "890002",
+        "empname": "JAMMU SANYASI RAO",
+        "da_rate": "26.09173",
+        "fa_rate": "170.86",
+        "fa_days": "17.896",
+        "fa_amount": "3058"
+    },
+    {
+        "S.no": "127",
+        "TICKET_NO": "890003",
+        "empname": "VASANTHA GURUVULU",
+        "da_rate": "26.09173",
+        "fa_rate": "170.86",
+        "fa_days": "11.5",
+        "fa_amount": "1965"
+    },
+    {
+        "S.no": "128",
+        "TICKET_NO": "900001",
+        "empname": "MAMIDI SRINIVASA RAO",
+        "da_rate": "23.78663",
+        "fa_rate": "190.23",
+        "fa_days": "15.896",
+        "fa_amount": "3024"
+    },
+    {
+        "S.no": "129",
+        "TICKET_NO": "900006",
+        "empname": "SEELA RAMU NAIDU",
+        "da_rate": "26.09173",
+        "fa_rate": "170.86",
+        "fa_days": "13.896",
+        "fa_amount": "2374"
+    },
+    {
+        "S.no": "130",
+        "TICKET_NO": "900024",
+        "empname": "MARNA KOTESWAR RAO",
+        "da_rate": "23.55943",
+        "fa_rate": "192.15",
+        "fa_days": "24",
+        "fa_amount": "4612"
+    }
+]

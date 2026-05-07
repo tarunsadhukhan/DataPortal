@@ -26,7 +26,7 @@ $ni=0;
 		$sql="select * from tbl_pay_period tpp where from_date='".$from_date."' and TO_DATE ='".$to_date."' 
 		and PAYSCHEME_ID =".$payscheme_id."
 		and company_id=".$companyId." and branch_id=".$branch_id." and STATUS not in (4)";
-//echo $sql;
+//echo 'compoany'.$sql;
 		$query = $this->db->query($sql);
 		$mccodes= $query->result();
 		foreach ($mccodes as $record) {
@@ -73,7 +73,7 @@ $ni=0;
 	 ORDER BY
 		 tppc.payscheme_id,
 		 payslip_order";
-//	 echo $sql;
+	// echo 'my fdh'.$sql;
 
 		 $query = $this->db->query($sqlhd);
 		 $mccodes= $query->result();
@@ -117,6 +117,7 @@ $ni=0;
   
 		 }
 //echo $sqlmhd;
+		$sqlfhd = rtrim($sqlfhd, ',');
 
 //$sqlmhd = substr($sqlmhd, 0, -1);
 
@@ -312,7 +313,7 @@ $ni=0;
 	ORDER BY
 		tppc.payscheme_id,
 		payslip_order";
-//	 echo $sql;
+//	 echo 'myfhdd'.$sqlhd.'=========================]=========================';
 
 		$query = $this->db->query($sqlhd);
 		$mccodes= $query->result();
@@ -448,8 +449,16 @@ $ni=0;
 	   WHERE
 		   tpep.PAYPERIOD_ID=".$payid."
 	   ) g
-		where PAYPERIOD_ID=".$payid."  group by PAYPERIOD_ID,".$sqlfhd.",eb_id ";
-		
+		where PAYPERIOD_ID=".$payid."  
+		group by PAYPERIOD_ID,";
+		$sqlfhd = rtrim($sqlfhd, ',');
+		if (strlen($sqlfhd)>0) {
+			$sqlp=$sqlp.$sqlfhd.",eb_id ";
+		} else {
+			$sqlp=$sqlp."eb_id ";
+		}
+//		echo 'lenght of fhd'.strlen($sqlfhd).'=='.$sqlfhd;
+//		echo 'sqlfd'.$sqlfhd;
 $sql=$sqlp;
 //echo $sql;
 		$q = $this->db->query($sql);

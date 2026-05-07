@@ -507,7 +507,7 @@ $config['time_reference'] = 'local';
 |
 */
 $config['rewrite_short_tags'] = FALSE;
-
+$config['python_bin'] = 'D:\\python311\\python.exe';
 /*
 |--------------------------------------------------------------------------
 | Reverse Proxy IPs
