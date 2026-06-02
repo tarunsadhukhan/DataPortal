@@ -132,7 +132,7 @@ $this->load->library('session');
 		branch_name Branch,
 		store_print_no SR_No,
 		mm.mechine_name Mechine_Name,
-		g.company_id
+		g.company_id,sm.status_name
 	from
 		(
 		select
@@ -151,7 +151,7 @@ $this->load->library('session');
 			sih.issue_value,
 			sitm.indent_type_desc,
 			sih.machine_id,
-			tpi.store_receipt_no store_print_no
+			tpi.store_receipt_no store_print_no,sih.issue_status
 		from
 			scm_issue_hdr sih,
 			branch_master bm,
@@ -174,7 +174,8 @@ $this->load->library('session');
 			 ) g
 	left join mechine_master mm on
 		g.machine_id = mm.mechine_id
-	where  issue_date between '".date('Y-m-d',strtotime($from_date))."' 
+left join status_master sm on sm.status_id =g.issue_status 
+		where  issue_date between '".date('Y-m-d',strtotime($from_date))."' 
 	and '".date('Y-m-d',strtotime($to_date))."'
 	and g.company_id= ".$companyId; 
 	if($itcode){
@@ -192,7 +193,7 @@ $this->load->library('session');
 
 
 
-//		echo $sql;
+	//	echo $sql;
 
 //echo $sql;
 		return $sql;
@@ -227,11 +228,11 @@ $this->load->library('session');
 		$sql="select hdr_id `Issue_No`,issuedate `Issue_Date`,dept_desc `Department` , g.itemcode `Item_Code`,
 		item_desc `Item_Description`,uom_code Unit,cost_desc `Cost_Center`,issue_qty `Issue_Quantity`,
 		issue_value `Issue_Value`,indent_type_desc `EXP_Type`,branch_name Branch,store_print_no `SR_No`,
-		mm.mechine_name `Mechine_Name` from 
+		mm.mechine_name `Mechine_Name`,sm.status_name `Status` from 
 		(
 		select sih.company_id,cmm.company_name,bm.branch_name,sih.hdr_id,issue_date,DATE_FORMAT(issue_date, '%d-%m-%Y') 
 		issuedate ,md.dept_desc,cm.cost_desc, concat(im.group_code,im.item_code) itemcode,im.item_desc,im.uom_code,sih.issue_qty,sih.issue_value,
-		sitm.indent_type_desc,sih.machine_id,tpi.store_receipt_no store_print_no
+		sitm.indent_type_desc,sih.machine_id,tpi.store_receipt_no store_print_no,sih.issue_status
 		from scm_issue_hdr sih,branch_master bm,company_master cmm, master_department md,costmaster cm,itemmaster im,scm_indent_type_master sitm ,
 		tbl_proc_inward tpi
 		where sih.company_id=cmm.comp_id and sih.branch_id=bm.branch_id
@@ -242,7 +243,9 @@ $this->load->library('session');
 		and sih.company_id=".$pers['company']."
 		) g
 		left  join
-		mechine_master mm on g.machine_id=mm.mechine_id order by hdr_id";
+		mechine_master mm on g.machine_id=mm.mechine_id
+		left join status_master sm on sm.status_id = g.issue_status
+		order by hdr_id";
 //echo $sql;
 		$q = $this->db->query($sql);
 		if($q->num_rows()>0){

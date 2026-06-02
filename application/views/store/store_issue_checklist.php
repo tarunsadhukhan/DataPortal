@@ -73,6 +73,7 @@
                     echo '<td class="thtop thleft">'.$row->Branch.'</td>';
                     echo '<td class="thtop thleft">'.$row->SR_No.'</td>';
                     echo '<td class="thtop thleft">'.$row->Mechine_Name.'</td>';
+                    echo '<td class="thtop thleft">'.$row->Status.'</td>';
                     echo '</tr>';
                    
                 }

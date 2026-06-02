@@ -1299,7 +1299,8 @@ class Columns
                 'EXP_Type' => 'Exp&nbsp;Type',
                 'Branch' => 'Branch',
                 'SR_No' => 'SR&nbsp;No',
-                'Mechine_Name' => 'Mechine&nbsp;Name'
+                'Mechine_Name' => 'Mechine&nbsp;Name',
+                'status_name' => 'Status'
              );
         
         }   
