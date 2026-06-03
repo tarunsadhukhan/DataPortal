@@ -1039,7 +1039,7 @@ public function njmwagespayslip1641($mccodes,$periodfromdate,$periodtodate,$att_
             $hra=$row->C_HRA_;
             $bkl=$zero;
             $lwd=$zero;
-            $elw=$row->eldwagesincamt_;
+            $elw=$row->C_eldwagesincamt_;
             $exw=$zero;
             $wf=$zero;
             $advan=$zero;
@@ -1282,7 +1282,7 @@ public function njmwagespayslip1641($mccodes,$periodfromdate,$periodtodate,$att_
 
             $pdf->SetXY($x, $y);
             $pdf->Cell(8, 4, 'SLDGI : ');
-            $pdf->Cell(15, 4, $eldgi,0,0,'R');
+            $pdf->Cell(15, 4, $sldgi,0,0,'R');
             $x=$x+30;
             $pdf->SetXY($x, $y);
             $pdf->Cell(8, 4, 'HRA    : ');
