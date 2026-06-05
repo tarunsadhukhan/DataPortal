@@ -2283,6 +2283,25 @@ order by cm.cata_desc
 
 "; 
 
+$sql="select emp_code,CONCAT(trim(thepd.first_name), ' ', IFNULL(trim(thepd.middle_name), ''), ' ', IFNULL(trim(thepd.last_name), '')) AS empname,
+dept_desc,cata_desc,sm.status_name,tps.NAME,sum(working_hours-idle_hours) whrs,theod.date_of_join,thep.pf_uan_no,thee.esi_no  
+from daily_attendance da 
+left join tbl_hrms_ed_personal_details thepd on thepd.eb_id=da.eb_id
+left join tbl_hrms_ed_official_details theod on theod.eb_id =da.eb_id and theod.is_active =1
+left join department_master dm on dm.dept_id=theod.department_id 
+left join category_master cm on cm.cata_id =theod.catagory_id 
+left join status_master sm on sm.status_id =thepd.status 
+left join tbl_pay_employee_payscheme tpep on tpep.EMPLOYEEID =da.eb_id and tpep.STATUS =1
+left join tbl_pay_scheme tps on tps.ID =tpep.PAY_SCHEME_ID
+left join tbl_hrms_ed_pf thep on thep.eb_id =thepd.eb_id and thep.is_active =1
+left join tbl_hrms_ed_esi thee on thee.eb_id =thepd.eb_id and thee.is_active =1
+where da.company_id = $companyId and da.is_active =1 and da.attendance_type in ('R','O')
+and da.attendance_date between '$periodfromdate' and '$periodtodate'
+group by emp_code,CONCAT(trim(thepd.first_name), ' ', IFNULL(trim(thepd.middle_name), ''), ' ', IFNULL(trim(thepd.last_name), '')) ,
+dept_desc,cata_desc,sm.status_name,tps.NAME,date_of_join,thep.pf_uan_no,thee.esi_no  
+order by cm.cata_desc 
+    "   ;
+
 //echo $sql;
     $query = $this->db->query($sql);
 
