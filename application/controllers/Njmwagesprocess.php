@@ -5075,6 +5075,81 @@ for ($col = 3; $col <= 20; $col++) {
 }
 
 
+
+//new budli rtd
+
+    $mccodes = $this->Njmallwagesprocess->nbdlrtdwgsbrksummary($att_payschm,$periodfromdate,$periodtodate);
+    $result=$mccodes;
+    $sheetName = 'New Budli Rtd';   // change to your sheet name
+    $tsheetName = 'New Budli Rtd';   // change to your sheet name
+    $tsheetName='Final Sheet';
+    $sheet = $spreadsheet->getSheetByName($sheetName);
+    $targetsheet = $spreadsheet->getSheetByName($tsheetName);
+
+     $tsumCell   = 'A2'; // write total in next row
+     $mnyr= date('M Y', strtotime($periodfromdate));
+     $formula='ALL MANPOWER PAYMENT SHEET FOR THE MONTH OF '.$mnyr;
+     $targetsheet->setCellValue($tsumCell, $formula);
+
+    $highestRow    = $sheet->getHighestRow();
+    $highestColumn = $sheet->getHighestColumn();
+    $rowNumber = 2;
+    $range = "A2:{$highestColumn}{$highestRow}";
+    $sheet->removeRow(2, $highestRow-1);  // removes all rows with content
+    foreach ($result as $row) {
+    $col = 'A';
+    $colno = 0;
+    foreach ($row as $cell) {
+        if ($colno == 20) {
+            $sheet->setCellValueExplicit($col . $rowNumber, $cell, DataType::TYPE_STRING);
+        } else {
+            $sheet->setCellValue($col . $rowNumber, $cell);
+        }
+
+        $col++;     // move outside
+        $colno++;   // move outside
+    }
+
+    $rowNumber++;
+}
+    $highestRow    = $sheet->getHighestRow();
+    $lastRow  = $sheet->getHighestRow();
+
+for ($col = 3; $col <= 20; $col++) {
+    $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+    $sumCell   = $colLetter . ($lastRow + 1); // write total in next row
+
+    // Write the SUM formula
+    $sheet->setCellValue($sumCell, "=SUM({$colLetter}2:{$colLetter}{$lastRow})");
+
+}
+
+$lastRow++;
+$finalrow=6;
+$startrow=1;
+
+for ($col = 3; $col <= 20; $col++) {
+    $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+    $sumCell   = $colLetter . ($lastRow); // write total in next row
+    $cl=$col-1;
+    $tcolLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($cl);
+    $tsumCell   = $tcolLetter . ($finalrow); // write total in next row
+
+
+    $srcRow = $col+$lastRow ;  // 240, 241, 242...
+
+    $formula = "='New Budli'!{$sumCell}";
+    
+    echo $formula;
+    echo $tsumcell;
+    $targetsheet->setCellValue($tsumCell, $formula);
+
+
+ 
+}
+
+
+
 //main
 
     $mccodes = $this->Njmallwagesprocess->mainwgsbrksummary($att_payschm,$periodfromdate,$periodtodate);

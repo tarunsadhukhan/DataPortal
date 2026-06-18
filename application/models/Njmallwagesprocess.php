@@ -2529,6 +2529,56 @@ return $query->result_array();
     }
 
 
+public function nbdlrtdwgsbrksummary($att_payschm,$periodfromdate,$periodtodate) {
+    $companyId = $this->session->userdata('companyId');
+    $sql="select * from (	
+   select theod.emp_code ticket_no,
+    CONCAT(thepd.first_name, ' ', thepd.middle_name, ' ', thepd.last_name) AS emp_name,
+    max(case when component_id=349 then amount else 0 end) 'Grossearn',
+    0 'othern',
+    max(case when component_id=18 then amount else 0 end) 'pf',
+    max(case when component_id=19 then amount else 0 end) 'esi',
+    max(case when component_id=16 then amount else 0 end) 'ptax',
+    0 gwf,
+    max(case when component_id=343 then amount else 0 end) 'rent',
+    max(case when component_id=345 then amount else 0 end) landrent,
+    max(case when component_id=166  then amount else 0 end)+max(case when component_id=292  then amount else 0 end) 'advance',
+    max(case when component_id=354 then amount else 0 end) 'rsd',
+    max(case when component_id=291 then amount else 0 end) 'canteen',
+    0 othded,
+    0 roff,
+    max(case when component_id=21 then amount else 0 end) 'net',
+    max(case when component_id=351 then amount else 0 end) death,
+    max(case when component_id=357 then (amount-0) else 0 end) 'netpay',
+    max(case when component_id=18 then round(amount/10*11,0) else 0 end) emppf,
+    max(case when component_id=19 then round(amount/.75*3.25,0) else 0 end) 'empesi',thebd.bank_acc_no,ifsc_code 
+    ,tpep.PAYSCHEME_ID,theod.department_id 
+from tbl_pay_employee_payroll tpep
+left join tbl_pay_period tpp on tpep.PAYPERIOD_ID =tpp.ID and tpp.IS_ACTIVE =1 and tpp.STATUS not in (4)
+left join tbl_hrms_ed_personal_details thepd on tpep.EMPLOYEEID =thepd.eb_id
+left join tbl_hrms_ed_official_details theod on tpep.EMPLOYEEID =theod.eb_id and theod.is_active =1
+left join tbl_hrms_ed_bank_details thebd on thebd.eb_id =tpep.EMPLOYEEID and thebd.is_active =1
+where tpep.STATUS =1 and tpep.PAYSCHEME_ID in (174) and tpp.FROM_DATE ='$periodfromdate'
+and tpp.TO_DATE ='$periodtodate'  
+group by emp_code,
+CONCAT(thepd.first_name, ' ', thepd.middle_name, ' ', thepd.last_name),tpep.PAYSCHEME_ID,
+ifsc_code,thebd.bank_acc_no ,theod.department_id
+) g where Grossearn>0
+";
+    $query = $this->db->query($sql);
+    $data=$query->result();
+    if ($query->num_rows() > 0) {
+   //     var_dump($data);
+return $query->result_array(); 
+//        return $data;
+    } else {
+        return array(); // Return an empty array if no results are found
+    }
+
+    }
+
+
+
 public function mainwgsbrksummary($att_payschm,$periodfromdate,$periodtodate) {
     $companyId = $this->session->userdata('companyId');
     
