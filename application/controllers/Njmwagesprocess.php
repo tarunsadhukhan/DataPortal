@@ -124,6 +124,11 @@ log_message('error', '✅ njmwagespayslip() was triggered');
 
         }
 
+        if ($att_payschm==174) {
+              $mccodes = $this->Njmallwagesprocess->njmwagespayslip1641($att_payschm,$periodfromdate,$periodtodate,$att_dept);
+              $this->njmwagespayslip1641($mccodes,$periodfromdate,$periodtodate,$att_payschm);
+
+        }
 
 
     
@@ -263,23 +268,44 @@ public function njmwagespayslip1641($mccodes,$periodfromdate,$periodtodate,$att_
                 $logMsg.='   '.'SLD   :'.str_repeat(' ', 4 - strlen($SLD)).number_format($SLD,2).'    '.'ELD  :'.str_repeat(' ', 8 - strlen($C_eldays_)).$C_eldays_.'   '.'LODAY:'.str_repeat(' ', 5 - strlen($LODAY)).number_format($LODAY,2).'   '.'OTTHR:'.str_repeat(' ', 8 - strlen($C_extrahrstime_)).$C_extrahrstime_.'   '.'OTPHR:'.str_repeat(' ', 8 - strlen($C_extrahourspiece_)).$C_extrahourspiece_.'   '.'ESID :'.str_repeat(' ', 8 - strlen($C_esi_days_)).$C_esi_days_.'            '.''.str_repeat('', 35 - strlen($emp_name)).$emp_name."\n";
                 
                 $logMsg.='  '.' TWAGE :'.str_repeat(' ', 8 - strlen($C_timewages_)).$C_timewages_.'   '.'ADJ.A:'.str_repeat(' ', 8 - strlen($C_mveminus_)).$C_mveminus_.'   '.'LOWI :'.str_repeat(' ', 8 - strlen($C_loffwagesincamt_)).$C_loffwagesincamt_.'  '.'ILT&PW:'.str_repeat(' ', 5 - strlen($ILT)).number_format($ILT,2).'   '.'S.ADV:'.str_repeat(' ', 8 - strlen($C_sundayadv_)).number_format($C_sundayadv_,2).'   '.'RSD  :'.str_repeat(' ', 8 - strlen($C_rsdamt_)).$C_rsdamt_.'            '.'CODE: '.str_repeat('', 65 - strlen($eb_no)).$eb_no."\n";
-                
+
                 $logMsg.='  '.' P.WAGE:'.str_repeat(' ', 8 - strlen($C_pwage_)).$C_pwage_.'  '.' DA   :'.str_repeat(' ', 8 - strlen($C_DAAMOUNT_)).$C_DAAMOUNT_.'  '.' LODG :'.str_repeat(' ', 8 - strlen($C_loffdagenincamt_)).$C_loffdagenincamt_.' '.' INCENT:'.str_repeat(' ', 8 - strlen($C_pwagesinc_)).$C_pwagesinc_.'  '.' CDN  :'.str_repeat(' ', 5 - strlen($CDN)).number_format($CDN,2).'  '.' GDED :'.str_repeat(' ', 8 - strlen($C_TOTAL_DEDUCTION_)).$C_TOTAL_DEDUCTION_.'            '.'TKT:'.str_repeat('', 25 - strlen($eb_no)).$eb_no."\n";
-                
+
                 $logMsg.='  '.' NA    :'.str_repeat(' ', 8 - strlen($C_na_)).$C_na_.'  '.' EWI  :'.str_repeat(' ', 8 - strlen($C_eldwagesincamt_)).$C_eldwagesincamt_.'  '.' OTW  :'.str_repeat(' ', 8 - strlen($C_extrahourswages_)).$C_extrahourswages_.'  '.' ILIN :'.str_repeat(' ', 5 - strlen($ILINT)).number_format($ILINT,2).'  '.' PF   :'.str_repeat(' ', 8 - strlen($C_EPF_)).$C_EPF_.'  '.' NPAY :'.str_repeat(' ', 8 - strlen($C_netpayamount_)).$C_netpayamount_.'            '.chr(14).'NET:'.str_repeat('', 25 - strlen($C_finalnetpay_)).$C_finalnetpay_."\n";
-                
+
                 $logMsg.='  '.' GI    :'.str_repeat(' ', 8 - strlen($C_genincamt_)).$C_genincamt_.'  '.' EDG  :'.str_repeat(' ', 8 - strlen($C_elddagenincamt_)).$C_elddagenincamt_.'  '.' OTI  :'.str_repeat(' ', 8 - strlen($C_extrahoursincamt_)).$C_extrahoursincamt_.'  '.' ILDG :'.str_repeat(' ', 5 - strlen($ILDG)).number_format($ILDG,2).'  '.' RENT :'.str_repeat(' ', 8 - strlen($C_rentded_)).$C_rentded_.'  '.' RNPAY:'.str_repeat(' ', 8 - strlen($C_NET)).$C_NET."\n";
-                
+
                 $logMsg.='  '.' INC   :'.str_repeat(' ', 8 - strlen($C_inc_)).$C_inc_.'   '.'FDG  :'.str_repeat(' ', 8 - strlen($C_festdagenincamt_)).$C_festdagenincamt_.'  '.' ODG  :'.str_repeat(' ', 8 - strlen($C_exthrsdagincamt_)).$C_exthrsdagincamt_.'  '.' GRS2 :'.str_repeat(' ', 8 - strlen($C_gross2amt_)).$C_gross2amt_.'  '.' ESI  :'.str_repeat(' ', 8 - strlen($C_ESI_)).$C_ESI_.'  '.' VARD1:'.str_repeat(' ', 8 - strlen($C_iftudedamt_)).$C_iftudedamt_."\n";
-                
+
                 $logMsg.='  '.' FWI   :'.str_repeat(' ', 8 - strlen($C_festwagesincamt_)).$C_festwagesincamt_.'  '.' SDG  :'.str_repeat(' ', 8 - strlen($C_sldwagesincamt_)).$C_sldwagesincamt_.'  '.' HRA  :'.str_repeat(' ', 8 - strlen($C_HRA_)).$C_HRA_.' '.' ADVDED:'.str_repeat(' ', 8 - strlen($C_exadvance_)).$C_exadvance_.'  '.' G.W.F:'.str_repeat(' ', 8 - strlen($C_govtwelfare_)).$C_govtwelfare_.'  '.' NET  :'.str_repeat(' ', 8 - strlen($C_finalnetpay_)).$C_finalnetpay_."\n";
-            
+
                 $logMsg.='  '.' SWI   :'.str_repeat(' ', 5 - strlen($SWOA)).number_format($SWOA,2).' '.'  TOTAL:'.str_repeat(' ', 8 - strlen($C_totalwagesamt_)).$C_totalwagesamt_.'  '.' GRS1 :'.str_repeat(' ', 8 - strlen($C_gross1amt_)).$C_gross1amt_.'  '.' PTAX :'.str_repeat(' ', 8 - strlen($C_PTAX_)).$C_PTAX_.'  '.' LR   :'.str_repeat(' ', 8 - strlen($C_landrentamt_)).$C_landrentamt_."\n";
                 $logMsg.='  '.' PVE   :'.str_repeat(' ', 8 - strlen($C_mveplus_)).$C_mveplus_.' '.'  P.F.G:'.str_repeat(' ', 8 - strlen($C_PFG_)).$C_PFG_.'  '.' OP   :'.str_repeat(' ', 8 - strlen($C_otherpay_)).$C_otherpay_.'  '.' CANT :'.str_repeat(' ', 8 - strlen($C_canteen_)).$C_canteen_.'  '.' PROD :'.str_repeat(' ', 8 - strlen($C_loomproducion_)).$C_loomproducion_."\n";
                 }
 
+                if ($att_payschm==174) {
+                $logMsg.='   '.'THR1  :'.str_repeat(' ', 8 - strlen($C_wrkhrs1_)).$C_wrkhrs1_.'   '.'THR2 :'.str_repeat(' ', 8 - strlen($C_wrkhours2_)).$C_wrkhours2_.'   '.'PHRS :'.str_repeat(' ', 8 - strlen($C_PHours_)).$C_PHours_.'   '.'CPN  :'.str_repeat(' ', 8 - strlen($C_nightdays_)).$C_nightdays_.'   '.'FHRS :'.str_repeat(' ', 8 - strlen($C_FHours_)).$C_FHours_.'   '.'LHRS :'.str_repeat(' ', 8 - strlen($C_LayOffHrs_)).$C_LayOffHrs_.'            '.'DEPT:'.str_repeat('', 14 - strlen($department)).$department."\n";
 
-                if ($att_payschm==169) { 
+                $logMsg.='   '.'SLD   :'.str_repeat(' ', 4 - strlen($SLD)).number_format($SLD,2).'    '.'ELD  :'.str_repeat(' ', 8 - strlen($C_eldays_)).$C_eldays_.'   '.'LODAY:'.str_repeat(' ', 5 - strlen($LODAY)).number_format($LODAY,2).'   '.'OTTHR:'.str_repeat(' ', 8 - strlen($C_extrahrstime_)).$C_extrahrstime_.'   '.'OTPHR:'.str_repeat(' ', 8 - strlen($C_extrahourspiece_)).$C_extrahourspiece_.'   '.'ESID :'.str_repeat(' ', 8 - strlen($C_esi_days_)).$C_esi_days_.'            '.''.str_repeat('', 35 - strlen($emp_name)).$emp_name."\n";
+
+                $logMsg.='  '.' TWAGE :'.str_repeat(' ', 8 - strlen($C_timewages_)).$C_timewages_.'   '.'ADJ.A:'.str_repeat(' ', 8 - strlen($C_mveminus_)).$C_mveminus_.'   '.'LOWI :'.str_repeat(' ', 8 - strlen($C_loffwagesincamt_)).$C_loffwagesincamt_.'  '.'ILT&PW:'.str_repeat(' ', 5 - strlen($ILT)).number_format($ILT,2).'   '.'S.ADV:'.str_repeat(' ', 8 - strlen($C_sundayadv_)).$C_sundayadv_.'   '.'RSD  :'.str_repeat(' ', 8 - strlen($C_rsdamt_)).$C_rsdamt_.'            '.'CODE: '.str_repeat('', 65 - strlen($eb_no)).$eb_no."\n";
+
+                $logMsg.='  '.' P.WAGE:'.str_repeat(' ', 8 - strlen($C_pwage_)).$C_pwage_.'  '.' DA   :'.str_repeat(' ', 8 - strlen($C_DAAMOUNT_)).$C_DAAMOUNT_.'  '.' LODG :'.str_repeat(' ', 8 - strlen($C_loffdagenincamt_)).$C_loffdagenincamt_.' '.' INCENT:'.str_repeat(' ', 8 - strlen($C_pwagesinc_)).$C_pwagesinc_.'  '.' CDN  :'.str_repeat(' ', 5 - strlen($CDN)).number_format($CDN,2).'  '.' GDED :'.str_repeat(' ', 8 - strlen($C_TOTAL_DEDUCTION_)).$C_TOTAL_DEDUCTION_.'            '.'TKT:'.str_repeat('', 25 - strlen($eb_no)).$eb_no."\n";
+
+                $logMsg.='  '.' NA    :'.str_repeat(' ', 8 - strlen($C_na_)).$C_na_.'  '.' EWI  :'.str_repeat(' ', 8 - strlen($C_eldwagesincamt_)).$C_eldwagesincamt_.'  '.' OTW  :'.str_repeat(' ', 8 - strlen($C_extrahourswages_)).$C_extrahourswages_.'  '.' ILIN :'.str_repeat(' ', 5 - strlen($ILINT)).number_format($ILINT,2).'  '.' PF   :'.str_repeat(' ', 8 - strlen($C_EPF_)).$C_EPF_.'  '.' NPAY :'.str_repeat(' ', 8 - strlen($C_netpayamount_)).$C_netpayamount_.'            '.chr(14).'NET:'.str_repeat('', 25 - strlen($C_finalnetpay_)).$C_finalnetpay_."\n";
+
+                $logMsg.='  '.' GI    :'.str_repeat(' ', 8 - strlen($C_genincamt_)).$C_genincamt_.'  '.' EDG  :'.str_repeat(' ', 8 - strlen($C_elddagenincamt_)).$C_elddagenincamt_.'  '.' OTI  :'.str_repeat(' ', 8 - strlen($C_extrahoursincamt_)).$C_extrahoursincamt_.'  '.' ILDG :'.str_repeat(' ', 5 - strlen($ILDG)).number_format($ILDG,2).'  '.' RENT :'.str_repeat(' ', 8 - strlen($C_rentded_)).$C_rentded_.'  '.' RNPAY:'.str_repeat(' ', 8 - strlen($C_NET)).$C_NET."\n";
+
+                $logMsg.='  '.' O.A   :'.str_repeat(' ', 8 - strlen($C_OTHER_ALLOW_)).$C_OTHER_ALLOW_.'   '.'FDG  :'.str_repeat(' ', 8 - strlen($C_festdagenincamt_)).$C_festdagenincamt_.'  '.' ODG  :'.str_repeat(' ', 8 - strlen($C_exthrsdagincamt_)).$C_exthrsdagincamt_.'  '.' GRS2 :'.str_repeat(' ', 8 - strlen($C_gross2amt_)).$C_gross2amt_.'  '.' ESI  :'.str_repeat(' ', 8 - strlen($C_ESI_)).$C_ESI_.'  '.' VARD1:'.str_repeat(' ', 8 - strlen($C_iftudedamt_)).$C_iftudedamt_."\n";
+
+                $logMsg.='  '.' FWOA  :'.str_repeat(' ', 8 - strlen($C_festwagesincamt_)).$C_festwagesincamt_.'  '.' SDG  :'.str_repeat(' ', 8 - strlen($C_sldwagesincamt_)).$C_sldwagesincamt_.'  '.' HRA  :'.str_repeat(' ', 8 - strlen($C_HRA_)).$C_HRA_.' '.' ADVDED:'.str_repeat(' ', 8 - strlen($C_exadvance_)).$C_exadvance_.'  '.' G.W.F:'.str_repeat(' ', 8 - strlen($C_govtwelfare_)).$C_govtwelfare_.'  '.' NET  :'.str_repeat(' ', 8 - strlen($C_finalnetpay_)).$C_finalnetpay_."\n";
+
+                $logMsg.='  '.' SWOA  :'.str_repeat(' ', 5 - strlen($SWOA)).number_format($SWOA,2).' '.'  TOTAL:'.str_repeat(' ', 8 - strlen($C_totalwagesamt_)).$C_totalwagesamt_.'  '.' GRS1 :'.str_repeat(' ', 8 - strlen($C_gross1amt_)).$C_gross1amt_.'  '.' PTAX :'.str_repeat(' ', 8 - strlen($C_PTAX_)).$C_PTAX_.'  '.' LR   :'.str_repeat(' ', 8 - strlen($C_landrentamt_)).$C_landrentamt_."\n";
+                $logMsg.='  '.' PVE   :'.str_repeat(' ', 8 - strlen($C_mveplus_)).$C_mveplus_.' '.'       :'.str_repeat(' ', 8 - strlen($bln   )).$bln   .'  '.' OP   :'.str_repeat(' ', 8 - strlen($C_otherpay_)).$C_otherpay_.'  '.' CANT :'.str_repeat(' ', 8 - strlen($C_canteen_)).$C_canteen_.'  '.' PROD :'.str_repeat(' ', 8 - strlen($C_loomproducion_)).$C_loomproducion_."\n";
+                }
+
+
+                if ($att_payschm==169) {
                 $logMsg.='   '.'THR1  :'.str_repeat(' ', 8 - strlen($C_wrkhrs1_)).$C_wrkhrs1_.'   '.'THR2 :'.str_repeat(' ', 8 - strlen($C_wrkhours2_)).$C_wrkhours2_.'   '.'PHRS :'.str_repeat(' ', 8 - strlen($C_PHours_)).$C_PHours_.'   '.'CPN  :'.str_repeat(' ', 8 - strlen($C_nightdays_)).$C_nightdays_.'   '.'FHRS :'.str_repeat(' ', 8 - strlen($C_FHours_)).$C_FHours_.'   '.'LHRS :'.str_repeat(' ', 8 - strlen($C_LayOffHrs_)).$C_LayOffHrs_.'            '.'DEPT:'.str_repeat('', 14 - strlen($department)).$department."\n";
         
                 $logMsg.='   '.'SLD   :'.str_repeat(' ', 4 - strlen($SLD)).number_format($SLD,2).'    '.'ELD  :'.str_repeat(' ', 8 - strlen($C_eldays_)).$C_eldays_.'   '.'LODAY:'.str_repeat(' ', 5 - strlen($LODAY)).number_format($LODAY,2).'   '.'OTTHR:'.str_repeat(' ', 8 - strlen($C_extrahrstime_)).$C_extrahrstime_.'   '.'OTPHR:'.str_repeat(' ', 8 - strlen($C_extrahourspiece_)).$C_extrahourspiece_.'   '.'ESID :'.str_repeat(' ', 8 - strlen($C_esi_days_)).$C_esi_days_.'            '.''.str_repeat('', 35 - strlen($emp_name)).$emp_name."\n";
@@ -354,8 +380,8 @@ public function njmwagespayslip1641($mccodes,$periodfromdate,$periodtodate,$att_
 
         $PFNO=substr($record->uan_no,0,5);
  if ($att_payschm==167) {
-    $PFNO=''; 
- }   
+    $PFNO='';
+ }
         $SLD=0.00;
         $LODAY=0.00;
         $ILT=0.00;
@@ -653,23 +679,44 @@ public function njmwagespayslip1641($mccodes,$periodfromdate,$periodtodate,$att_
                 $logMsg.='   '.'SLD   :'.str_repeat(' ', 4 - strlen($SLD)).number_format($SLD,2).'    '.'ELD  :'.str_repeat(' ', 8 - strlen($C_eldays_)).$C_eldays_.'   '.'LODAY:'.str_repeat(' ', 5 - strlen($LODAY)).number_format($LODAY,2).'   '.'OTTHR:'.str_repeat(' ', 8 - strlen($C_extrahrstime_)).$C_extrahrstime_.'   '.'OTPHR:'.str_repeat(' ', 8 - strlen($C_extrahourspiece_)).$C_extrahourspiece_.'   '.'ESID :'.str_repeat(' ', 8 - strlen($C_esi_days_)).$C_esi_days_.'            '.''.str_repeat('', 35 - strlen($emp_name)).$emp_name."\n";
                 
                 $logMsg.='  '.' TWAGE :'.str_repeat(' ', 8 - strlen($C_timewages_)).$C_timewages_.'   '.'ADJ.A:'.str_repeat(' ', 8 - strlen($C_mveminus_)).$C_sundayadv_.'   '.'LOWI :'.str_repeat(' ', 8 - strlen($C_loffwagesincamt_)).$C_loffwagesincamt_.'  '.'ILT&PW:'.str_repeat(' ', 5 - strlen($ILT)).number_format($ILT,2).'   '.'S.ADV:'.str_repeat(' ', 5 - strlen($PADV)).number_format($PADV,2).'   '.'RSD  :'.str_repeat(' ', 8 - strlen($C_rsdamt_)).$C_rsdamt_.'            '.'CODE: '.str_repeat('', 65 - strlen($eb_no)).$eb_no."\n";
-                
+
                 $logMsg.='  '.' P.WAGE:'.str_repeat(' ', 8 - strlen($C_pwage_)).$C_pwage_.'  '.' DA   :'.str_repeat(' ', 8 - strlen($C_DAAMOUNT_)).$C_DAAMOUNT_.'  '.' LODG :'.str_repeat(' ', 8 - strlen($C_loffdagenincamt_)).$C_loffdagenincamt_.' '.' INCENT:'.str_repeat(' ', 8 - strlen($C_pwagesinc_)).$C_pwagesinc_.'  '.' CDN  :'.str_repeat(' ', 5 - strlen($CDN)).number_format($CDN,2).'  '.' GDED :'.str_repeat(' ', 8 - strlen($C_TOTAL_DEDUCTION_)).$C_TOTAL_DEDUCTION_.'            '.'TKT:'.str_repeat('', 25 - strlen($eb_no)).$eb_no."\n";
-                
+
                 $logMsg.='  '.' NA    :'.str_repeat(' ', 8 - strlen($C_na_)).$C_na_.'  '.' EWI  :'.str_repeat(' ', 8 - strlen($C_eldwagesincamt_)).$C_eldwagesincamt_.'  '.' OTW  :'.str_repeat(' ', 8 - strlen($C_extrahourswages_)).$C_extrahourswages_.'  '.' ILIN :'.str_repeat(' ', 5 - strlen($ILINT)).number_format($ILINT,2).'  '.' PF   :'.str_repeat(' ', 8 - strlen($C_EPF_)).$C_EPF_.'  '.' NPAY :'.str_repeat(' ', 8 - strlen($C_netpayamount_)).$C_netpayamount_.'            '.chr(14).'NET:'.str_repeat('', 25 - strlen($C_finalnetpay_)).$C_finalnetpay_."\n";
-                
+
                 $logMsg.='  '.' GI    :'.str_repeat(' ', 8 - strlen($C_genincamt_)).$C_genincamt_.'  '.' EDG  :'.str_repeat(' ', 8 - strlen($C_elddagenincamt_)).$C_elddagenincamt_.'  '.' OTI  :'.str_repeat(' ', 8 - strlen($C_extrahoursincamt_)).$C_extrahoursincamt_.'  '.' ILDG :'.str_repeat(' ', 5 - strlen($ILDG)).number_format($ILDG,2).'  '.' RENT :'.str_repeat(' ', 8 - strlen($C_rentded_)).$C_rentded_.'  '.' RNPAY:'.str_repeat(' ', 8 - strlen($C_NET)).$C_NET."\n";
-                
+
                 $logMsg.='  '.' INC   :'.str_repeat(' ', 8 - strlen($C_inc_)).$C_inc_.'   '.'FDG  :'.str_repeat(' ', 8 - strlen($C_festdagenincamt_)).$C_festdagenincamt_.'  '.' ODG  :'.str_repeat(' ', 8 - strlen($C_exthrsdagincamt_)).$C_exthrsdagincamt_.'  '.' GRS2 :'.str_repeat(' ', 8 - strlen($C_gross2amt_)).$C_gross2amt_.'  '.' ESI  :'.str_repeat(' ', 8 - strlen($C_ESI_)).$C_ESI_.'  '.' VARD1:'.str_repeat(' ', 8 - strlen($C_iftudedamt_)).$C_iftudedamt_."\n";
-                
+
                 $logMsg.='  '.' FWI   :'.str_repeat(' ', 8 - strlen($C_festwagesincamt_)).$C_festwagesincamt_.'  '.' SDG  :'.str_repeat(' ', 8 - strlen($C_sldwagesincamt_)).$C_sldwagesincamt_.'  '.' HRA  :'.str_repeat(' ', 8 - strlen($C_HRA_)).$C_HRA_.' '.' ADVDED:'.str_repeat(' ', 8 - strlen($C_exadvance_)).$C_exadvance_.'  '.' G.W.F:'.str_repeat(' ', 8 - strlen($C_govtwelfare_)).$C_govtwelfare_.'  '.' NET  :'.str_repeat(' ', 8 - strlen($C_finalnetpay_)).$C_finalnetpay_."\n";
-            
+
                 $logMsg.='  '.' SWI   :'.str_repeat(' ', 5 - strlen($SWOA)).number_format($SWOA,2).' '.'  TOTAL:'.str_repeat(' ', 8 - strlen($C_totalwagesamt_)).$C_totalwagesamt_.'  '.' GRS1 :'.str_repeat(' ', 8 - strlen($C_gross1amt_)).$C_gross1amt_.'  '.' PTAX :'.str_repeat(' ', 8 - strlen($C_PTAX_)).$C_PTAX_.'  '.' LR   :'.str_repeat(' ', 8 - strlen($C_landrentamt_)).$C_landrentamt_."\n";
                 $logMsg.='  '.' PVE   :'.str_repeat(' ', 8 - strlen($C_mveplus_)).$C_mveplus_.' '.'  P.F.G:'.str_repeat(' ', 8 - strlen($C_PFG_)).$C_PFG_.'  '.' OP   :'.str_repeat(' ', 8 - strlen($C_otherpay_)).$C_otherpay_.'  '.' CANT :'.str_repeat(' ', 8 - strlen($C_canteen_)).$C_canteen_.'  '.' PROD :'.str_repeat(' ', 8 - strlen($C_loomproducion_)).$C_loomproducion_."\n";
                 }
 
+                if ($att_payschm==174) {
+                $logMsg.='   '.'THR1  :'.str_repeat(' ', 8 - strlen($C_wrkhrs1_)).$C_wrkhrs1_.'   '.'THR2 :'.str_repeat(' ', 8 - strlen($C_wrkhours2_)).$C_wrkhours2_.'   '.'PHRS :'.str_repeat(' ', 8 - strlen($C_PHours_)).$C_PHours_.'   '.'CPN  :'.str_repeat(' ', 8 - strlen($C_nightdays_)).$C_nightdays_.'   '.'FHRS :'.str_repeat(' ', 8 - strlen($C_FHours_)).$C_FHours_.'   '.'LHRS :'.str_repeat(' ', 8 - strlen($C_LayOffHrs_)).$C_LayOffHrs_.'            '.'DEPT:'.str_repeat('', 14 - strlen($department)).$department."\n";
 
-                if ($att_payschm==169) { 
+                $logMsg.='   '.'SLD   :'.str_repeat(' ', 4 - strlen($SLD)).number_format($SLD,2).'    '.'ELD  :'.str_repeat(' ', 8 - strlen($C_eldays_)).$C_eldays_.'   '.'LODAY:'.str_repeat(' ', 5 - strlen($LODAY)).number_format($LODAY,2).'   '.'OTTHR:'.str_repeat(' ', 8 - strlen($C_extrahrstime_)).$C_extrahrstime_.'   '.'OTPHR:'.str_repeat(' ', 8 - strlen($C_extrahourspiece_)).$C_extrahourspiece_.'   '.'ESID :'.str_repeat(' ', 8 - strlen($C_esi_days_)).$C_esi_days_.'            '.''.str_repeat('', 35 - strlen($emp_name)).$emp_name."\n";
+
+                $logMsg.='  '.' TWAGE :'.str_repeat(' ', 8 - strlen($C_timewages_)).$C_timewages_.'   '.'ADJ.A:'.str_repeat(' ', 8 - strlen($C_mveminus_)).$C_sundayadv_.'   '.'LOWI :'.str_repeat(' ', 8 - strlen($C_loffwagesincamt_)).$C_loffwagesincamt_.'  '.'ILT&PW:'.str_repeat(' ', 5 - strlen($ILT)).number_format($ILT,2).'   '.'S.ADV:'.str_repeat(' ', 5 - strlen($PADV)).number_format($PADV,2).'   '.'RSD  :'.str_repeat(' ', 8 - strlen($C_rsdamt_)).$C_rsdamt_.'            '.'CODE: '.str_repeat('', 65 - strlen($eb_no)).$eb_no."\n";
+
+                $logMsg.='  '.' P.WAGE:'.str_repeat(' ', 8 - strlen($C_pwage_)).$C_pwage_.'  '.' DA   :'.str_repeat(' ', 8 - strlen($C_DAAMOUNT_)).$C_DAAMOUNT_.'  '.' LODG :'.str_repeat(' ', 8 - strlen($C_loffdagenincamt_)).$C_loffdagenincamt_.' '.' INCENT:'.str_repeat(' ', 8 - strlen($C_pwagesinc_)).$C_pwagesinc_.'  '.' CDN  :'.str_repeat(' ', 5 - strlen($CDN)).number_format($CDN,2).'  '.' GDED :'.str_repeat(' ', 8 - strlen($C_TOTAL_DEDUCTION_)).$C_TOTAL_DEDUCTION_.'            '.'TKT:'.str_repeat('', 25 - strlen($eb_no)).$eb_no."\n";
+
+                $logMsg.='  '.' NA    :'.str_repeat(' ', 8 - strlen($C_na_)).$C_na_.'  '.' EWI  :'.str_repeat(' ', 8 - strlen($C_eldwagesincamt_)).$C_eldwagesincamt_.'  '.' OTW  :'.str_repeat(' ', 8 - strlen($C_extrahourswages_)).$C_extrahourswages_.'  '.' ILIN :'.str_repeat(' ', 5 - strlen($ILINT)).number_format($ILINT,2).'  '.' PF   :'.str_repeat(' ', 8 - strlen($C_EPF_)).$C_EPF_.'  '.' NPAY :'.str_repeat(' ', 8 - strlen($C_netpayamount_)).$C_netpayamount_.'            '.chr(14).'NET:'.str_repeat('', 25 - strlen($C_finalnetpay_)).$C_finalnetpay_."\n";
+
+                $logMsg.='  '.' GI    :'.str_repeat(' ', 8 - strlen($C_genincamt_)).$C_genincamt_.'  '.' EDG  :'.str_repeat(' ', 8 - strlen($C_elddagenincamt_)).$C_elddagenincamt_.'  '.' OTI  :'.str_repeat(' ', 8 - strlen($C_extrahoursincamt_)).$C_extrahoursincamt_.'  '.' ILDG :'.str_repeat(' ', 5 - strlen($ILDG)).number_format($ILDG,2).'  '.' RENT :'.str_repeat(' ', 8 - strlen($C_rentded_)).$C_rentded_.'  '.' RNPAY:'.str_repeat(' ', 8 - strlen($C_NET)).$C_NET."\n";
+
+                $logMsg.='  '.' O.A   :'.str_repeat(' ', 8 - strlen($C_OTHER_ALLOW_)).$C_OTHER_ALLOW_.'   '.'FDG  :'.str_repeat(' ', 8 - strlen($C_festdagenincamt_)).$C_festdagenincamt_.'  '.' ODG  :'.str_repeat(' ', 8 - strlen($C_exthrsdagincamt_)).$C_exthrsdagincamt_.'  '.' GRS2 :'.str_repeat(' ', 8 - strlen($C_gross2amt_)).$C_gross2amt_.'  '.' ESI  :'.str_repeat(' ', 8 - strlen($C_ESI_)).$C_ESI_.'  '.' VARD1:'.str_repeat(' ', 8 - strlen($C_iftudedamt_)).$C_iftudedamt_."\n";
+
+                $logMsg.='  '.' FWOA  :'.str_repeat(' ', 8 - strlen($C_festwagesincamt_)).$C_festwagesincamt_.'  '.' SDG  :'.str_repeat(' ', 8 - strlen($C_sldwagesincamt_)).$C_sldwagesincamt_.'  '.' HRA  :'.str_repeat(' ', 8 - strlen($C_HRA_)).$C_HRA_.' '.' ADVDED:'.str_repeat(' ', 8 - strlen($C_exadvance_)).$C_exadvance_.'  '.' G.W.F:'.str_repeat(' ', 8 - strlen($C_govtwelfare_)).$C_govtwelfare_.'  '.' NET  :'.str_repeat(' ', 8 - strlen($C_finalnetpay_)).$C_finalnetpay_."\n";
+
+                $logMsg.='  '.' SWOA  :'.str_repeat(' ', 5 - strlen($SWOA)).number_format($SWOA,2).' '.'  TOTAL:'.str_repeat(' ', 8 - strlen($C_totalwagesamt_)).$C_totalwagesamt_.'  '.' GRS1 :'.str_repeat(' ', 8 - strlen($C_gross1amt_)).$C_gross1amt_.'  '.' PTAX :'.str_repeat(' ', 8 - strlen($C_PTAX_)).$C_PTAX_.'  '.' LR   :'.str_repeat(' ', 8 - strlen($C_landrentamt_)).$C_landrentamt_."\n";
+                $logMsg.='  '.' PVE   :'.str_repeat(' ', 8 - strlen($C_mveplus_)).$C_mveplus_.' '.'       :'.str_repeat(' ', 8 - strlen($bln   )).$bln   .'  '.' OP   :'.str_repeat(' ', 8 - strlen($C_otherpay_)).$C_otherpay_.'  '.' CANT :'.str_repeat(' ', 8 - strlen($C_canteen_)).$C_canteen_.'  '.' PROD :'.str_repeat(' ', 8 - strlen($C_loomproducion_)).$C_loomproducion_."\n";
+                }
+
+
+                if ($att_payschm==169) {
                 $logMsg.='   '.'THR1  :'.str_repeat(' ', 8 - strlen($C_wrkhrs1_)).$C_wrkhrs1_.'   '.'THR2 :'.str_repeat(' ', 8 - strlen($C_wrkhours2_)).$C_wrkhours2_.'   '.'PHRS :'.str_repeat(' ', 8 - strlen($C_PHours_)).$C_PHours_.'   '.'CPN  :'.str_repeat(' ', 8 - strlen($C_nightdays_)).$C_nightdays_.'   '.'FHRS :'.str_repeat(' ', 8 - strlen($C_FHours_)).$C_FHours_.'   '.'LHRS :'.str_repeat(' ', 8 - strlen($C_LayOffHrs_)).$C_LayOffHrs_.'            '.'DEPT:'.str_repeat('', 14 - strlen($department)).$department."\n";
         
                 $logMsg.='   '.'SLD   :'.str_repeat(' ', 4 - strlen($SLD)).number_format($SLD,2).'    '.'ELD  :'.str_repeat(' ', 8 - strlen($C_eldays_)).$C_eldays_.'   '.'LODAY:'.str_repeat(' ', 5 - strlen($LODAY)).number_format($LODAY,2).'   '.'OTTHR:'.str_repeat(' ', 8 - strlen($C_extrahrstime_)).$C_extrahrstime_.'   '.'OTPHR:'.str_repeat(' ', 8 - strlen($C_extrahourspiece_)).$C_extrahourspiece_.'   '.'ESID :'.str_repeat(' ', 8 - strlen($C_esi_days_)).$C_esi_days_.'            '.''.str_repeat('', 35 - strlen($emp_name)).$emp_name."\n";
@@ -3559,6 +3606,10 @@ if ($att_payschm==169) {
     $cmphd='LIMELIGHT COMM PVT LTD';
     $hdline='NEW BUDLI PAY REGISTER FOR THE PERIOD FROM '.$startdate.' TO '.$enddate;
 }
+if ($att_payschm==174) {
+    $cmphd='LIMELIGHT COMM PVT LTD';
+    $hdline='NEW BUDLI PAY REGISTER FOR THE PERIOD FROM '.$startdate.' TO '.$enddate;
+}
 
 
 
@@ -3742,6 +3793,10 @@ if ($att_payschm==167) {
     $hdline='RETIRED PAY REGISTER FOR THE PERIOD FROM '.$startdate.' TO '.$enddate;
 }
 if ($att_payschm==169) {
+    $cmphd='LIMELIGHT COMM PVT LTD';
+    $hdline='NEW BUDLI PAY REGISTER FOR THE PERIOD FROM '.$startdate.' TO '.$enddate;
+}
+if ($att_payschm==174) {
     $cmphd='LIMELIGHT COMM PVT LTD';
     $hdline='NEW BUDLI PAY REGISTER FOR THE PERIOD FROM '.$startdate.' TO '.$enddate;
 }
