@@ -4610,6 +4610,10 @@ return false;
 
         }
 
+       if (getchecklist == 8) {
+             njmadvexceldata(event);
+
+        }        
 
       
     });
@@ -4721,6 +4725,31 @@ return false;
 };
 
 
+function njmadvexceldata(event){
+      event.preventDefault(); 
+	  var opt=3;
+             event.preventDefault();     
+                var att_payschm =  $('#att_payschm').val();
+                var holget =  $('#hol_get').val();
+                periodfromdate = $('#njmcntfromdt').val();
+                periodtodate = $('#njmcnttodt').val();
+                payschemeName = $('#payschemename').val();
+
+var url = '<?php echo site_url("Njmwagesprocess/njmadvexceldata"); ?>' +
+                      '?att_payschm=' + att_payschm +
+                      '&holget=' + holget+
+                      '&periodfromdate=' + periodfromdate+
+                      '&payschemeName=' + payschemeName+
+                      '&periodtodate=' + periodtodate
+                       
+                      ;
+                      alert(url);
+			//$(location).attr('href',url);
+			window.open( url, '_blank');
+			
+			
+return false;
+};
 
 
 

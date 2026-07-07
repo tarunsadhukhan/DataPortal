@@ -1094,8 +1094,8 @@ $updfor='IADV';
     is_active,update_for,payscheme_id,advance_date ) 
      select  tca.eb_id, '$periodfromdate'  df,'$periodtodate' dt,installment_amount,
       1 act,'$updfor',$att_payschm  payscm,advance_date advdate from (
-	  select tca.eb_id, tca.advance_amount,tca.advance_date,tca.company_id,tca.installment_amount,ifnull(dedadv.advded ,0 ) advded,
-	  tca.advance_amount-ifnull(dedadv.advded ,0 ) balamt from EMPMILL12.tbl_company_advance tca 
+        select tca.eb_id, tca.advance_amount,tca.advance_date,tca.company_id,tca.installment_amount,ifnull(dedadv.advded ,0 ) advded,
+	  tca.advance_amount-ifnull(dedadv.advded ,0 )-ifnull(adj_trans_amount,0) balamt,adj_trans_amount from EMPMILL12.tbl_company_advance tca 
 	  left join (	  
 	  select eb_id,advance_date,sum(advance) advded from  EMPMILL12.tbl_njm_wages_data_collection tnwdc 
 	  where update_for='$updfor' and tnwdc.date_from <'$periodfromdate' AND tnwdc.is_active=1 
@@ -1108,7 +1108,7 @@ $updfor='IADV';
 	  and da.is_active=1 group by eb_no,eb_id) da on da.eb_id=tca.eb_id
 	  left join vowsls.tbl_pay_employee_payscheme tpep on tpep.EMPLOYEEID =tca.eb_id 
       and tpep.PAY_SCHEME_ID =$att_payschm and tpep.STATUS =1
-	  where advance_amount >0
+	  where advance_amount >0 and balamt>0
 	  and da.eb_id is not null and tpep.PAY_SCHEME_ID is not null";
 //ECHO $sql;	  
 
@@ -2391,6 +2391,78 @@ return $query->result_array();
     }
 
     }
+
+
+
+
+
+
+
+
+public function njmadvexceldata($periodfromdate,$periodtodate,$att_payschm) {
+$companyId = $this->session->userdata('companyId');
+
+$sql="select esi_no,emp_code, empname, 
+vcab.eb_id,
+advance_date,
+advance_amount,
+installment_amount,
+adj_amount,
+date_from,
+ded_amount,
+cumulative_ded,
+balamt from EMPMILL12.vw_company_advance_balance vcab 
+order by esi_no,date_from
+
+ 
+"; 
+ 
+
+//echo $sql;
+    $query = $this->db->query($sql);
+
+      
+    $data=$query->result();
+    if ($query->num_rows() > 0) {
+   //     var_dump($data);
+return $query->result_array(); 
+//        return $data;
+    } else {
+        return array(); // Return an empty array if no results are found
+    }
+
+    }
+
+public function njmadvexceldatasumm($periodfromdate,$periodtodate,$att_payschm) {
+$companyId = $this->session->userdata('companyId');
+
+$sql="select distinct(esi_no) esino,vcab.advance_date ,advance_amount,dedamt,vcab.adj_amount,vcab.advance_amount-ifnull(dedamt,0)-ifnull(adj_amount,0) balamt   from EMPMILL12.vw_company_advance_balance vcab 
+left join (
+select esi_no esinos,advance_date,sum(vcab2.ded_amount) dedamt from EMPMILL12.vw_company_advance_balance vcab2 
+group by esi_no,advance_date
+) advded  on vcab.esi_no=advded.esinos and vcab.advance_date =advded.advance_date 
+order by esino 
+ 
+
+ 
+"; 
+ 
+
+//echo $sql;
+    $query = $this->db->query($sql);
+
+      
+    $data=$query->result();
+    if ($query->num_rows() > 0) {
+   //     var_dump($data);
+return $query->result_array(); 
+//        return $data;
+    } else {
+        return array(); // Return an empty array if no results are found
+    }
+
+    }
+
 
 
 

@@ -4554,6 +4554,204 @@ echo json_encode(array('success' => true, 'savedata' => $savedata, 'excelUrl' =>
 
 	}
 
+public function njmadvexceldata() {
+		// Create a new Spreadsheet object
+		$periodfromdate= $this->input->get('periodfromdate');
+		$periodtodate = $this->input->get('periodtodate');
+		$att_payschm = $this->input->get('att_payschm');
+
+    echo $periodfromdate.'=='.$periodtodate.'=='.$att_payschm;
+    $result = $this->Njmallwagesprocess->njmadvexceldata($periodfromdate,$periodtodate,$att_payschm);
+//var_dump($result);
+//    $query = $this->Njmallwagesprocess->getcntwagespayslip($periodfromdate,$periodtodate,$att_payschm);
+    if (!$result) {
+        echo "Query failed.";
+        return;
+    }
+    
+    // Check if the query returned any results
+   //   
+//$result=$this->Njmallwagesprocess->njmcntwagesexceldownload($periodfromdate,$periodtodate,$att_payschm);
+  //  var_dump($query);
+
+//  var_dump($result);
+if (empty($result) || count($result) == 0) {
+    echo "No data found.";
+    return;
+}
+        $query = $result;
+//    echo "Total Rows: " . $result->num_rows() . "<br>";
+
+				$spreadsheet = new Spreadsheet();
+	$sheet = $spreadsheet->getActiveSheet();
+
+    $sdate=$periodtodate;
+	//	$sdate='2024-01-01';
+
+//echo $this->db->last_query();
+// Fetching the result set as an array of arrays
+
+//$results = $query->result_array();
+//$columns = $query->list_fields();
+//$numCols = $query->num_fields();
+
+//$result = $query->result_array();
+
+
+
+
+
+$columnNames = array_keys($result[0]);
+echo "Column Names: " . implode(", ", $columnNames) . "<br>";
+$col = 'A';
+    foreach ($columnNames as $column) {
+        $sheet->setCellValue($col.'1', $column);
+        $col++;
+    }
+
+  /*   $rowNumber = 2;
+    $colno=0;
+    foreach ($result as $row) {
+    $colno=0;
+        $col = 'A';
+        foreach ($row as $cell) {
+            if ($colno<=0) {
+              //  $sheet->setCellValueExplicitByColumnAndRow($colIndex, $rowIndex, $value, DataType::TYPE_STRING);
+//                $sheet->setCellValue($col.$rowNumber, $cell, DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit($col.$rowNumber, $cell, DataType::TYPE_STRING);
+
+            } else {    
+                $sheet->setCellValue($col.$rowNumber, $cell);
+            $col++;
+            $colno++;
+            }       
+        }
+        $rowNumber++;
+    }
+ */
+
+$rowNumber = 2;
+
+foreach ($result as $row) {
+    $col = 'A';
+    $colno = 0;
+
+    foreach ($row as $cell) {
+        if ($colno <= 0) {
+            $sheet->setCellValueExplicit($col . $rowNumber, $cell, DataType::TYPE_STRING);
+        } else {
+            $sheet->setCellValue($col . $rowNumber, $cell);
+        }
+
+        $col++;     // move outside
+        $colno++;   // move outside
+    }
+
+    $rowNumber++;
+}
+
+
+
+//$sheet = $spreadsheet->createSheet($index);
+
+// Rename the sheet
+$sheet->setTitle('Checklist');
+
+$sheet = $spreadsheet->createSheet(1);
+$sheet->setTitle('Summary');
+
+
+
+
+    $result = $this->Njmallwagesprocess->njmadvexceldatasumm($periodfromdate,$periodtodate,$att_payschm);
+    if (!$result) {
+        echo "Query failed.";
+        return;
+    }
+    
+ if (empty($result) || count($result) == 0) {
+    echo "No data found.";
+    return;
+}
+        $query = $result;
+//    echo "Total Rows: " . $result->num_rows() . "<br>";
+
+//				$spreadsheet = new Spreadsheet();
+//	$sheet = $spreadsheet->getActiveSheet();
+
+    $sdate=$periodtodate;
+ 
+
+
+
+
+$columnNames = array_keys($result[0]);
+echo "Column Names: " . implode(", ", $columnNames) . "<br>";
+$col = 'A';
+    foreach ($columnNames as $column) {
+        $sheet->setCellValue($col.'1', $column);
+        $col++;
+    }
+
+  
+$rowNumber = 2;
+
+foreach ($result as $row) {
+    $col = 'A';
+    $colno = 0;
+
+    foreach ($row as $cell) {
+        if ($colno <= 0) {
+            $sheet->setCellValueExplicit($col . $rowNumber, $cell, DataType::TYPE_STRING);
+        } else {
+            $sheet->setCellValue($col . $rowNumber, $cell);
+        }
+
+        $col++;     // move outside
+        $colno++;   // move outside
+    }
+
+    $rowNumber++;
+}
+
+
+
+
+
+
+
+    $filename="Advance_checklist_".$sdate.'.xlsx';
+
+// After generating the Excel file
+$excelUrl = 'path_to_generated_excel_file.xlsx'; // Change this to the actual URL
+
+// Return the URL along with other response data
+echo json_encode(array('success' => true, 'savedata' => $savedata, 'excelUrl' => $excelUrl));
+
+	// Set headers for Excel file download
+//	ob_clean();
+	header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+//	header('Content-Disposition: attachment;filename="your_excel_file.xlsx"');
+
+//		header('Content-Type: application/vnd.ms-excel');
+	header('Content-Disposition: attachment;filename='.$filename);
+	header('Cache-Control: max-age=0');
+	ob_clean();
+
+	// Save the Excel file to output stream
+	$writer = new Xlsx($spreadsheet);
+	$writer->save('php://output');
+	// Save the Excel file to output stream
+//	$writer = new Xlsx($spreadsheet);
+//	$writer->save('php://output');
+	
+		// Terminate the script to prevent further output
+		exit;
+
+
+
+	}
+
 
 
        public function njmlinehrschecklist() {
