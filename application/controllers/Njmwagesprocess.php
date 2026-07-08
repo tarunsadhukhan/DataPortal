@@ -5323,7 +5323,7 @@ for ($col = 3; $col <= 20; $col++) {
 }
 
 $lastRow++;
-$finalrow=6;
+$finalrow=7;
 $startrow=1;
 
 for ($col = 3; $col <= 20; $col++) {
@@ -5336,7 +5336,7 @@ for ($col = 3; $col <= 20; $col++) {
 
     $srcRow = $col+$lastRow ;  // 240, 241, 242...
 
-    $formula = "='New Budli'!{$sumCell}";
+    $formula = "='New Budli Rtd'!{$sumCell}";
     
     echo $formula;
     echo $tsumcell;
@@ -5523,7 +5523,7 @@ for ($col = 3; $col <= 20; $col++) {
 }
 
 $lastRow++;
-$finalrow=7;
+$finalrow=8;
 $startrow=1;
 
 for ($col = 3; $col <= 20; $col++) {
@@ -5591,7 +5591,7 @@ for ($col = 3; $col <= 20; $col++) {
 }
 
 $lastRow++;
-$finalrow=8;
+$finalrow=9;
 $startrow=1;
 
 for ($col = 3; $col <= 20; $col++) {
@@ -5657,7 +5657,7 @@ for ($col = 3; $col <= 20; $col++) {
 }
 
 $lastRow++;
-$finalrow=9;
+$finalrow=10;
 $startrow=1;
 
 for ($col = 3; $col <= 20; $col++) {
@@ -5723,7 +5723,7 @@ for ($col = 3; $col <= 20; $col++) {
 }
 
 $lastRow++;
-$finalrow=10;
+$finalrow=11;
 $startrow=1;
 
 for ($col = 3; $col <= 20; $col++) {
@@ -5790,7 +5790,7 @@ for ($col = 3; $col <= 20; $col++) {
 }
 
 $lastRow++;
-$finalrow=12;
+$finalrow=13;
 $startrow=1;
 
 for ($col = 3; $col <= 20; $col++) {
