@@ -642,7 +642,7 @@ GROUP BY
         from vowsls.leave_transactions lt 
         left join EMPMILL12.tbl_stl_days_payment tsdp on lt.leave_transaction_id =tsdp.leave_tran_id 
         left join ( 
-        select eb_id,emp_code  from tbl_hrms_ed_official_details theod where is_active =1
+        select eb_id,emp_code,department_id  from tbl_hrms_ed_official_details theod where is_active =1
         ) theod on lt.eb_id=theod.eb_id
         left join tbl_hrms_ed_personal_details thepd on lt.eb_id=thepd.eb_id
         left join department_master dm on theod.department_id =dm.dept_id

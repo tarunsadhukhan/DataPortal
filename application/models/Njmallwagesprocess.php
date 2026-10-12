@@ -410,7 +410,7 @@ public function njmcntwagesprocessdata($periodfromdate,$periodtodate) {
     and updt_from not in ('M')";
     $this->db->query($sql);
 
-
+//attendance data
     $sql="INSERT INTO EMPMILL12.tbl_njm_cnt_wages_data_collection (
         start_date, end_date, eb_id, dept_id, desig_id, wrk_hours_reg, wrk_hours_ot,
         wrk_hours_adj, rates, prod_id, production, amount_reg, amount_ot,

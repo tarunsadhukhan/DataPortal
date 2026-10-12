@@ -214,132 +214,72 @@ class Varaha_model extends CI_Model
 
 	}
 
+	// Checks the password against user_details (bcrypt) directly; the old security-api server no longer exists.
+	// Returns 1 = ok, 2 = username/password incorrect, 4 = user not active.
 	public function login($username,$password){
-			$databasecr = $this->varaha->getTenentId();
+			$this->db->where('user_login_id', $username);
+			$this->db->or_where('email', $username);
+			$q = $this->db->get('user_details');
 
-			// $this->varaha->print_arrays($databasecr['tenentId']);
-		
-            $sms_url = $databasecr['serverIp']."/security-api/oauth/token";
-			// $parameters = array(
-			// 	'grant_type' => 'password',
-			// 	'username' =>  $username,
-			// 	'password' =>  $password,
-			// );
-
-			$data = "grant_type=password&username=$username&password=$password";
-            
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_POST, false);
-            curl_setopt($ch, CURLOPT_URL, $sms_url);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-				'X-TenantId: '.$databasecr['tenentId'],
-				'Authorization: Basic dHV0b3JpYWxzcG9pbnQ6bXktc2VjcmV0LWtleQ=='
-			));
-            $output = curl_exec($ch);
-            curl_close($ch);
-			// $this->varaha->print_arrays( $sms_url,$data,$databasecr['tenentId'],$output);
-            if ($output){
-				
-				$mdata = json_decode($output, true);
-				
-				if($mdata['access_token']){
-					$sms_url = $databasecr['serverIp']."/security-api/api/easybusiness/user/authenticateUserLogin";
-					$parameters = array(
-						'reqSource' => 0,
-						'userName' =>  $username,
-						'password' =>  $password,
-					);
-					$headers = [
-						"Content-Type: application/json",
-						"X-Content-Type-Options:nosniff",
-						"Accept:application/json",
-						"Cache-Control:no-cache",
-						'X-TenantId: '.$databasecr['tenentId'],
-						'Authorization: '.$mdata['token_type'].$mdata['access_token'],
-						'CompanyID: 0',
-					];
-					$chs = curl_init();
-					curl_setopt($chs, CURLOPT_POST, true);
-					curl_setopt($chs, CURLOPT_URL, $sms_url);
-					curl_setopt($chs,CURLOPT_CUSTOMREQUEST, "POST");
-					curl_setopt($chs, CURLOPT_POSTFIELDS, json_encode($parameters));
-					// curl_setopt($chs, CURLOPT_POSTFIELDS, $mydata);
-					curl_setopt($chs, CURLOPT_RETURNTRANSFER, true);
-					curl_setopt($chs, CURLOPT_HTTPHEADER, $headers);
-					$output1 = curl_exec($chs);
-					curl_close($chs);
-					// $this->varaha->print_arrays($output1);
-					if ($output1){
-						
-						$compdata= array();
-						$res = json_decode($output1, true);
-						$companyId = 0 ;
-						if($this->data['companys']){	
-							foreach ($this->data['companys'] as $comp) {
-								if($i==0){
-									$companyId = $comp['compId'];					
-								}
-								$i++;
-							}
-						}	
-						
-						if($res){
-							if($res['companyDetails']){
-								$mc=0;
-								foreach($res['companyDetails'] as $company){
-									if($mc==0){
-										$companyId = $company['value'];	
-									}
-
-									$mdt = array(
-										'compId' => $company['value'],
-										'name' => $company['name'],
-										'label' => $company['label'],
-										'label' => $company['label'],
-										'userGroupId' => $company['userGroupId'],
-										'companyLogo' => $company['companyLogo'],
-									);
-									$mc++;
-									$compdata[] = $mdt;
-								}
-							}
-						}
-						$ssdata = array(
-							'loginStatus' => $res['loginStatus'],
-							'userid' => $res['userId'],
-							'userName' => $res['userName'],
-							'imageURL' => $res['imageURL'],
-							'email' => $res['email'],
-							'orgId' => $res['orgId'],
-							'ebId' => $res['ebId'],
-							'ebNo' => $res['ebNo'],
-							'companyId' => $companyId,
-							'mobileNumber' => $res['mobileNumber'],
-							'Authorization' => $mdata['token_type'].$mdata['access_token'],
-							'companys' => $compdata,
-						);
-						// $this->varaha->print_arrays($ssdata);
-						$this->session->set_userdata($ssdata);
-						return 1;
-
-					}else{						
-						return 2;
-					}
-				}else{					
-					return 2;
-				}				
-			}else{				
+			$user = null;
+			foreach($q->result() as $row){
+				if($row->password && password_verify($password, $row->password)){
+					$user = $row;
+					break;
+				}
+			}
+			if(!$user){
 				return 2;
 			}
-                
-			//snehadeep
-			//sneha9948?
+			if($user->is_enable != 1){
+				return 4;
+			}
 
+			$this->db->select('c.comp_id, c.company_code, c.company_name, m.user_grp_id');
+			$this->db->from('user_group_map_master m');
+			$this->db->join('company_master c', 'c.comp_id = m.company_id');
+			$this->db->where('m.user_id', $user->user_id);
+			$this->db->where('m.is_enable', 1);
+			$this->db->order_by('c.comp_id', 'ASC');
+			$companies = $this->db->get()->result();
 
-		
-		
+			// ponytail: 'support' has no rows in user_group_map_master, so it is hardcoded as a superuser
+			// (every company of its organization, group 0 = all menus). Map it to real groups to remove this.
+			if(!$companies && $user->user_login_id == 'support'){
+				$this->db->select('comp_id, company_code, company_name, 0 as user_grp_id', false);
+				$this->db->where('org_id', $user->organization);
+				$this->db->order_by('comp_id', 'ASC');
+				$companies = $this->db->get('company_master')->result();
+			}
+
+			$compdata = array();
+			foreach($companies as $company){
+				$compdata[] = array(
+					'compId' => $company->comp_id,
+					'name' => $company->company_code,
+					'label' => $company->company_name,
+					'userGroupId' => $company->user_grp_id,
+					'companyLogo' => '',
+				);
+			}
+
+			$this->session->sess_regenerate(TRUE);
+			$this->session->set_userdata(array(
+				'loginStatus' => 1,
+				'userid' => $user->user_id,
+				'userName' => $user->user_login_id,
+				'imageURL' => $user->user_img,
+				'email' => $user->email,
+				'orgId' => $user->organization,
+				'ebId' => $user->eb_id,
+				'ebNo' => '',
+				'companyId' => ($compdata ? $compdata[0]['compId'] : 0),
+				'mobileNumber' => $user->mobile,
+				// ponytail: no API token any more; the reports that still call security-api will fail until rewritten.
+				'Authorization' => '',
+				'companys' => $compdata,
+			));
+			return 1;
 	}
 
 	public function logout(){

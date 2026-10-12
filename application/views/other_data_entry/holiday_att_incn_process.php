@@ -4613,9 +4613,27 @@ return false;
        if (getchecklist == 8) {
              njmadvexceldata(event);
 
-        }        
+        }
 
-      
+
+    });
+
+// Canteen(9)/STL(10) statements - same ids in both checklist dropdowns, dates from whichever modal it sits in
+    $('#getchecklist, #ejm_getchecklist').change(function() {
+        var opt = $(this).val();
+        if (opt != 9 && opt != 10) return;
+        var ejm = (this.id == 'ejm_getchecklist');
+        var periodfromdate = ejm ? $('#ejmfromdt').val() : $('#njmcntfromdt').val();
+        var periodtodate   = ejm ? $('#ejmtodt').val()   : $('#njmcnttodt').val();
+        var action = (opt == 9) ? 'canteendetdownloaddata' : 'stldownloaddata';
+
+        var url = '<?php echo site_url("Data_entry_2"); ?>/' + action +
+                      '?att_payschm=' + $('#att_payschm').val() +
+                      '&holget=' + $('#hol_get').val() +
+                      '&periodfromdate=' + periodfromdate +
+                      '&payschemeName=' + $('#payschemename').val() +
+                      '&periodtodate=' + periodtodate;
+        window.open( url, '_blank');
     });
 
 function njmattwithpayschmexceldata(event){
